@@ -40,7 +40,7 @@ object StaticFileService {
     ),
     body(
       div(id := BuildInfo.rootId),
-      script(src := /*BuildInfo.rootScript*/s"${BuildInfo.name}-fastopt-bundle.js")
+      script(src := /*BuildInfo.rootScript*/s"${BuildInfo.name}-opt-bundle.js")
     )
   ).render
 

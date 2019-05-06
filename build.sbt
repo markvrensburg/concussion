@@ -69,22 +69,23 @@ lazy val coreJvm = core.jvm
 lazy val coreJs = core.js
 
 lazy val backend = (project in file("backend"))
-  .enablePlugins(WebScalaJSBundlerPlugin)
+  .enablePlugins(WebScalaJSBundlerPlugin, DockerPlugin)
   .settings(commonSettings)
   .settings(
     test in assembly := {},
-//    assemblyMergeStrategy in assembly := {
-//      case PathList(ps @ _*) if ps.last endsWith "BuildInfo$.class" => MergeStrategy.first
-//      case x => {
-//        val oldStrategy = (assemblyMergeStrategy in assembly).value
-//        oldStrategy(x)
-//      }
-//    },
+    assemblyMergeStrategy in assembly := {
+      case PathList(ps @ _*) if ps.last endsWith "BuildInfo$.class" => MergeStrategy.first
+      case x => {
+        val oldStrategy = (assemblyMergeStrategy in assembly).value
+        oldStrategy(x)
+      }
+    },
     mainClass in assembly := Some(Backend.mainClass),
     
     scalaJSProjects := Seq(frontend),
     pipelineStages in Assets := Seq(scalaJSPipeline),
     compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
+    
     npmAssets ++= NpmAssets.ofProject(frontend) { nodeModules =>
       (
         nodeModules / Ace.keybindingPath +++ 
@@ -92,6 +93,7 @@ lazy val backend = (project in file("backend"))
         nodeModules / Ace.modePath / "json.js" 
       ).allPaths
     }.value,
+    
     libraryDependencies ++= Seq(
       "org.http4s" %% "http4s-blaze-server" % http4sV,
       "org.http4s" %% "http4s-circe" % http4sV,
@@ -101,6 +103,7 @@ lazy val backend = (project in file("backend"))
       "org.fusesource.jansi" % "jansi" % "1.18",
       "ch.qos.logback" % "logback-classic" % "1.2.3"
     ),
+    
     WebKeys.packagePrefix in Assets := Backend.assetPath,
     managedClasspath in Runtime += (packageBin in Assets).value,
     
@@ -109,7 +112,20 @@ lazy val backend = (project in file("backend"))
     // Run reStart when frontend changes have been made
     watchSources ++= (watchSources in frontend).value,
     // Main class
-    mainClass in reStart := Some(Backend.mainClass)
+    mainClass in reStart := Some(Backend.mainClass),
+
+    dockerfile in docker := {
+      val artifact: File = assembly.value
+      val artifactTargetPath = s"${Application.name}.jar"
+      val port = sys.env.getOrElse("PORT","8090")
+
+      new Dockerfile {
+        from("openjdk:8-jre-alpine")
+        add(artifact, artifactTargetPath)
+        expose(port.toInt)
+        cmd("java", "-jar", artifactTargetPath)
+      }
+    }
   )
   .dependsOn(coreJvm)
 

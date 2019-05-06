@@ -21,7 +21,7 @@ object Main extends IOApp {
 
   def run(args: List[String]): IO[ExitCode] =
     for {
-      port <- IO(envOrNone("HTTP_PORT").map(_.toInt).getOrElse(port))
+      port <- IO(envOrNone("PORT").map(_.toInt).getOrElse(port))
       exitCode <- BlazeServerBuilder[IO]
         .bindHttp(port, ip)
         .withHttpApp(services)
