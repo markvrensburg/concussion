@@ -39,11 +39,12 @@ abstract class Port[F[_],A] {
   def source: Stream[F,A] =
     Stream.repeatEval(read)
 
-  def sink: Pipe[F, A, Unit] =
+  def sink: Pipe[F,A,Unit] =
     _.evalMap(write)
 }
 
 object Port {
+
   def apply[F[_],A](readPort: PVar[F,A], writePort: PVar[F,A]): Port[F,A] = new Port[F,A] {
     override def read: F[A] = readPort.read
     override def write(a: A): F[Unit] = writePort.write(a)

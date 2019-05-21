@@ -1,7 +1,7 @@
-var Webpack = require("webpack");
-var HtmlWebpackPlugin = require('html-webpack-plugin');
-var Path = require('path');
-var Merge = require('webpack-merge');
+const Webpack = require("webpack");
+const Merge = require('webpack-merge');
+const Path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 var rootDir = Path.resolve(__dirname, '../../../..');
 var resourcesDir = Path.resolve(rootDir, 'src/main/resources');

@@ -24,12 +24,13 @@ object Logo {
       height(100.%%),
       background := s"linear-gradient(to right, hsl(${r.nextInt(360)}, 80%, 10%), hsl(${r.nextInt(360)}, 50%, 40%))",
       display.flex,
-      alignItems.center
+      alignItems.center,
+      overflow.hidden
     ))
 
     val logo = style(unsafeRoot("#logo")(
-      height(80.vh),
-      width(80.vw),
+      height(80.%%),
+      width(80.%%),
       margin.auto,
       animationName(pulse),
       animationDuration(15.seconds),

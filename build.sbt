@@ -113,19 +113,23 @@ lazy val backend = (project in file("backend"))
     watchSources ++= (watchSources in frontend).value,
     // Main class
     mainClass in reStart := Some(Backend.mainClass),
-
+    
     dockerfile in docker := {
-      val artifact: File = assembly.value
-      val artifactTargetPath = s"${Application.name}.jar"
-      val port = sys.env.getOrElse("PORT","8090")
+      val app: File = assembly.value
+      val appTarget = s"${Application.name}.jar"
+      val port = sys.env.getOrElse("PORT","8090").toInt
 
       new Dockerfile {
         from("openjdk:8-jre-alpine")
-        add(artifact, artifactTargetPath)
-        expose(port.toInt)
-        cmd("java", "-jar", artifactTargetPath)
+        add(app, appTarget)
+        expose(port)
+        cmd("java", "-jar", appTarget)
       }
-    }
+    },
+
+    imageNames in docker := Seq(
+      ImageName("registry.heroku.com/concussion-io/web:latest")
+    )
   )
   .dependsOn(coreJvm)
 
@@ -137,15 +141,20 @@ val webpackDevConf = Def.setting {
   Some(webpackDir.value / "dev.webpack.config.js")
 }
 
+val webpackProdConf = Def.setting {
+  Some(webpackDir.value / "prod.webpack.config.js")
+}
+
 lazy val frontend = (project in file("frontend"))
   .enablePlugins(ScalaJSPlugin, ScalaJSWeb, ScalaJSBundlerPlugin)
   .settings(commonSettings)
   .settings(
-    version in webpack := "4.12.0",
-    version in startWebpackDevServer := "3.1.4",
+    version in webpack := "4.30.0",
+    version in startWebpackDevServer := "3.3.1",
     webpackDevServerExtraArgs := Seq("--inline"),
     webpackResources := webpackDir.value * "*.js",
     webpackConfigFile in fastOptJS := webpackDevConf.value,
+    webpackConfigFile in fullOptJS := webpackProdConf.value,
     webpackBundlingMode in fastOptJS := BundlingMode.LibraryAndApplication(),
     webpackBundlingMode in fullOptJS := BundlingMode.Application,
     includeFilter in webpackMonitoredFiles := "*",
@@ -155,16 +164,19 @@ lazy val frontend = (project in file("frontend"))
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomV,
       "com.github.japgolly.scalajs-react" %%% "core" % scalaJsReactV,
       "com.github.japgolly.scalajs-react" %%% "extra" % scalaJsReactV,
-      "com.github.japgolly.scalacss" %%% "ext-react" % scalaCssV
+      "com.github.japgolly.scalacss" %%% "ext-react" % scalaCssV,
+      "io.github.cquiroz" %%% "scalajs-react-draggable" % scalaJsReactDraggableV
     ),
     npmDependencies in Compile ++= Seq(
-      "react" -> "16.8.6",
-      "react-dom" -> "16.8.6",
-      "react-ace" -> "5.10.0"
+      "react" -> "16.5.1",
+      "react-dom" -> "16.5.1",
+      "react-ace" -> "5.10.0",
+      "react-draggable" -> "3.1.1"
     ),
     npmDevDependencies in Compile ++= Seq(
       "webpack-merge" -> "4.1.0",
       "html-webpack-plugin" -> "3.1.0",
+      "uglifyjs-webpack-plugin" -> "1.3.0",
       "imports-loader" -> "0.8.0",
       "expose-loader" -> "0.7.5"
     )

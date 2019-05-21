@@ -9,11 +9,12 @@ object Dependencies {
   val scalaTagsV = "0.6.7"
   
   //Backend
-  val http4sV = "0.20.0"
-  val pureConfigV = "0.10.2"
+  val http4sV = "0.20.1"
+  val pureConfigV = "0.11.0"
   
   //Frontend
   val scalaCssV = "0.5.6"
-  val scalaJsReactV = "1.4.1"
+  val scalaJsReactV = "1.4.2"
   val scalaJsDomV = "0.9.7"
+  val scalaJsReactDraggableV = "0.2.3"
 }

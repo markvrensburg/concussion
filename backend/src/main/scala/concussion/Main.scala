@@ -15,6 +15,12 @@ object Main extends IOApp {
   private val ip = "0.0.0.0"
   private val port = 8090
 
+  private val banner = """
+                         | _______  _____  __   _ _______ _     _ _______ _______ _____  _____  __   _
+                         | |       |     | | \  | |       |     | |______ |______   |   |     | | \  |
+                         | |_____  |_____| |  \_| |_____  |_____| ______| ______| __|__ |_____| |  \_|
+                         """.stripMargin.lines.toList
+
   private val services = Router(
     "/" -> GZip(StaticFileService[IO])
   ).orNotFound
@@ -25,6 +31,7 @@ object Main extends IOApp {
       exitCode <- BlazeServerBuilder[IO]
         .bindHttp(port, ip)
         .withHttpApp(services)
+        .withBanner(banner)
         .serve
         .compile
         .drain

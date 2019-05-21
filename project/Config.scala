@@ -18,9 +18,9 @@ object Config {
   }
 
   object Ace {
-    val keybindingPath: String = s"brace/keybinding"
-    val modePath: String = s"brace/mode"
-    val themePath: String = s"brace/theme"
+    val keybindingPath: String = "brace/keybinding"
+    val modePath: String = "brace/mode"
+    val themePath: String = "brace/theme"
 
     val keybindingRegex: String = "/keybinding-(.*)[.]js"
     val modeRegex: String = "/mode-(.*)[.]js"
