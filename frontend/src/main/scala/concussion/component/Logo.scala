@@ -14,6 +14,12 @@ object Logo {
 
     import dsl._
 
+    private val colour = {
+      val c1 = r.nextInt(360)
+      val c2 = c1 + r.nextInt(20)
+      (c1,c2)
+    }
+
     val pulse = keyframes(
       0.%% -> style(opacity(0.3), transform := "scale(1.0)"),
       50.%% -> style(opacity(0.6), transform := "scale(1.05)"),
@@ -22,7 +28,7 @@ object Logo {
 
     val logoContainer = style(unsafeRoot("#logo-container")(
       height(100.%%),
-      background := s"linear-gradient(to right, hsl(${r.nextInt(360)}, 80%, 10%), hsl(${r.nextInt(360)}, 50%, 40%))",
+      background := s"linear-gradient(to right, hsl(${colour._1}, 50%, 10%), hsl(${colour._2}, 40%, 50%))",
       display.flex,
       alignItems.center,
       overflow.hidden

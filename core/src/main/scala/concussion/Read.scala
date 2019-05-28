@@ -9,7 +9,7 @@ final class Read[A](val parser: Parser[A]) {
 
 object Read {
 
-  @inline def apply[A](implicit P: Read[A]): Read[A] = P
+  @inline def apply[A](implicit R: Read[A]): Read[A] = R
 
   def fromParser[A](parser: Parser[A]): Read[A] =
     new Read[A](parser)

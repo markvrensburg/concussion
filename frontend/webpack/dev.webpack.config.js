@@ -10,9 +10,12 @@ var generatedConfig = require('./scalajs.webpack.config');
 var commonConfig = require('./common.webpack.config.js');
 
 module.exports = Merge(generatedConfig, commonConfig, {
+  mode: 'development',
   plugins: [
     new HtmlWebpackPlugin({
       title: 'Concussion',
+      filename: "index.html",
+      template: Path.resolve(resourcesDir, './index.html'),
       favicon: Path.resolve(resourcesDir, './favicon.ico'),
     })
   ]

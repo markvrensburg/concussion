@@ -4,6 +4,11 @@ import Config._
 import Dependencies._
 import Environment._
 
+//addCommandAlias("root", ";project root")
+//addCommandAlias("core", ";project coreJVM")
+//addCommandAlias("frontend", ";project frontend")
+//addCommandAlias("backend", ";project backend")
+
 lazy val commonSettings = Seq(
   name := Application.name,
   organization := Application.organization,
@@ -12,12 +17,6 @@ lazy val commonSettings = Seq(
   addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.10"),
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.0")
 )
-
-onLoad in Global := { state =>
-  // Check for library updates whenever the project is [re]loaded
-  if (sys.props.contains(skipDependencyUpdates)) state
-  else "dependencyUpdates" :: state
-}
 
 lazy val root = project.in(file("."))
   .settings(commonSettings)
@@ -85,7 +84,7 @@ lazy val backend = (project in file("backend"))
     scalaJSProjects := Seq(frontend),
     pipelineStages in Assets := Seq(scalaJSPipeline),
     compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
-    
+
     npmAssets ++= NpmAssets.ofProject(frontend) { nodeModules =>
       (
         nodeModules / Ace.keybindingPath +++ 
@@ -112,7 +111,13 @@ lazy val backend = (project in file("backend"))
     // Run reStart when frontend changes have been made
     watchSources ++= (watchSources in frontend).value,
     // Main class
-    mainClass in reStart := Some(Backend.mainClass),
+    mainClass in reStart := Some(Backend.developMainClass),
+
+    buildOptions in docker := BuildOptions(
+      cache = false,
+      removeIntermediateContainers = BuildOptions.Remove.Always,
+      pullBaseImage = BuildOptions.Pull.Always
+    ),
     
     dockerfile in docker := {
       val app: File = assembly.value
@@ -155,12 +160,13 @@ lazy val frontend = (project in file("frontend"))
     webpackResources := webpackDir.value * "*.js",
     webpackConfigFile in fastOptJS := webpackDevConf.value,
     webpackConfigFile in fullOptJS := webpackProdConf.value,
-    webpackBundlingMode in fastOptJS := BundlingMode.LibraryAndApplication(),
+    webpackBundlingMode in fastOptJS := BundlingMode.LibraryOnly(),
     webpackBundlingMode in fullOptJS := BundlingMode.Application,
     includeFilter in webpackMonitoredFiles := "*",
     emitSourceMaps := false,
     scalaJSUseMainModuleInitializer := true,
-    useYarn := true,    libraryDependencies ++= Seq(
+    useYarn := true,    
+    libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomV,
       "com.github.japgolly.scalajs-react" %%% "core" % scalaJsReactV,
       "com.github.japgolly.scalajs-react" %%% "extra" % scalaJsReactV,
@@ -182,3 +188,9 @@ lazy val frontend = (project in file("frontend"))
     )
   )
   .dependsOn(coreJs)
+
+onLoad in Global := { state =>
+  // Check for library updates whenever the project is [re]loaded
+  if (sys.props.contains(skipDependencyUpdates)) state
+  else "dependencyUpdates" :: state
+}

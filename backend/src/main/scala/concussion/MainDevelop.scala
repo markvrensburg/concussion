@@ -2,8 +2,8 @@ package concussion
 
 import cats.effect._
 
-object Main extends IOApp {
+object MainDevelop extends IOApp {
 
   def run(args: List[String]): IO[ExitCode] =
-    Server[IO].serve
+    Server[IO](developmentMode = false).serve
 }

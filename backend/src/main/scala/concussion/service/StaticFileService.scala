@@ -12,7 +12,7 @@ import scalatags.Text.all._
 import scala.concurrent.ExecutionContext
 import info.BuildInfo
 
-object StaticFileService {
+class StaticFileService(developmentMode: Boolean) {
 
   private val keybindingRegex = BuildInfo.aceKeybindingRegex.r
   private val modeRegex = BuildInfo.aceModeRegex.r
@@ -32,19 +32,28 @@ object StaticFileService {
   private val blockingEc =
     ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(Runtime.getRuntime.availableProcessors))
 
-  private val index: String = html(
-    head(
-      title := BuildInfo.name,
-      base(href := "/"),
-      meta(charset := "utf-8")
-    ),
-    body(
-      div(id := BuildInfo.rootId),
-      script(src := /*BuildInfo.rootScript*/s"${BuildInfo.name}-opt-bundle.js")
-    )
+  private val index: String =
+    html(
+      head(
+        title := BuildInfo.name,
+        base(href := "/"),
+        meta(charset := "utf-8"),
+        link(rel := "shortcut icon", href := "favicon.ico")
+      ),
+      body(
+        div(id := BuildInfo.rootId),
+        if (developmentMode)
+          script(src := s"${BuildInfo.name}.js")
+        else
+          Seq(
+            script(src := s"${BuildInfo.name}-fastopt-library.js"),
+            script(src := s"${BuildInfo.name}-fastopt-loader.js"),
+            script(src := s"${BuildInfo.name}-fastopt.js")
+          )
+      )
   ).render
 
-  private def service[F[_]](implicit F: Effect[F], CS: ContextShift[F]) = {
+  private def service[F[_]: ContextShift](implicit F: Effect[F]) = {
 
     val getAceMapping: String => F[Option[String]] = pathInfo => F.delay {
       val path = assetPath.getOrElse("/")
@@ -76,6 +85,10 @@ object StaticFileService {
           .flatten
     }
   }
+}
 
-  def apply[F[_]](implicit F: Effect[F], C: ContextShift[F]): HttpRoutes[F] = service
+object StaticFileService {
+
+  def apply[F[_]: Effect: ContextShift](developmentMode: Boolean): HttpRoutes[F] =
+    new StaticFileService(developmentMode).service
 }
