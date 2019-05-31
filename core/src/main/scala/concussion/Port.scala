@@ -49,4 +49,7 @@ object Port {
     override def read: F[A] = readPort.read
     override def write(a: A): F[Unit] = writePort.write(a)
   }
+
+  def connection[F[_],A](pv1: PVar[F,A], pv2: PVar[F,A]): (Port[F,A], Port[F,A]) =
+    (Port(pv1, pv2), Port(pv2, pv1))
 }

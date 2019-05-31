@@ -126,8 +126,8 @@ lazy val backend = (project in file("backend"))
 
       new Dockerfile {
         from("openjdk:8-jre-alpine")
-        add(app, appTarget)
         expose(port)
+        add(app, appTarget)
         cmd("java", "-jar", appTarget)
       }
     },
@@ -182,7 +182,6 @@ lazy val frontend = (project in file("frontend"))
     npmDevDependencies in Compile ++= Seq(
       "webpack-merge" -> "4.1.0",
       "html-webpack-plugin" -> "3.1.0",
-      "uglifyjs-webpack-plugin" -> "1.3.0",
       "imports-loader" -> "0.8.0",
       "expose-loader" -> "0.7.5"
     )

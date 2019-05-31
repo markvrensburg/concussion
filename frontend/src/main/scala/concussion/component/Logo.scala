@@ -2,7 +2,6 @@ package concussion
 package component
 
 import scala.concurrent.duration._
-import scalatags.Text.implicits._
 import scalatags.Text.svgAttrs.{filter => _, modifier => _, _}
 import scalatags.Text.svgTags._
 import scala.util.Random
@@ -10,15 +9,9 @@ import scalacss.ProdDefaults._
 
 object Logo {
 
-  class Style(r: Random) extends StyleSheet.Inline {
+  object Style extends StyleSheet.Inline {
 
     import dsl._
-
-    private val colour = {
-      val c1 = r.nextInt(360)
-      val c2 = c1 + r.nextInt(20)
-      (c1,c2)
-    }
 
     val pulse = keyframes(
       0.%% -> style(opacity(0.3), transform := "scale(1.0)"),
@@ -26,15 +19,31 @@ object Logo {
       100.%% -> style(opacity(0.3), transform := "scale(1.0)")
     )
 
-    val logoContainer = style(unsafeRoot("#logo-container")(
-      height(100.%%),
-      background := s"linear-gradient(to right, hsl(${colour._1}, 50%, 10%), hsl(${colour._2}, 40%, 50%))",
+    val logoWrapper = style(unsafeRoot("#logo-wrapper")(
+      width(100.vw),
+      height(100.vh),
       display.flex,
-      alignItems.center,
+      justifyContent.stretch,
       overflow.hidden
     ))
 
-    val logo = style(unsafeRoot("#logo")(
+    val logoGrid = style(unsafeRoot("#logo-grid")(
+      display.grid,
+      justifyContent.stretch,
+      backgroundColor.black,
+      padding(10.px),
+      //gridGap no available
+      width(100.vw),
+      height(100.vh)
+    ))
+
+    val logoContainer = style(unsafeRoot(".logo-container")(
+      height(100.%%),
+      display.flex,
+      overflow.hidden
+    ))
+
+    val logo = style(unsafeRoot(".logo")(
       height(80.%%),
       width(80.%%),
       margin.auto,
@@ -48,10 +57,6 @@ object Logo {
       &.hover(
         filter := "url(#glow)"
       )))
-  }
-
-  object Style {
-    def apply(r: Random): Style = new Style(r)
   }
 
   private val sections = List(
@@ -99,6 +104,8 @@ object Logo {
     "m 44.231669,166.29041 26.192413,-11.49259 2.939966,-4.27631 -10.958052,-1.06908 -15.501633,4.00904 -15.501631,11.22532 z"
   )
 
+  import scalatags.Text.implicits._
+
   private def createPaths(r: Random) = sections.zipWithIndex.map(section => {
     path(
       id := s"section${section._2+1}",
@@ -107,8 +114,8 @@ object Logo {
     )
   })
 
-  def apply(r: Random, idName: String = "logo", filterName: String = "glow"): String =
-    svg(id := idName, viewBox := "0 0 200 160",
+  def apply(r: Random, className: String = "logo", filterName: String = "glow"): String =
+    svg(`class` := className, viewBox := "0 0 200 160",
       g(style := "display:inline", transform := "translate(0,-140)",
         defs(
           filter(id := filterName,

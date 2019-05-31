@@ -26,7 +26,8 @@ object Main extends IOApp {
     import dsl._
 
     (trimSlashes
-      | staticRoute(root, Landing) ~> render(landing)
+      | staticRoute(root, Landing) ~> renderR(landing(new Random))
+      | staticRoute("#1", Landing2) ~> render(landing2(new Random,(4,3)))
       | staticRoute("#notfound", NotFound) ~> render(notFound)
       )
       .notFound(redirectToPage(NotFound)(Redirect.Replace))
@@ -37,7 +38,7 @@ object Main extends IOApp {
   def run(args: List[String]): IO[ExitCode] =
     for {
       _ <- IO(GlobalStyles.addToDocument())
-      _ <- IO(Logo.Style(new Random).addToDocument())
+      _ <- IO(Logo.Style.addToDocument())
       router <- IO(Router(BaseUrl.until_#, routerConfig))
       exitCode <- IO(router().renderIntoDOM(dom.document.getElementById(BuildInfo.rootId)))
         .as(ExitCode.Success)
