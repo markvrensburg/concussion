@@ -4,6 +4,7 @@ package component
 import scala.concurrent.duration._
 import scalatags.Text.svgAttrs.{filter => _, modifier => _, _}
 import scalatags.Text.svgTags._
+
 import scala.util.Random
 import scalacss.ProdDefaults._
 
@@ -32,7 +33,8 @@ object Logo {
       justifyContent.stretch,
       backgroundColor.black,
       padding(10.px),
-      //gridGap no available
+      columnGap(10.px),
+      rowGap(10.px),
       width(100.vw),
       height(100.vh)
     ))

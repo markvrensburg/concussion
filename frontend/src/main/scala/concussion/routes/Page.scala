@@ -4,7 +4,7 @@ package routes
 import concussion.component.Logo
 import japgolly.scalajs.react.extra.router.RouterCtl
 import japgolly.scalajs.react.vdom.html_<^._
-import react.draggable._
+import concussion.facade.draggable._
 
 import scala.scalajs.js
 import scala.util.Random
@@ -46,8 +46,7 @@ object Page {
       )
 
     val columns = js.Dictionary(
-      "grid-template-columns" -> (1 to size._1).map(_ => "auto").mkString(" "),
-      "grid-gap" -> "10px"
+      "grid-template-columns" -> (1 to size._1).map(_ => "auto").mkString(" ")
     )
 
     <.div(^.id := "logo-grid", ^.style := columns,

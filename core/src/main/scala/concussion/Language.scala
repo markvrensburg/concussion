@@ -6,7 +6,8 @@ import cats.effect.concurrent.Deferred
 import fs2.Stream
 
 //.evalMap(_ => state.get) over "run" stream for state
-class Language[F[_]: Concurrent,A](implicit numeric: Numeric[A],
+class Language[F[_]: Concurrent,A](implicit 
+                                   numeric: Numeric[A],
                                    operandDSL: OperandDSL[F,A],
                                    counterDSL: CounterDSL[F],
                                    labelDSL: LabelDSL[F],

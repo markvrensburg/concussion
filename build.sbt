@@ -170,12 +170,11 @@ lazy val frontend = (project in file("frontend"))
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomV,
       "com.github.japgolly.scalajs-react" %%% "core" % scalaJsReactV,
       "com.github.japgolly.scalajs-react" %%% "extra" % scalaJsReactV,
-      "com.github.japgolly.scalacss" %%% "ext-react" % scalaCssV,
-      "io.github.cquiroz" %%% "scalajs-react-draggable" % scalaJsReactDraggableV
+      "com.github.japgolly.scalacss" %%% "ext-react" % scalaCssV
     ),
     npmDependencies in Compile ++= Seq(
-      "react" -> "16.5.1",
-      "react-dom" -> "16.5.1",
+      "react" -> "16.8.6",
+      "react-dom" -> "16.8.6",
       "react-ace" -> "5.10.0",
       "react-draggable" -> "3.1.1"
     ),
