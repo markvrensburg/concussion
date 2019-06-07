@@ -5,6 +5,11 @@ import concussion.component.Logo
 import japgolly.scalajs.react.extra.router.RouterCtl
 import japgolly.scalajs.react.vdom.html_<^._
 import concussion.facade.draggable._
+//import concussion.semantic.SemanticUiCss
+import react.semanticui.colors._
+import react.semanticui.elements.icon._
+import react.semanticui.elements.label.{Label, LabelDetail}
+import react.semanticui.elements.segment._
 
 import scala.scalajs.js
 import scala.util.Random
@@ -16,6 +21,8 @@ object Page {
   case object Landing extends Page
   case object Landing2 extends Page //@todo remove
   case object NotFound extends Page
+
+  //val semanticUiCss = SemanticUiCss
 
   private def gradient(r: Random) = {
     val c1 = r.nextInt(360)
@@ -51,23 +58,25 @@ object Page {
 
     <.div(^.id := "logo-grid", ^.style := columns,
       (1 to (size._1*size._2)).map(_ => Draggable(
-        Draggable.props(bounds = "body", grid = Grid(10,10)),
+        Draggable.props(bounds = "body", grid = Grid(5,5)),
         logo
       )).toTagMod
     )
   }
 
   val notFound: VdomElement =
-    <.div(
-      Draggable(Draggable.props(
-        //axis = Axis.Both,
-        //defaultClassName = "DragHandle",
-        //defaultClassNameDragging = "DragHandleActive",
-        //onDrag = (ev: MouseEvent, d: DraggableData) => Callback(println((ev,d.node))),
-        //position = ControlPosition(0)
-        ),
-        <.div(
-          <.h2("NOT_FOUND")
+    Draggable(
+      Draggable.props(bounds = "body", grid = Grid(5,5)),
+      Segment(
+        Segment.props(inverted = true, compact = true),
+        Label(
+          Label.props(color = Orange),
+          Icon(Icon.props(name = "check")),
+          "ACC",
+          LabelDetail(
+            LabelDetail.props(),
+            42
+          )
         )
       )
     )

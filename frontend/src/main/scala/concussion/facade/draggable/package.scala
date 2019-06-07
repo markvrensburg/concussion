@@ -1,4 +1,5 @@
-package concussion.facade
+package concussion
+package facade
 
 import scala.scalajs.js
 import scala.scalajs.js.|

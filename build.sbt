@@ -170,19 +170,25 @@ lazy val frontend = (project in file("frontend"))
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomV,
       "com.github.japgolly.scalajs-react" %%% "core" % scalaJsReactV,
       "com.github.japgolly.scalajs-react" %%% "extra" % scalaJsReactV,
-      "com.github.japgolly.scalacss" %%% "ext-react" % scalaCssV
+      "com.github.japgolly.scalacss" %%% "ext-react" % scalaCssV,
+      "io.github.cquiroz.react" %%% "react-semantic-ui" % "0.1.1+2-b91876ac"
     ),
     npmDependencies in Compile ++= Seq(
-      "react" -> "16.8.6",
-      "react-dom" -> "16.8.6",
+      "react" -> "16.7.0",
+      "react-dom" -> "16.7.0",
       "react-ace" -> "5.10.0",
-      "react-draggable" -> "3.1.1"
+      "react-draggable" -> "3.1.1",
+      "semantic-ui-react" -> "0.87.1",
+      "semantic-ui-css" -> "2.4.1"
     ),
     npmDevDependencies in Compile ++= Seq(
       "webpack-merge" -> "4.1.0",
       "html-webpack-plugin" -> "3.1.0",
       "imports-loader" -> "0.8.0",
-      "expose-loader" -> "0.7.5"
+      "expose-loader" -> "0.7.5",
+      "style-loader" -> "0.23.1",
+      "css-loader" -> "2.1.1",
+      "ignore-loader" -> "0.1.2"
     )
   )
   .dependsOn(coreJs)
