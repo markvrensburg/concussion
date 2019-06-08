@@ -38,7 +38,8 @@ class StaticFileService(developmentMode: Boolean) {
         title := BuildInfo.name,
         base(href := "/"),
         meta(charset := "utf-8"),
-        link(rel := "shortcut icon", href := "favicon.ico")
+        link(rel := "shortcut icon", href := "favicon.ico"),
+        link(rel := "stylesheet", href := "//cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css")
       ),
       body(
         div(id := BuildInfo.rootId),
@@ -55,13 +56,16 @@ class StaticFileService(developmentMode: Boolean) {
 
   private def service[F[_]: ContextShift](implicit F: Effect[F]) = {
 
-    val getAceMapping: String => F[Option[String]] = pathInfo => F.delay {
+    val getMapping: String => F[Option[String]] = pathInfo => F.delay {
       val path = assetPath.getOrElse("/")
 
       pathInfo match {
-        case keybindingRegex(keybinding) => Some(s"$path${BuildInfo.aceKeybindingPath}/$keybinding.js")
-        case modeRegex(mode) => Some(s"$path${BuildInfo.aceModePath}/$mode.js")
-        case themeRegex(theme) => Some(s"$path${BuildInfo.aceThemePath}/$theme.js")
+        case keybindingRegex(keybinding) =>
+          Some(s"$path${BuildInfo.aceKeybindingPath}/$keybinding.js")
+        case modeRegex(mode) =>
+          Some(s"$path${BuildInfo.aceModePath}/$mode.js")
+        case themeRegex(theme) =>
+          Some(s"$path${BuildInfo.aceThemePath}/$theme.js")
         case _ => None
       }
     }
@@ -74,15 +78,12 @@ class StaticFileService(developmentMode: Boolean) {
         Ok(index).map(_.putHeaders(`Content-Type`(MediaType.text.html)))
       case GET -> Root / "index.html" =>
         Ok(index).map(_.putHeaders(`Content-Type`(MediaType.text.html)))
-      case req@GET -> Root / "favicon.ico" =>
-        StaticFile.fromResource[F](s"${assetPath.getOrElse("")}favicon.ico", blockingEc, req.some)
-          .fold(NotFound())(_.pure[F])
-          .flatten
-      case req@GET -> Root / asset if supportedStaticExtensions.exists(asset.endsWith) =>
+      case req@GET -> Root / asset if supportedStaticExtensions.exists(asset.endsWith) => {
         StaticFile.fromResource[F](s"${assetPath.getOrElse("")}$asset", blockingEc, req.some)
-          .orElse(OptionT(getAceMapping(s"/$asset")).flatMap(StaticFile.fromResource[F](_, blockingEc, req.some)))
+          .orElse(OptionT(getMapping(s"/$asset")).flatMap(StaticFile.fromResource[F](_, blockingEc, req.some)))
           .fold(NotFound())(_.pure[F])
           .flatten
+      }
     }
   }
 }

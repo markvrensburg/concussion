@@ -94,9 +94,6 @@ package draggable {
 
   case object FalseBounds
 
-  /**
-    * Raw facades, shouldn't be exposed to final users
-    */
   private[draggable] object raw {
     type RawOnMouseDown = js.Function1[MouseEvent, Unit]
 

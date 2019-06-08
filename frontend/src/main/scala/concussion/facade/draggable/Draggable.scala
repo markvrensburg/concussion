@@ -39,7 +39,7 @@ object Draggable {
     var defaultClassNameDragged: js.UndefOr[String]
     var defaultPosition: js.UndefOr[ControlPosition]
     var disabled: js.UndefOr[Boolean]
-    // var enableUserSelectHack: js.UndefOr[Boolean]
+    var enableUserSelectHack: js.UndefOr[Boolean]
     var grid: js.UndefOr[js.Array[JsNumber]]
     var handle: js.UndefOr[String]
     var offsetParent: js.UndefOr[HTMLElement]
@@ -51,24 +51,24 @@ object Draggable {
     var position: js.UndefOr[ControlPosition]
   }
 
-  def props(
-             allowAnyClick: js.UndefOr[Boolean] = js.undefined,
-             axis: js.UndefOr[Axis] = js.undefined,
-             bounds: js.UndefOr[Bounds] = js.undefined,
-             cancel: js.UndefOr[String] = js.undefined,
-             defaultClassName: js.UndefOr[String]  = js.undefined,
-             defaultClassNameDragging: js.UndefOr[String] = js.undefined,
-             defaultClassNameDragged: js.UndefOr[String] = js.undefined,
-             defaultPosition: js.UndefOr[ControlPosition] = js.undefined,
-             disabled: js.UndefOr[Boolean] = js.undefined,
-             grid: js.UndefOr[Grid] = js.undefined,
-             handle: js.UndefOr[String] = js.undefined,
-             onMouseDown: js.UndefOr[OnMouseDown] = js.undefined,
-             onStart: js.UndefOr[DraggableEventHandler] = js.undefined,
-             onDrag: js.UndefOr[DraggableEventHandler] = js.undefined,
-             onStop: js.UndefOr[DraggableEventHandler] = js.undefined,
-             position: js.UndefOr[ControlPosition] = js.undefined,
-             positionOffset: js.UndefOr[PositionOffsetControlPosition] = js.undefined
+  def props(allowAnyClick: js.UndefOr[Boolean] = js.undefined,
+            axis: js.UndefOr[Axis] = js.undefined,
+            bounds: js.UndefOr[Bounds] = js.undefined,
+            cancel: js.UndefOr[String] = js.undefined,
+            defaultClassName: js.UndefOr[String]  = js.undefined,
+            defaultClassNameDragging: js.UndefOr[String] = js.undefined,
+            defaultClassNameDragged: js.UndefOr[String] = js.undefined,
+            defaultPosition: js.UndefOr[ControlPosition] = js.undefined,
+            disabled: js.UndefOr[Boolean] = js.undefined,
+            enableUserSelectHack: js.UndefOr[Boolean] = js.undefined,
+            grid: js.UndefOr[Grid] = js.undefined,
+            handle: js.UndefOr[String] = js.undefined,
+            onMouseDown: js.UndefOr[OnMouseDown] = js.undefined,
+            onStart: js.UndefOr[DraggableEventHandler] = js.undefined,
+            onDrag: js.UndefOr[DraggableEventHandler] = js.undefined,
+            onStop: js.UndefOr[DraggableEventHandler] = js.undefined,
+            position: js.UndefOr[ControlPosition] = js.undefined,
+            positionOffset: js.UndefOr[PositionOffsetControlPosition] = js.undefined
            ): Props = {
     val p = (new js.Object).asInstanceOf[Props]
     p.allowAnyClick = allowAnyClick
@@ -86,6 +86,7 @@ object Draggable {
     p.defaultClassNameDragged = defaultClassNameDragged
     p.defaultPosition = defaultPosition
     p.disabled = disabled
+    p.enableUserSelectHack = enableUserSelectHack
     p.grid = grid.map(_.value)
     p.handle = handle
     p.onMouseDown = onMouseDown.map(cb => (m: MouseEvent) => cb(m).runNow())

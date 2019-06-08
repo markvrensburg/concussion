@@ -89,7 +89,7 @@ lazy val backend = (project in file("backend"))
       (
         nodeModules / Ace.keybindingPath +++ 
         nodeModules / Ace.themePath +++
-        nodeModules / Ace.modePath / "json.js" 
+        nodeModules / Ace.modePath
       ).allPaths
     }.value,
     
@@ -178,17 +178,14 @@ lazy val frontend = (project in file("frontend"))
       "react-dom" -> "16.7.0",
       "react-ace" -> "5.10.0",
       "react-draggable" -> "3.1.1",
-      "semantic-ui-react" -> "0.87.1",
-      "semantic-ui-css" -> "2.4.1"
+      "semantic-ui-react" -> "0.87.1"
     ),
     npmDevDependencies in Compile ++= Seq(
       "webpack-merge" -> "4.1.0",
       "html-webpack-plugin" -> "3.1.0",
       "imports-loader" -> "0.8.0",
       "expose-loader" -> "0.7.5",
-      "style-loader" -> "0.23.1",
-      "css-loader" -> "2.1.1",
-      "ignore-loader" -> "0.1.2"
+      "semantic-ui-css" -> "2.4.1"
     )
   )
   .dependsOn(coreJs)

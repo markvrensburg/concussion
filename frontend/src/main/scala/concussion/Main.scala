@@ -4,6 +4,7 @@ import info.BuildInfo
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.implicits._
 import concussion.component.Logo
+import concussion.facade.ace.AceEditor
 import concussion.routes.Page
 import concussion.routes.Page._
 import japgolly.scalajs.react.extra.router._
@@ -38,6 +39,7 @@ object Main extends IOApp {
   def run(args: List[String]): IO[ExitCode] =
     for {
       _ <- IO(GlobalStyles.addToDocument())
+      _ <- IO(AceEditor.Style.addToDocument())
       _ <- IO(Logo.Style.addToDocument())
       router <- IO(Router(BaseUrl.until_#, routerConfig))
       exitCode <- IO(router().renderIntoDOM(dom.document.getElementById(BuildInfo.rootId)))

@@ -2,10 +2,11 @@ package concussion
 package routes
 
 import concussion.component.Logo
+import concussion.facade.ace.AceEditor
+import japgolly.scalajs.react._
 import japgolly.scalajs.react.extra.router.RouterCtl
 import japgolly.scalajs.react.vdom.html_<^._
 import concussion.facade.draggable._
-//import concussion.semantic.SemanticUiCss
 import react.semanticui.colors._
 import react.semanticui.elements.icon._
 import react.semanticui.elements.label.{Label, LabelDetail}
@@ -21,8 +22,6 @@ object Page {
   case object Landing extends Page
   case object Landing2 extends Page //@todo remove
   case object NotFound extends Page
-
-  //val semanticUiCss = SemanticUiCss
 
   private def gradient(r: Random) = {
     val c1 = r.nextInt(360)
@@ -64,11 +63,23 @@ object Page {
     )
   }
 
-  val notFound: VdomElement =
+  val notFound: VdomElement = {
+
+    val update: AceEditor.OnChange =
+      (e: ReactEvent) => Callback(println(e))
+
     Draggable(
-      Draggable.props(bounds = "body", grid = Grid(5,5)),
+      Draggable.props(grid = Grid(5,5), enableUserSelectHack = false),
       Segment(
         Segment.props(inverted = true, compact = true),
+        AceEditor(
+          AceEditor.props(
+            height = "195px",
+            width = "210px",
+            mode = "yaml",
+            theme = "merbivore",
+            onChange = update)
+        ),
         Label(
           Label.props(color = Orange),
           Icon(Icon.props(name = "check")),
@@ -80,4 +91,5 @@ object Page {
         )
       )
     )
+  }
 }
