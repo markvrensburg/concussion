@@ -38,8 +38,14 @@ class StaticFileService(developmentMode: Boolean) {
         title := BuildInfo.name,
         base(href := "/"),
         meta(charset := "utf-8"),
-        link(rel := "shortcut icon", href := "favicon.ico"),
-        link(rel := "stylesheet", href := "//cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css")
+        link(
+          rel := "shortcut icon",
+          href := "favicon.ico"
+        ),
+        link(
+          rel := "stylesheet",
+          href := s"//cdn.jsdelivr.net/npm/semantic-ui@${BuildInfo.semanticCssVersion}/dist/semantic.min.css"
+        )
       ),
       body(
         div(id := BuildInfo.rootId),

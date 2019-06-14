@@ -4,7 +4,7 @@ import atto._
 import Atto._
 
 final class Read[A](val parser: Parser[A]) {
-  def parse(s: String) = parser.parseOnly(s)
+  def parse(s: String): Either[String, A] = parser.parseOnly(s).either
 }
 
 object Read {

@@ -45,6 +45,7 @@ lazy val core = (crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure)
         "aceKeybindingRegex" -> Ace.keybindingRegex,
         "aceModeRegex" -> Ace.modeRegex,
         "aceThemeRegex" -> Ace.themeRegex,
+        "semanticCssVersion" -> semanticUICssV
       ),
       buildInfoPackage := "info",
       libraryDependencies ++= Seq(
@@ -171,7 +172,7 @@ lazy val frontend = (project in file("frontend"))
       "com.github.japgolly.scalajs-react" %%% "core" % scalaJsReactV,
       "com.github.japgolly.scalajs-react" %%% "extra" % scalaJsReactV,
       "com.github.japgolly.scalacss" %%% "ext-react" % scalaCssV,
-      "io.github.cquiroz.react" %%% "react-semantic-ui" % "0.1.1+2-b91876ac"
+      "io.github.cquiroz.react" %%% "react-semantic-ui" % "0.1.2"
     ),
     npmDependencies in Compile ++= Seq(
       "react" -> "16.7.0",
@@ -185,7 +186,7 @@ lazy val frontend = (project in file("frontend"))
       "html-webpack-plugin" -> "3.1.0",
       "imports-loader" -> "0.8.0",
       "expose-loader" -> "0.7.5",
-      "semantic-ui-css" -> "2.4.1"
+      "semantic-ui-css" -> semanticUICssV
     )
   )
   .dependsOn(coreJs)

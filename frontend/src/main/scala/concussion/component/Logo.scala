@@ -31,7 +31,7 @@ object Logo {
     val logoGrid = style(unsafeRoot("#logo-grid")(
       display.grid,
       justifyContent.stretch,
-      backgroundColor.black,
+      backgroundColor(rgba(0,0,0,0.7)),
       padding(10.px),
       columnGap(10.px),
       rowGap(10.px),
@@ -116,11 +116,11 @@ object Logo {
     )
   })
 
-  def apply(r: Random, className: String = "logo", filterName: String = "glow"): String =
-    svg(`class` := className, viewBox := "0 0 200 160",
+  def apply(r: Random): String =
+    svg(`class` := "logo", viewBox := "0 0 200 160",
       g(style := "display:inline", transform := "translate(0,-140)",
         defs(
-          filter(id := filterName,
+          filter(id := "glow",
             feGaussianBlur(`class` := "blur", result := "coloredBlur", stdDeviation := "1"),
             feMerge(
               feMergeNode(in := "coloredBlur"),
@@ -130,5 +130,5 @@ object Logo {
         ),
         modifier(createPaths(r): _*)
       )
-  ).render
+    ).render
 }

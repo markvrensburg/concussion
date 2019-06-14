@@ -17,4 +17,8 @@ object Dependencies {
   val scalaJsReactV = "1.4.2"
   val scalaJsDomV = "0.9.7"
   val scalaJsReactDraggableV = "0.2.3"
+
+  //Frontend NPM
+  val semanticUICssV = "2.4.1"
+  
 }
