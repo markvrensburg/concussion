@@ -5,7 +5,6 @@ package ace
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.component.Js.{RawMounted, UnmountedWithRawType}
 import japgolly.scalajs.react.raw.JsNumber
-import scalacss.ProdDefaults._
 
 import scala.scalajs.js.annotation.JSImport
 import scalajs.js
@@ -14,15 +13,6 @@ import scalajs.js
 trait AceEditor extends js.Object
 
 object AceEditor {
-
-  object Style extends StyleSheet.Inline {
-
-    import dsl._
-
-    style(unsafeRoot("#brace-editor")(
-      borderRadius(0.5.em)
-    ))
-  }
 
   @js.native
   @JSImport("react-ace", JSImport.Default)

@@ -11,7 +11,6 @@ import japgolly.scalajs.react.component.Js.UnmountedMapped
 import japgolly.scalajs.react.internal.Effect.Id
 import japgolly.scalajs.react.raw.JsNumber
 import japgolly.scalajs.react.vdom.VdomNode
-import scalacss.ProdDefaults._
 import org.scalajs.dom.html.{ Element => HTMLElement }
 import org.scalajs.dom.MouseEvent
 import concussion.facade.common.syntax._
@@ -20,20 +19,6 @@ import concussion.facade.common.syntax._
 trait Draggable extends js.Object
 
 object Draggable {
-
-  object Style extends StyleSheet.Inline {
-
-    import dsl._
-
-    style(unsafeRoot(".dragger")(
-      userSelect.none
-    ))
-
-    style(unsafeRoot(".react-draggable")(
-      position.absolute,
-      height(0.px)
-    ))
-  }
 
   @js.native
   @JSImport("react-draggable", JSImport.Default)

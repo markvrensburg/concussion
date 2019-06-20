@@ -172,14 +172,14 @@ lazy val frontend = (project in file("frontend"))
       "com.github.japgolly.scalajs-react" %%% "core" % scalaJsReactV,
       "com.github.japgolly.scalajs-react" %%% "extra" % scalaJsReactV,
       "com.github.japgolly.scalacss" %%% "ext-react" % scalaCssV,
-      "io.github.cquiroz.react" %%% "react-semantic-ui" % "0.1.2"
+      "io.github.cquiroz.react" %%% "react-semantic-ui" % scalaJsReactSemanticUIV
     ),
     npmDependencies in Compile ++= Seq(
-      "react" -> "16.7.0",
-      "react-dom" -> "16.7.0",
-      "react-ace" -> "5.10.0",
-      "react-draggable" -> "3.1.1",
-      "semantic-ui-react" -> "0.87.1"
+      "react" -> reactV,
+      "react-dom" -> reactV,
+      "react-ace" -> reactAceV,
+      "react-draggable" -> reactDraggableV,
+      "semantic-ui-react" -> semanticUIReactV
     ),
     npmDevDependencies in Compile ++= Seq(
       "webpack-merge" -> "4.1.0",

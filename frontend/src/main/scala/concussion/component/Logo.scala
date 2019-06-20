@@ -1,65 +1,12 @@
 package concussion
 package component
 
-import scala.concurrent.duration._
 import scalatags.Text.svgAttrs.{filter => _, modifier => _, _}
 import scalatags.Text.svgTags._
 
 import scala.util.Random
-import scalacss.ProdDefaults._
 
 object Logo {
-
-  object Style extends StyleSheet.Inline {
-
-    import dsl._
-
-    val pulse = keyframes(
-      0.%% -> style(opacity(0.3), transform := "scale(1.0)"),
-      50.%% -> style(opacity(0.6), transform := "scale(1.05)"),
-      100.%% -> style(opacity(0.3), transform := "scale(1.0)")
-    )
-
-    val logoWrapper = style(unsafeRoot("#logo-wrapper")(
-      width(100.vw),
-      height(100.vh),
-      display.flex,
-      justifyContent.stretch,
-      overflow.hidden
-    ))
-
-    val logoGrid = style(unsafeRoot("#logo-grid")(
-      display.grid,
-      justifyContent.stretch,
-      backgroundColor(rgba(0,0,0,0.7)),
-      padding(10.px),
-      columnGap(10.px),
-      rowGap(10.px),
-      width(100.vw),
-      height(100.vh)
-    ))
-
-    val logoContainer = style(unsafeRoot(".logo-container")(
-      height(100.%%),
-      display.flex,
-      overflow.hidden
-    ))
-
-    val logo = style(unsafeRoot(".logo")(
-      height(80.%%),
-      width(80.%%),
-      margin.auto,
-      animationName(pulse),
-      animationDuration(15.seconds),
-      animationIterationCount.infinite,
-      animationDirection.alternate
-    ))
-
-    val pathStyle = style(unsafeRoot("path")(
-      &.hover(
-        filter := "url(#glow)"
-      )))
-  }
 
   private val sections = List(
     "m 95.023215,257.61488 6.803565,9.82739 6.80358,2.64583 6.80357,10.96131 14.36309,13.98512 7.18155,-0.75595 -3.77976,-14.3631 -9.82738,-5.66964 -1.51191,-6.4256 -8.31547,-6.42559 4.91369,-4.15774 -6.4256,-6.04762 -6.04762,4.53571 z",

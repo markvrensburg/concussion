@@ -79,11 +79,11 @@ class StaticFileService(developmentMode: Boolean) {
     object dsl extends Http4sDsl[F]
     import dsl._
 
+    val indexRoute = Ok(index).map(_.putHeaders(`Content-Type`(MediaType.text.html)))
+
     HttpRoutes.of[F] {
-      case GET -> Root =>
-        Ok(index).map(_.putHeaders(`Content-Type`(MediaType.text.html)))
-      case GET -> Root / "index.html" =>
-        Ok(index).map(_.putHeaders(`Content-Type`(MediaType.text.html)))
+      case GET -> Root => indexRoute
+      case GET -> Root / "index.html" => indexRoute
       case req@GET -> Root / asset if supportedStaticExtensions.exists(asset.endsWith) => {
         StaticFile.fromResource[F](s"${assetPath.getOrElse("")}$asset", blockingEc, req.some)
           .orElse(OptionT(getMapping(s"/$asset")).flatMap(StaticFile.fromResource[F](_, blockingEc, req.some)))

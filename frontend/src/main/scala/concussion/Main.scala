@@ -3,39 +3,33 @@ package concussion
 import info.BuildInfo
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.implicits._
-import concussion.component.{Connector, Logo}
-import concussion.facade.ace.AceEditor
-import concussion.facade.draggable.Draggable
 import concussion.routes.Page
 import concussion.routes.Page._
+import concussion.styles.Style
+import japgolly.scalajs.react.React
 import japgolly.scalajs.react.extra.router._
 import japgolly.scalajs.react.vdom.html_<^._
 import org.scalajs.dom
 import scalacss.ProdDefaults._
 import scalacss.ScalaCssReact._
 
-import scala.scalajs.js
 import scala.util.Random
 
 object Main extends IOApp {
 
   private def layout(r: Random, page: Resolution[Page]) = {
 
-    val layoutStyle = {
-      val c1 = r.nextInt(360)
-      val c2 = c1 + r.nextInt(20)
+    val c1 = r.nextInt(360)
+    val c2 = c1 + r.nextInt(20)
 
-      js.Dictionary(
-        "height" -> "100vh",
-        "width" -> "100vw",
-        "position" -> "fixed",
-        "z-index" -> "-100",
-        "background" -> s"linear-gradient(to right, hsl($c1, 50%, 10%), hsl($c2, 40%, 50%))"
-      )
-    }
-
-    <.div(
-      <.div(^.style := layoutStyle),
+    React.Fragment(
+      <.div(
+        ^.height := "100vh",
+        ^.width := "100vw",
+        ^.position := "fixed",
+        ^.zIndex := "-100",
+        ^.background := s"linear-gradient(to right, hsl($c1, 50%, 10%), hsl($c2, 40%, 50%))"
+      ),
       page.render()
     )
   }
@@ -55,12 +49,7 @@ object Main extends IOApp {
 
   def run(args: List[String]): IO[ExitCode] =
     for {
-      _ <- IO(GlobalStyles.addToDocument())
-      _ <- IO(Draggable.Style.addToDocument())
-      _ <- IO(AceEditor.Style.addToDocument())
-      _ <- IO(Logo.Style.addToDocument())
-      _ <- IO(Page.Style.addToDocument())
-      _ <- IO(Connector.Style.addToDocument())
+      _ <- Style.styles.values.toList.traverse(style => IO(style.addToDocument()))
       random <- IO(new Random)
       router <- IO(Router(BaseUrl.until_#, routerConfig(random)))
       exitCode <- IO(router().renderIntoDOM(dom.document.getElementById(BuildInfo.rootId)))

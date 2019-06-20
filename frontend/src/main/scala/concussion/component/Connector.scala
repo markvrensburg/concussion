@@ -1,6 +1,7 @@
 package concussion
 package component
 
+import concussion.styles.ConnectorStyle
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.html_<^._
 import japgolly.scalajs.react.component.Scala.Unmounted
@@ -8,19 +9,8 @@ import scalatags.Text.svgAttrs._
 import scalatags.Text.svgTags._
 import scalatags.Text.implicits._
 import scalacss.ScalaCssReact._
-import scalacss.ProdDefaults._
 
 object Connector {
-
-  object Style extends StyleSheet.Inline {
-
-    import dsl._
-
-    val connector: StyleA = style(
-      zIndex(100),
-      pointerEvents.none
-    )
-  }
 
   case class Props(x1: Int, y1: Int, x2: Int, y2: Int) {
     private val bezierWeight = 0.7
@@ -49,7 +39,7 @@ object Connector {
   }
 
   private val component = ScalaComponent.builder[Props]("Connector")
-      .render_P(p => <.div(Style.connector, ^.dangerouslySetInnerHtml := p.connector))
+      .render_P(p => <.div(ConnectorStyle.connector, ^.dangerouslySetInnerHtml := p.connector))
       .build
 
   def apply(x1: Int, y1: Int, x2: Int, y2: Int): Unmounted[Props, Unit, Unit] =
