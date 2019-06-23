@@ -4,7 +4,7 @@ package facade
 import scala.scalajs.js
 import scala.scalajs.js.|
 import japgolly.scalajs.react.raw.JsNumber
-import org.scalajs.dom.html.{ Element => HTMLElement }
+import org.scalajs.dom.html.{Element => HTMLElement}
 import org.scalajs.dom.MouseEvent
 import concussion.facade.common.EnumValue
 
@@ -36,7 +36,10 @@ package draggable {
 
   object ControlPosition {
 
-    def apply(x: js.UndefOr[JsNumber] = js.undefined, y: js.UndefOr[JsNumber] = js.undefined): ControlPosition = {
+    def apply(
+        x: js.UndefOr[JsNumber] = js.undefined,
+        y: js.UndefOr[JsNumber] = js.undefined
+    ): ControlPosition = {
       val p = (new js.Object).asInstanceOf[ControlPosition]
       p.x = x
       p.y = y
@@ -83,8 +86,10 @@ package draggable {
 
   object PositionOffsetControlPosition {
 
-    def apply(x: js.UndefOr[String | JsNumber] = js.undefined,
-              y: js.UndefOr[String | JsNumber] = js.undefined): PositionOffsetControlPosition = {
+    def apply(
+        x: js.UndefOr[String | JsNumber] = js.undefined,
+        y: js.UndefOr[String | JsNumber] = js.undefined
+    ): PositionOffsetControlPosition = {
       val p = (new js.Object).asInstanceOf[PositionOffsetControlPosition]
       p.x = x
       p.y = y

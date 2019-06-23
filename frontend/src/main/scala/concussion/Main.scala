@@ -40,8 +40,7 @@ object Main extends IOApp {
     (trimSlashes
       | staticRoute(root, Landing) ~> renderR(landing(r))
       | staticRoute("#edit", Editor) ~> render(editor)
-      | staticRoute("#notfound", NotFound) ~> render(notFound(r,(4,3)))
-      )
+      | staticRoute("#notfound", NotFound) ~> render(notFound(r, (4, 3))))
       .notFound(redirectToPage(NotFound)(Redirect.Replace))
       .setTitle(page => s"${BuildInfo.name.capitalize} | $page")
       .renderWith((_, page) => layout(r, page))

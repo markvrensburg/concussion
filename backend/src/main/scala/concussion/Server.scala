@@ -8,7 +8,6 @@ import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.GZip
 import org.http4s.server.Router
 
-
 import scala.util.Properties.envOrNone
 
 class Server[F[_]: ConcurrentEffect: ContextShift: Timer](developmentMode: Boolean) {

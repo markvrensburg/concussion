@@ -63,7 +63,7 @@ package common {
 
         def value(a: A): Boolean | String = a match {
           case b if b == trueValue => true
-          case _ => a.toString.toLowerCase
+          case _                   => a.toString.toLowerCase
         }
       }
 
@@ -72,7 +72,7 @@ package common {
 
         def value(a: A): Boolean | String = a match {
           case b if b == falseValue => false
-          case _  => a.toString.toLowerCase
+          case _                    => a.toString.toLowerCase
         }
       }
 
@@ -80,9 +80,9 @@ package common {
       new EnumValueB[A] {
 
         def value(a: A): Boolean | String = a match {
-          case b if b == trueValue => true
+          case b if b == trueValue  => true
           case b if b == falseValue => false
-          case _   => a.toString.toLowerCase
+          case _                    => a.toString.toLowerCase
         }
       }
 

@@ -10,32 +10,40 @@ sealed trait Style extends StyleSheet.Inline
 object GlobalStyle extends Style {
   import dsl._
 
-  style(unsafeRoot("*")(
-    boxSizing.borderBox,
-    padding(0.px),
-    margin(0.px)
-  ))
+  style(
+    unsafeRoot("*")(
+      boxSizing.borderBox,
+      padding(0.px),
+      margin(0.px)
+    )
+  )
 }
 
 object AceEditorStyle extends Style {
   import dsl._
 
-  style(unsafeRoot("#brace-editor")(
-    borderRadius(0.5.em)
-  ))
+  style(
+    unsafeRoot("#brace-editor")(
+      borderRadius(0.5.em)
+    )
+  )
 }
 
 object DraggableStyle extends Style {
   import dsl._
 
-  style(unsafeRoot(".dragger")(
-    userSelect.none
-  ))
+  style(
+    unsafeRoot(".dragger")(
+      userSelect.none
+    )
+  )
 
-  style(unsafeRoot(".react-draggable")(
-    position.absolute,
-    height(0.px)
-  ))
+  style(
+    unsafeRoot(".react-draggable")(
+      position.absolute,
+      height(0.px)
+    )
+  )
 }
 
 object PageStyle extends Style {
@@ -43,7 +51,7 @@ object PageStyle extends Style {
 
   val editor = style(
     height(100.vh),
-    width(100.vw),
+    width(100.vw)
   )
 
   val nodeEditor = style(
@@ -58,10 +66,12 @@ object PageStyle extends Style {
     left(200.px)
   )
 
-  val portHandle = style(unsafeRoot(".port-socket, .port-options")(
-    marginLeft(0.25.rem).important,
-    marginRight(0.25.rem).important
-  ))
+  val portHandle = style(
+    unsafeRoot(".port-socket, .port-options")(
+      marginLeft(0.25.rem).important,
+      marginRight(0.25.rem).important
+    )
+  )
 }
 
 object LogoStyle extends Style {
@@ -74,45 +84,56 @@ object LogoStyle extends Style {
     100.%% -> style(opacity(0.3), transform := "scale(1.0)")
   )
 
-  val logoWrapper = style(unsafeRoot("#logo-wrapper")(
-    width(100.vw),
-    height(100.vh),
-    display.flex,
-    justifyContent.stretch,
-    overflow.hidden
-  ))
+  val logoWrapper = style(
+    unsafeRoot("#logo-wrapper")(
+      width(100.vw),
+      height(100.vh),
+      display.flex,
+      justifyContent.stretch,
+      overflow.hidden
+    )
+  )
 
-  val logoGrid = style(unsafeRoot("#logo-grid")(
-    display.grid,
-    justifyContent.stretch,
-    backgroundColor(rgba(0,0,0,0.7)),
-    padding(10.px),
-    columnGap(10.px),
-    rowGap(10.px),
-    width(100.vw),
-    height(100.vh)
-  ))
+  val logoGrid = style(
+    unsafeRoot("#logo-grid")(
+      display.grid,
+      justifyContent.stretch,
+      backgroundColor(rgba(0, 0, 0, 0.7)),
+      padding(10.px),
+      columnGap(10.px),
+      rowGap(10.px),
+      width(100.vw),
+      height(100.vh)
+    )
+  )
 
-  val logoContainer = style(unsafeRoot(".logo-container")(
-    height(100.%%),
-    display.flex,
-    overflow.hidden
-  ))
+  val logoContainer = style(
+    unsafeRoot(".logo-container")(
+      height(100.%%),
+      display.flex,
+      overflow.hidden
+    )
+  )
 
-  val logo = style(unsafeRoot(".logo")(
-    height(80.%%),
-    width(80.%%),
-    margin.auto,
-    animationName(pulse),
-    animationDuration(15.seconds),
-    animationIterationCount.infinite,
-    animationDirection.alternate
-  ))
+  val logo = style(
+    unsafeRoot(".logo")(
+      height(80.%%),
+      width(80.%%),
+      margin.auto,
+      animationName(pulse),
+      animationDuration(15.seconds),
+      animationIterationCount.infinite,
+      animationDirection.alternate
+    )
+  )
 
-  val pathStyle = style(unsafeRoot("path")(
-    &.hover(
-      filter := "url(#glow)"
-    )))
+  val pathStyle = style(
+    unsafeRoot("path")(
+      &.hover(
+        filter := "url(#glow)"
+      )
+    )
+  )
 }
 
 object ConnectorStyle extends Style {
@@ -127,9 +148,11 @@ object ConnectorStyle extends Style {
 object NodeMenuStyle extends Style {
   import dsl._
 
-  val nodeMenu: StyleA = style(unsafeRoot(".node-menu")(
-    opacity(0.9)
-  ))
+  val nodeMenu: StyleA = style(
+    unsafeRoot(".node-menu")(
+      opacity(0.9)
+    )
+  )
 }
 
 object InfobarStyle extends Style {

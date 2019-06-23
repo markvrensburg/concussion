@@ -37,20 +37,21 @@ object AceEditor {
     var wrapEnabled: js.UndefOr[Boolean]
   }
 
-  def props(height: js.UndefOr[String] = js.undefined,
-            width: js.UndefOr[String] = js.undefined,
-            value: js.UndefOr[String] = js.undefined,
-            onChange: js.UndefOr[OnChange] = js.undefined,
-            minLines: js.UndefOr[JsNumber] = js.undefined,
-            maxLines: js.UndefOr[JsNumber] = js.undefined,
-            debounceChangePeriod: js.UndefOr[JsNumber] = js.undefined,
-            mode: js.UndefOr[String] = js.undefined,
-            theme: js.UndefOr[String] = js.undefined,
-            readOnly: js.UndefOr[Boolean] = js.undefined,
-            keyboardHandler: js.UndefOr[String] = js.undefined,
-            showGutter: js.UndefOr[Boolean] = js.undefined,
-            wrapEnabled: js.UndefOr[Boolean] = js.undefined
-           ): Props = {
+  def props(
+      height: js.UndefOr[String] = js.undefined,
+      width: js.UndefOr[String] = js.undefined,
+      value: js.UndefOr[String] = js.undefined,
+      onChange: js.UndefOr[OnChange] = js.undefined,
+      minLines: js.UndefOr[JsNumber] = js.undefined,
+      maxLines: js.UndefOr[JsNumber] = js.undefined,
+      debounceChangePeriod: js.UndefOr[JsNumber] = js.undefined,
+      mode: js.UndefOr[String] = js.undefined,
+      theme: js.UndefOr[String] = js.undefined,
+      readOnly: js.UndefOr[Boolean] = js.undefined,
+      keyboardHandler: js.UndefOr[String] = js.undefined,
+      showGutter: js.UndefOr[Boolean] = js.undefined,
+      wrapEnabled: js.UndefOr[Boolean] = js.undefined
+  ): Props = {
     val p = (new js.Object).asInstanceOf[Props]
     p.height = height
     p.width = width
@@ -71,5 +72,5 @@ object AceEditor {
   private val component = JsComponent[Props, Children.None, Null](RawComponent)
 
   def apply(p: Props): UnmountedWithRawType[Props, Null, RawMounted[Props, Null]] =
-   component.apply(p)
+    component.apply(p)
 }

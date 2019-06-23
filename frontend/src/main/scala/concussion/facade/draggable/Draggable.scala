@@ -11,7 +11,7 @@ import japgolly.scalajs.react.component.Js.UnmountedMapped
 import japgolly.scalajs.react.internal.Effect.Id
 import japgolly.scalajs.react.raw.JsNumber
 import japgolly.scalajs.react.vdom.VdomNode
-import org.scalajs.dom.html.{ Element => HTMLElement }
+import org.scalajs.dom.html.{Element => HTMLElement}
 import org.scalajs.dom.MouseEvent
 import concussion.facade.common.syntax._
 
@@ -51,28 +51,29 @@ object Draggable {
     var position: js.UndefOr[ControlPosition]
   }
 
-  def props(allowAnyClick: js.UndefOr[Boolean] = js.undefined,
-            axis: js.UndefOr[Axis] = js.undefined,
-            bounds: js.UndefOr[Bounds] = js.undefined,
-            cancel: js.UndefOr[String] = js.undefined,
-            defaultClassName: js.UndefOr[String]  = js.undefined,
-            defaultClassNameDragging: js.UndefOr[String] = js.undefined,
-            defaultClassNameDragged: js.UndefOr[String] = js.undefined,
-            defaultPosition: js.UndefOr[ControlPosition] = js.undefined,
-            disabled: js.UndefOr[Boolean] = js.undefined,
-            enableUserSelectHack: js.UndefOr[Boolean] = js.undefined,
-            grid: js.UndefOr[Grid] = js.undefined,
-            handle: js.UndefOr[String] = js.undefined,
-            onMouseDown: js.UndefOr[OnMouseDown] = js.undefined,
-            onStart: js.UndefOr[DraggableEventHandler] = js.undefined,
-            onDrag: js.UndefOr[DraggableEventHandler] = js.undefined,
-            onStop: js.UndefOr[DraggableEventHandler] = js.undefined,
-            position: js.UndefOr[ControlPosition] = js.undefined,
-            positionOffset: js.UndefOr[PositionOffsetControlPosition] = js.undefined
-           ): Props = {
+  def props(
+      allowAnyClick: js.UndefOr[Boolean] = js.undefined,
+      axis: js.UndefOr[Axis] = js.undefined,
+      bounds: js.UndefOr[Bounds] = js.undefined,
+      cancel: js.UndefOr[String] = js.undefined,
+      defaultClassName: js.UndefOr[String] = js.undefined,
+      defaultClassNameDragging: js.UndefOr[String] = js.undefined,
+      defaultClassNameDragged: js.UndefOr[String] = js.undefined,
+      defaultPosition: js.UndefOr[ControlPosition] = js.undefined,
+      disabled: js.UndefOr[Boolean] = js.undefined,
+      enableUserSelectHack: js.UndefOr[Boolean] = js.undefined,
+      grid: js.UndefOr[Grid] = js.undefined,
+      handle: js.UndefOr[String] = js.undefined,
+      onMouseDown: js.UndefOr[OnMouseDown] = js.undefined,
+      onStart: js.UndefOr[DraggableEventHandler] = js.undefined,
+      onDrag: js.UndefOr[DraggableEventHandler] = js.undefined,
+      onStop: js.UndefOr[DraggableEventHandler] = js.undefined,
+      position: js.UndefOr[ControlPosition] = js.undefined,
+      positionOffset: js.UndefOr[PositionOffsetControlPosition] = js.undefined
+  ): Props = {
     val p = (new js.Object).asInstanceOf[Props]
     p.allowAnyClick = allowAnyClick
-    p.axis          = axis.toJs
+    p.axis = axis.toJs
     p.bounds = bounds.map { x =>
       (x: Any) match {
         case FalseBounds => false
@@ -100,6 +101,9 @@ object Draggable {
 
   private val component = JsComponent[Props, Children.Varargs, Null](RawComponent)
 
-  def apply(p: Props, children: VdomNode): UnmountedMapped[Id, Props, Null, RawMounted[Props, Null], Props, Null] =
+  def apply(
+      p: Props,
+      children: VdomNode
+  ): UnmountedMapped[Id, Props, Null, RawMounted[Props, Null], Props, Null] =
     component.apply(p)(children)
 }

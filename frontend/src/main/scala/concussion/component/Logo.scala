@@ -55,19 +55,25 @@ object Logo {
 
   import scalatags.Text.implicits._
 
-  private def createPaths(r: Random) = sections.zipWithIndex.map(section => {
-    path(
-      id := s"section${section._2+1}",
-      d := section._1,
-      style := s"fill:#ffffff;fill-opacity:${0.4 + (0.75 - 0.4) * r.nextDouble};fill-rule:evenodd;",
-    )
-  })
+  private def createPaths(r: Random) =
+    sections.zipWithIndex.map(section => {
+      path(
+        id := s"section${section._2 + 1}",
+        d := section._1,
+        style := s"fill:#ffffff;fill-opacity:${0.4 + (0.75 - 0.4) * r.nextDouble};fill-rule:evenodd;"
+      )
+    })
 
   def apply(r: Random): String =
-    svg(`class` := "logo", viewBox := "0 0 200 160",
-      g(style := "display:inline", transform := "translate(0,-140)",
+    svg(
+      `class` := "logo",
+      viewBox := "0 0 200 160",
+      g(
+        style := "display:inline",
+        transform := "translate(0,-140)",
         defs(
-          filter(id := "glow",
+          filter(
+            id := "glow",
             feGaussianBlur(`class` := "blur", result := "coloredBlur", stdDeviation := "1"),
             feMerge(
               feMergeNode(in := "coloredBlur"),

@@ -4,6 +4,7 @@ package editor
 
 import concussion.styles.ToolbarStyle
 import japgolly.scalajs.react._
+import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.vdom.html_<^._
 import react.semanticui.collections.menu.{Menu, MenuIcon, MenuItem}
 import react.semanticui.elements.icon.Icon
@@ -29,15 +30,16 @@ object Toolbar {
         MenuItem(
           MenuItem.props(name = "stop"),
           Icon(Icon.props(name = "stop")),
-         "Stop"
+          "Stop"
         )
       )
     )
 
-  private val component = ScalaComponent.builder[Unit]("Toolbar")
+  private val component = ScalaComponent
+    .builder[Unit]("Toolbar")
     .renderStatic(toolbar)
     .build
 
-  def apply() = component()
+  def apply(): Unmounted[Unit, Unit, Unit] = component()
 
 }

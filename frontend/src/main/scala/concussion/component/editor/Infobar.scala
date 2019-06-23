@@ -15,12 +15,13 @@ object Infobar {
         Menu.props(compact = true, inverted = true),
         MenuItem(
           MenuItem.props(name = "info"),
-          Input(defaultValue = "Main")
+          Input(defaultValue = "MAIN_PROGRAM")
         )
       )
     )
 
-  private val component = ScalaComponent.builder[Unit]("Info")
+  private val component = ScalaComponent
+    .builder[Unit]("Info")
     .renderStatic(infobar)
     .build
 

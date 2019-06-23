@@ -2,6 +2,7 @@ package concussion
 package component
 package editor
 
+import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.{PropsChildren, _}
 import japgolly.scalajs.react.vdom.html_<^._
 import japgolly.scalajs.react.vdom.VdomNode
@@ -19,36 +20,35 @@ object NodeMenu {
 
   class Backend() {
 
-  def render(C: PropsChildren) =
-    Sidebar.Pushable(
-      Pushable.props(),
-      Sidebar(
-        Sidebar.props(
-          as = As.Menu(Menu.props(inverted = true, vertical = true)),
-          animation = Overlay,
-          visible = true,
-          width = Thin,
-          className = "node-menu"
+    def render(C: PropsChildren) =
+      Sidebar.Pushable(
+        Pushable.props(),
+        Sidebar(
+          Sidebar.props(
+            as = As.Menu(Menu.props(inverted = true, vertical = true)),
+            animation = Overlay,
+            visible = true,
+            width = Thin,
+            className = "node-menu"
+          ),
+          MenuItem(
+            MenuItem.props(as = "a"),
+            Icon(Icon.props(name = "home")),
+            "HOME"
+          )
         ),
-        MenuItem(
-          MenuItem.props(as = "a"),
-          Icon(Icon.props(name = "home")),
-          "HOME"
+        Sidebar.Pusher(
+          Pusher.props(),
+          <.div()(C)
         )
-      ),
-      Sidebar.Pusher(
-        Pusher.props(),
-        <.div()(C)
       )
-    )
-
   }
 
-  private val component = ScalaComponent.builder[Unit]("NodeMenu")
+  private val component = ScalaComponent
+    .builder[Unit]("NodeMenu")
     .renderBackendWithChildren[Backend]
     .build
 
-
-  def apply(children: VdomNode) =
+  def apply(children: VdomNode): Unmounted[Unit, Unit, Backend] =
     component(children)
 }

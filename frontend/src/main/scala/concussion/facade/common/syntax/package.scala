@@ -47,10 +47,14 @@ package syntax {
   }
 
   trait CallbackPairSyntax {
-    implicit def syntaxCallbackPair1[A](a: (js.UndefOr[A => Callback], js.UndefOr[Callback])): CallbackPairOps1[A] =
+    implicit def syntaxCallbackPair1[A](
+        a: (js.UndefOr[A => Callback], js.UndefOr[Callback])
+    ): CallbackPairOps1[A] =
       new CallbackPairOps1(a._1, a._2)
 
-    implicit def syntaxCallbackPair2[A, B](a: (js.UndefOr[(A, B) => Callback], js.UndefOr[Callback])): CallbackPairOps2[A, B] =
+    implicit def syntaxCallbackPair2[A, B](
+        a: (js.UndefOr[(A, B) => Callback], js.UndefOr[Callback])
+    ): CallbackPairOps2[A, B] =
       new CallbackPairOps2(a._1, a._2)
   }
 
@@ -99,20 +103,20 @@ package object syntax extends EnumValueSyntax with CallbackPairSyntax {
 
     // Some uglies for js union types
     def toDouble: Double = (d: Any) match {
-      case d: Float => d.toDouble
+      case d: Float  => d.toDouble
       case d: Double => d
-      case d: Byte => d.toDouble
-      case d: Short => d.toDouble
-      case d: Int => d.toDouble
+      case d: Byte   => d.toDouble
+      case d: Short  => d.toDouble
+      case d: Int    => d.toDouble
     }
 
     // Some uglies for js union types
     def toInt: Int = (d: Any) match {
-      case d: Float => d.toInt
+      case d: Float  => d.toInt
       case d: Double => d.toInt
-      case d: Byte => d.toInt
-      case d: Short => d.toInt
-      case d: Int => d
+      case d: Byte   => d.toInt
+      case d: Short  => d.toInt
+      case d: Int    => d
     }
   }
 }
