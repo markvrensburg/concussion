@@ -3,6 +3,8 @@ package styles
 
 import scalacss.ProdDefaults._
 import enum.Enum
+import scalacss.internal.Keyframes
+
 import scala.concurrent.duration._
 
 sealed trait Style extends StyleSheet.Inline
@@ -49,12 +51,12 @@ object DraggableStyle extends Style {
 object PageStyle extends Style {
   import dsl._
 
-  val editor = style(
+  val editor: StyleA = style(
     height(100.vh),
     width(100.vw)
   )
 
-  val nodeEditor = style(
+  val nodeEditor: StyleA = style(
     height(100.%%),
     width(100.%%),
     display.flex,
@@ -62,11 +64,11 @@ object PageStyle extends Style {
     overflow.auto
   )
 
-  val nodePos = style(
+  val nodePos: StyleA = style(
     left(200.px)
   )
 
-  val portHandle = style(
+  val portHandle: StyleA = style(
     unsafeRoot(".port-socket, .port-options")(
       marginLeft(0.25.rem).important,
       marginRight(0.25.rem).important
@@ -78,23 +80,21 @@ object LogoStyle extends Style {
 
   import dsl._
 
-  val pulse = keyframes(
+  val pulse: Keyframes = keyframes(
     0.%% -> style(opacity(0.3), transform := "scale(1.0)"),
     50.%% -> style(opacity(0.6), transform := "scale(1.05)"),
     100.%% -> style(opacity(0.3), transform := "scale(1.0)")
   )
 
-  val logoWrapper = style(
-    unsafeRoot("#logo-wrapper")(
-      width(100.vw),
-      height(100.vh),
-      display.flex,
-      justifyContent.stretch,
-      overflow.hidden
-    )
+  val logoWrapper: StyleA = style(
+    width(100.vw),
+    height(100.vh),
+    display.flex,
+    justifyContent.stretch,
+    overflow.hidden
   )
 
-  val logoGrid = style(
+  val logoGrid: StyleA = style(
     unsafeRoot("#logo-grid")(
       display.grid,
       justifyContent.stretch,
@@ -107,7 +107,7 @@ object LogoStyle extends Style {
     )
   )
 
-  val logoContainer = style(
+  val logoContainer: StyleA = style(
     unsafeRoot(".logo-container")(
       height(100.%%),
       display.flex,
@@ -115,7 +115,7 @@ object LogoStyle extends Style {
     )
   )
 
-  val logo = style(
+  val logo: StyleA = style(
     unsafeRoot(".logo")(
       height(80.%%),
       width(80.%%),
@@ -127,8 +127,8 @@ object LogoStyle extends Style {
     )
   )
 
-  val pathStyle = style(
-    unsafeRoot("path")(
+  val glow: StyleA = style(
+    unsafeRoot(".glow")(
       &.hover(
         filter := "url(#glow)"
       )
@@ -142,6 +142,16 @@ object ConnectorStyle extends Style {
   val connector: StyleA = style(
     zIndex(100),
     pointerEvents.none
+  )
+
+  val connectorHover: StyleA = style(
+    unsafeRoot(".connector")(
+      svgStrokeOpacity(1)
+
+      //      &.hover(
+//        svgStrokeOpacity(1)
+//      )
+    )
   )
 }
 

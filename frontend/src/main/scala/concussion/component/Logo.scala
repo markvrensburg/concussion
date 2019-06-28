@@ -59,6 +59,7 @@ object Logo {
     sections.zipWithIndex.map(section => {
       path(
         id := s"section${section._2 + 1}",
+        `class` := "glow",
         d := section._1,
         style := s"fill:#ffffff;fill-opacity:${0.4 + (0.75 - 0.4) * r.nextDouble};fill-rule:evenodd;"
       )

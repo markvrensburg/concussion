@@ -18,7 +18,7 @@ import react.semanticui.modules.sidebar.SidebarWidth._
 
 object NodeMenu {
 
-  class Backend() {
+  final class Backend() {
 
     def render(C: PropsChildren) =
       Sidebar.Pushable(

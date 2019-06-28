@@ -16,7 +16,9 @@ object Input {
 
     private def onChange(next: String => Callback)(e: ReactEventFromInput) = {
       val newValue = e.target.value
-      $.modState(_.copy(length = newValue.length)) >> next(newValue)
+      $.modState(_.copy(length = if (newValue.length <= 0) 5 else newValue.length)) >> next(
+        newValue
+      )
     }
 
     def render(props: Props, state: State): VdomElement =
@@ -41,7 +43,7 @@ object Input {
 
   def apply(
       defaultValue: String = "",
-      initialLength: Int = 20,
+      initialLength: Int = 5,
       onChange: String => Callback = _ => Callback(())
   ): Unmounted[Props, State, Backend] =
     component(if (defaultValue.isEmpty) initialLength else defaultValue.length)(

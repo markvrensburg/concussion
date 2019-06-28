@@ -1,5 +1,4 @@
-package concussion
-package component
+package concussion.component.editor
 
 import concussion.styles.ConnectorStyle
 import japgolly.scalajs.react._
@@ -30,11 +29,12 @@ object Connector {
       svg(
         style := s"height: 100%; width: 100%; position: absolute",
         path(
+          `class` := "connector",
           d := connectorPath,
           style := s"fill:none; stroke: white; stroke-opacity: 0.6; stroke-width: 4;"
         ),
-        circle(`class` := "connect-handle", style := s"fill: white;", cx := x1, cy := y1, r := 6),
-        circle(`class` := "connect-handle", style := s"fill: white;", cx := x2, cy := y2, r := 6)
+        circle(style := s"fill: white;", cx := x1, cy := y1, r := 6),
+        circle(style := s"fill: white;", cx := x2, cy := y2, r := 6)
       ).render
     }
   }
