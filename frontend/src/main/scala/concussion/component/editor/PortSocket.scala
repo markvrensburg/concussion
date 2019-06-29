@@ -37,10 +37,11 @@ object PortSocket {
 
   }
 
-  private val component = ScalaComponent
-    .builder[Unit]("PortContainer")
-    .renderBackend[Backend]
-    .build
+  private val component =
+    ScalaComponent
+      .builder[Unit]("PortContainer")
+      .renderBackend[Backend]
+      .build
 
   def apply(): Unmounted[Unit, Unit, Backend] = component()
 

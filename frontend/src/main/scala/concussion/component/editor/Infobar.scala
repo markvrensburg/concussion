@@ -20,10 +20,11 @@ object Infobar {
       )
     )
 
-  private val component = ScalaComponent
-    .builder[Unit]("Info")
-    .renderStatic(infobar)
-    .build
+  private val component =
+    ScalaComponent
+      .builder[Unit]("Info")
+      .renderStatic(infobar)
+      .build
 
   def apply() = component()
 

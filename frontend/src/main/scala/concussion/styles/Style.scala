@@ -144,15 +144,13 @@ object ConnectorStyle extends Style {
     pointerEvents.none
   )
 
-  val connectorHover: StyleA = style(
-    unsafeRoot(".connector")(
-      svgStrokeOpacity(1)
-
-      //      &.hover(
-//        svgStrokeOpacity(1)
+//  val connectorHover: StyleA = style(
+//    unsafeRoot(".connector")(
+//      &.hover(
+//        svgStrokeOpacity(1).important
 //      )
-    )
-  )
+//    )
+//  )
 }
 
 object NodeMenuStyle extends Style {

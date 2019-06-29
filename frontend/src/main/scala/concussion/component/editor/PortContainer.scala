@@ -36,7 +36,7 @@ object PortContainer {
       ^.justifyContent := {
         props.orientation match {
           case Right => "flex-end"
-          case Left  => "flex-start"
+          case _     => "flex-start"
         }
       },
       props.orientation match {
@@ -46,7 +46,7 @@ object PortContainer {
             Input(defaultValue = props.name),
             PortSocket()
           )
-        case Left =>
+        case _ =>
           React.Fragment(
             PortSocket(),
             Input(defaultValue = props.name),
@@ -56,10 +56,11 @@ object PortContainer {
     )
   }
 
-  private val component = ScalaComponent
-    .builder[Props]("PortContainer")
-    .renderBackend[Backend]
-    .build
+  private val component =
+    ScalaComponent
+      .builder[Props]("PortContainer")
+      .renderBackend[Backend]
+      .build
 
   def apply(name: String, orientation: PortOrientation): Unmounted[Props, Unit, Backend] =
     component(Props(name, orientation))

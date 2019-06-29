@@ -44,10 +44,11 @@ object NodeMenu {
       )
   }
 
-  private val component = ScalaComponent
-    .builder[Unit]("NodeMenu")
-    .renderBackendWithChildren[Backend]
-    .build
+  private val component =
+    ScalaComponent
+      .builder[Unit]("NodeMenu")
+      .renderBackendWithChildren[Backend]
+      .build
 
   def apply(children: VdomNode): Unmounted[Unit, Unit, Backend] =
     component(children)

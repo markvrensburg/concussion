@@ -35,10 +35,11 @@ object Toolbar {
       )
     )
 
-  private val component = ScalaComponent
-    .builder[Unit]("Toolbar")
-    .renderStatic(toolbar)
-    .build
+  private val component =
+    ScalaComponent
+      .builder[Unit]("Toolbar")
+      .renderStatic(toolbar)
+      .build
 
   def apply(): Unmounted[Unit, Unit, Unit] = component()
 
