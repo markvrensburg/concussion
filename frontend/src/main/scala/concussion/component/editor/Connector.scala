@@ -76,7 +76,7 @@ object Connector {
             ^.left := s"${p.left.x - radius}",
             ^.top := s"${p.top.y - radius}",
             ^.height := s"${p.height + (2 * radius)}",
-            ^.width := s"${p.width + (2 * radius)}", //TODO take into account bezier curve width
+            ^.width := s"${p.width + (2 * radius)}", //todo take into account bezier curve width
             ^.position := "absolute",
             ConnectorStyle.connector,
             ^.dangerouslySetInnerHtml := p.connector
@@ -85,5 +85,5 @@ object Connector {
       .build
 
   def apply(from: Port, to: Port): Unmounted[Props, Unit, Unit] =
-    component.apply(Props(from, to))
+    component(Props(from, to))
 }

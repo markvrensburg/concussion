@@ -34,6 +34,51 @@ object NodeEditor {
 
     private val editorRef = Ref[html.Element]
 
+    private def onPortClick(port: Port): Callback =
+      $.modState(state => {
+        val portX = state.offset._1 + port.x
+        val portY = state.offset._2 + port.y
+        val currentPort = Port(portX, portY, port.orientation)
+
+        state.connectionState match {
+          case Connecting(from, _) => {
+            if (currentPort == from)
+              state.copy(connectionState = NotConnecting)
+            else {
+              val connection = Connection(from, currentPort)
+              val connections = state.connections + connection
+              state.copy(connectionState = NotConnecting, connections = connections)
+            }
+
+            //Check if "from" - cancel in flight
+            //Check if in same node - do nothing
+            //Check if existing connection
+            //Yes -
+            //No - commit connection
+          }
+          case NotConnecting => {
+
+            state.copy(
+              connectionState = Connecting(currentPort, currentPort.copy(orientation = None))
+            )
+            //Check if connection already exists:
+            //Yes - Delete existing and change to in flight
+            //No - Start new inflight
+          }
+        }
+      })
+
+    private def adjustConnection(orientation: PortOrientation): Callback =
+      $.modState(state => {
+        state.connectionState match {
+          case Connecting(from, to) =>
+            state.copy(
+              connectionState = Connecting(from, to.copy(orientation = orientation))
+            )
+          case NotConnecting => state
+        }
+      })
+
     private val input =
       Draggable(
         Draggable.props(grid = Grid(5, 5), handle = ".dragger", bounds = bounds),
@@ -59,7 +104,7 @@ object NodeEditor {
               attached = SegmentAttached.Bottom,
               textAlign = Center
             ),
-            PortContainer("Port1", Right),
+            PortContainer("Port1", Right, onPortClick, adjustConnection),
             <.div(
               ^.width := "100%",
               ^.display := "flex",
@@ -96,7 +141,7 @@ object NodeEditor {
               attached = SegmentAttached.Bottom,
               textAlign = Center
             ),
-            PortContainer("Port1", Left),
+            PortContainer("Port1", Left, onPortClick, adjustConnection),
             <.div(
               ^.width := "100%",
               ^.display := "flex",
@@ -165,8 +210,8 @@ object NodeEditor {
           ),
           Segment(
             Segment.props(inverted = true, compact = true, attached = SegmentAttached.Bottom),
-            PortContainer("Port1", Left),
-            PortContainer("Port2", Right),
+            PortContainer("Port1", Left, onPortClick, adjustConnection),
+            PortContainer("Port2", Right, onPortClick, adjustConnection),
             <.div(
               ^.width := "100%",
               ^.display := "flex",
@@ -185,36 +230,16 @@ object NodeEditor {
         $.modState(_.copy(offset = (xOffset, yOffset)))
       })
 
-    private def updateConnectionState(e: ReactMouseEvent) = {
+    private def updateConnection(e: ReactMouseEvent): Callback = {
       val x = e.clientX
       val y = e.clientY
       $.modState(state => {
         state.connectionState match {
-          case Connecting(from, to) => {
-            val connections = state.connections + Connection(from, to)
-            state.copy(connectionState = NotConnecting, connections = connections)
-          }
-          case NotConnecting => {
-            val portX = state.offset._1 + x
-            val portY = state.offset._2 + y
-            state.copy(
-              connectionState = Connecting(Port(portX, portY, Right), Port(portX, portY, None))
-            )
-          }
-        }
-      })
-    }
-
-    private def updateConnection(e: ReactMouseEvent) = {
-      val x = e.clientX
-      val y = e.clientY
-      $.modState(state => {
-        state.connectionState match {
-          case Connecting(from, _) =>
+          case Connecting(from, to) =>
             state.copy(
               connectionState = Connecting(
                 from,
-                Port(state.offset._1 + x, state.offset._2 + y, None)
+                Port(state.offset._1 + x, state.offset._2 + y, to.orientation)
               )
             )
           case NotConnecting => state
@@ -234,16 +259,16 @@ object NodeEditor {
             //Nodes
             input,
             processor,
+            processor,
             output,
             //Connectors
             state.connections.toTagMod(c => Connector(c.port1, c.port2)),
             state.connectionState match {
               case Connecting(from, to) => Connector(from, to)
-              case NotConnecting        => React.Fragment()
+              case NotConnecting        => EmptyVdom
             },
             //Event Listeners
             ^.onScroll --> updateOffset,
-            ^.onMouseUp ==> updateConnectionState,
             (state.connectionState match {
               case Connecting(_, _) => Option[TagMod](^.onMouseMove ==> updateConnection)
               case NotConnecting    => Option.empty[TagMod]

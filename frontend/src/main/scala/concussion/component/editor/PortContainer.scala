@@ -3,15 +3,39 @@ package concussion.component.editor
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.vdom.html_<^._
+import org.scalajs.dom.html
 import react.semanticui.colors.Grey
 import react.semanticui.elements.icon.Icon
 import react.semanticui.modules.popup.{Popup, PopupContent, PopupOn, PopupPosition}
 
 object PortContainer {
 
-  final case class Props(name: String, orientation: PortOrientation)
+  final case class Props(
+      name: String,
+      orientation: PortOrientation,
+      onPortClick: Port => Callback,
+      adjustConnection: PortOrientation => Callback
+  )
 
   final class Backend() {
+
+    private val portSocketRef = Ref[html.Element]
+
+    private def onPortClick(props: Props) =
+      portSocketRef.foreachCB(e => {
+        val rect = e.getBoundingClientRect
+        val center =
+          (rect.left + ((rect.right - rect.left) / 2), rect.top + ((rect.bottom - rect.top) / 2))
+        props.onPortClick(Port(center._1, center._2, props.orientation))
+      })
+
+    private def portSocket(props: Props) =
+      <.div.withRef(portSocketRef)(
+        ^.onMouseUp --> onPortClick(props),
+        ^.onMouseEnter --> props.adjustConnection(props.orientation),
+        ^.onMouseLeave --> props.adjustConnection(None),
+        Icon(Icon.props(name = "dot circle outline", className = "port-socket"))
+      )
 
     private val portOptions: VdomNode =
       Icon(Icon.props(name = "setting", className = "port-options", color = Grey, link = true))
@@ -44,11 +68,11 @@ object PortContainer {
           React.Fragment(
             portOptionsPopup(PopupPosition.LeftCenter),
             Input(defaultValue = props.name),
-            PortSocket()
+            portSocket(props)
           )
         case _ =>
           React.Fragment(
-            PortSocket(),
+            portSocket(props),
             Input(defaultValue = props.name),
             portOptionsPopup(PopupPosition.RightCenter)
           )
@@ -62,7 +86,12 @@ object PortContainer {
       .renderBackend[Backend]
       .build
 
-  def apply(name: String, orientation: PortOrientation): Unmounted[Props, Unit, Backend] =
-    component(Props(name, orientation))
+  def apply(
+      name: String,
+      orientation: PortOrientation,
+      onPortClick: Port => Callback = _ => Callback.empty,
+      adjustConnection: PortOrientation => Callback = _ => Callback.empty
+  ): Unmounted[Props, Unit, Backend] =
+    component(Props(name, orientation, onPortClick, adjustConnection))
 
 }
