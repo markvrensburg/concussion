@@ -6,7 +6,7 @@ import japgolly.scalajs.react._
 import component.Scala.Unmounted
 import vdom.html_<^._
 
-object Input {
+object Name {
 
   final case class State(length: Int)
 
@@ -44,7 +44,7 @@ object Input {
   def apply(
       defaultValue: String = "",
       initialLength: Int = 5,
-      onChange: String => Callback = _ => Callback(())
+      onChange: String => Callback = _ => Callback.empty
   ): Unmounted[Props, State, Backend] =
     component(if (defaultValue.isEmpty) initialLength else defaultValue.length)(
       Props(defaultValue, onChange)

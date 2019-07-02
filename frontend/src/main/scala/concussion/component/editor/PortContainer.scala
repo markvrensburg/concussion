@@ -6,7 +6,6 @@ import japgolly.scalajs.react.vdom.html_<^._
 import org.scalajs.dom.html
 import react.semanticui.colors.Grey
 import react.semanticui.elements.icon.Icon
-import react.semanticui.modules.popup.{Popup, PopupContent, PopupOn, PopupPosition}
 
 object PortContainer {
 
@@ -14,7 +13,7 @@ object PortContainer {
       name: String,
       orientation: PortOrientation,
       onPortClick: Port => Callback,
-      adjustConnection: PortOrientation => Callback
+      onPortHover: PortOrientation => Callback
   )
 
   final class Backend() {
@@ -32,27 +31,27 @@ object PortContainer {
     private def portSocket(props: Props) =
       <.div.withRef(portSocketRef)(
         ^.onMouseUp --> onPortClick(props),
-        ^.onMouseEnter --> props.adjustConnection(props.orientation),
-        ^.onMouseLeave --> props.adjustConnection(None),
+        ^.onMouseEnter --> props.onPortHover(props.orientation),
+        ^.onMouseLeave --> props.onPortHover(None),
         Icon(Icon.props(name = "dot circle outline", className = "port-socket"))
       )
+//
+//    private val portOptions: VdomNode =
+//      Icon(Icon.props(name = "setting", color = Grey, link = true))
+//
+//    private val portOptionsContent: VdomNode =
+//      <.div("Port Options")
 
-    private val portOptions: VdomNode =
-      Icon(Icon.props(name = "setting", className = "port-options", color = Grey, link = true))
-
-    private val portOptionsContent: VdomNode =
-      <.div("Port Options")
-
-    private def portOptionsPopup(popupPosition: PopupPosition): VdomNode =
-      Popup(
-        Popup.props(
-          trigger = portOptions,
-          position = popupPosition,
-          content = PopupContent.props(content = portOptionsContent),
-          on = PopupOn.Click,
-          hideOnScroll = true
-        )
-      )
+//    private def portOptionsPopup(popupPosition: PopupPosition): VdomNode =
+//      Popup(
+//        Popup.props(
+//          trigger = portOptions,
+//          position = popupPosition,
+//          content = PopupContent.props(content = portOptionsContent),
+//          on = PopupOn.Click,
+//          hideOnScroll = true
+//        )
+//      )
 
     def render(props: Props): VdomElement = <.div(
       ^.width := "100%",
@@ -66,15 +65,25 @@ object PortContainer {
       props.orientation match {
         case Right =>
           React.Fragment(
-            portOptionsPopup(PopupPosition.LeftCenter),
-            Input(defaultValue = props.name),
+            Icon(
+              Icon.props(name = "angle left", color = Grey, link = true)
+            ),
+            Icon(
+              Icon.props(name = "trash alternate outline", color = Grey, link = true)
+            ),
+            Name(defaultValue = props.name),
             portSocket(props)
           )
         case _ =>
           React.Fragment(
             portSocket(props),
-            Input(defaultValue = props.name),
-            portOptionsPopup(PopupPosition.RightCenter)
+            Name(defaultValue = props.name),
+            Icon(
+              Icon.props(name = "trash alternate outline", color = Grey, link = true)
+            ),
+            Icon(
+              Icon.props(name = "angle right", color = Grey, link = true)
+            )
           )
       }
     )
@@ -90,8 +99,8 @@ object PortContainer {
       name: String,
       orientation: PortOrientation,
       onPortClick: Port => Callback = _ => Callback.empty,
-      adjustConnection: PortOrientation => Callback = _ => Callback.empty
+      onPortHover: PortOrientation => Callback = _ => Callback.empty
   ): Unmounted[Props, Unit, Backend] =
-    component(Props(name, orientation, onPortClick, adjustConnection))
+    component(Props(name, orientation, onPortClick, onPortHover))
 
 }

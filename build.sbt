@@ -18,7 +18,8 @@ lazy val commonSettings = Seq(
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.0")
 )
 
-lazy val root = project.in(file("."))
+lazy val root = project
+  .in(file("."))
   .settings(commonSettings)
   .settings(
     publish := {},
@@ -27,42 +28,42 @@ lazy val root = project.in(file("."))
   .aggregate(frontend, backend)
 
 lazy val core = (crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure) in file("core"))
-    .enablePlugins(BuildInfoPlugin)
-    .settings(commonSettings)
-    .settings(
-      buildInfoOptions ++= Seq(
-        BuildInfoOption.BuildTime,
-        BuildInfoOption.ToJson
-      ),
-      buildInfoKeys := Seq[BuildInfoKey](
-        name,
-        version,
-        "assetPath" -> Backend.assetPath,
-        "rootId" -> Frontend.rootId,
-        "aceKeybindingPath" -> Ace.keybindingPath,
-        "aceModePath" -> Ace.modePath,
-        "aceThemePath" -> Ace.themePath,
-        "aceKeybindingRegex" -> Ace.keybindingRegex,
-        "aceModeRegex" -> Ace.modeRegex,
-        "aceThemeRegex" -> Ace.themeRegex,
-        "semanticCssVersion" -> semanticUICssV
-      ),
-      buildInfoPackage := "info",
-      libraryDependencies ++= Seq(
-        "org.typelevel" %%% "cats-core" % catsV,
-        "org.typelevel" %%% "cats-effect" % catsEffectV,
-        "org.tpolecat" %%% "atto-core" % attoV,
-        "co.fs2" %%% "fs2-core" % fs2V,
-        "com.lihaoyi" %%% "scalatags" % scalaTagsV,
-        "org.julienrf" %%% "enum" % enumV,
-        "org.scalacheck" %%% "scalacheck" % "1.14.0" % "test",
-        "org.scalatest" %%% "scalatest" % "3.0.5" % "test"
-      )
+  .enablePlugins(BuildInfoPlugin)
+  .settings(commonSettings)
+  .settings(
+    buildInfoOptions ++= Seq(
+      BuildInfoOption.BuildTime,
+      BuildInfoOption.ToJson
+    ),
+    buildInfoKeys := Seq[BuildInfoKey](
+      name,
+      version,
+      "assetPath" -> Backend.assetPath,
+      "rootId" -> Frontend.rootId,
+      "aceKeybindingPath" -> Ace.keybindingPath,
+      "aceModePath" -> Ace.modePath,
+      "aceThemePath" -> Ace.themePath,
+      "aceKeybindingRegex" -> Ace.keybindingRegex,
+      "aceModeRegex" -> Ace.modeRegex,
+      "aceThemeRegex" -> Ace.themeRegex,
+      "semanticCssVersion" -> semanticUICssV
+    ),
+    buildInfoPackage := "info",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-core" % catsV,
+      "org.typelevel" %%% "cats-effect" % catsEffectV,
+      "org.tpolecat" %%% "atto-core" % attoV,
+      "co.fs2" %%% "fs2-core" % fs2V,
+      "com.lihaoyi" %%% "scalatags" % scalaTagsV,
+      "org.julienrf" %%% "enum" % enumV,
+      "org.scalacheck" %%% "scalacheck" % "1.14.0" % "test",
+      "org.scalatest" %%% "scalatest" % "3.0.5" % "test"
     )
-    .jvmSettings(
-      test in assembly := {}
-    )
-    .jsSettings(
+  )
+  .jvmSettings(
+    test in assembly := {}
+  )
+  .jsSettings(
     )
 
 lazy val coreJvm = core.jvm
@@ -74,26 +75,25 @@ lazy val backend = (project in file("backend"))
   .settings(
     test in assembly := {},
     assemblyMergeStrategy in assembly := {
-      case PathList(ps @ _*) if ps.last endsWith "BuildInfo$.class" => MergeStrategy.first
+      case PathList(ps @ _*) if ps.last.endsWith("BuildInfo$.class") => MergeStrategy.first
       case x => {
         val oldStrategy = (assemblyMergeStrategy in assembly).value
         oldStrategy(x)
       }
     },
     mainClass in assembly := Some(Backend.mainClass),
-    
     scalaJSProjects := Seq(frontend),
     pipelineStages in Assets := Seq(scalaJSPipeline),
-    compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
-
-    npmAssets ++= NpmAssets.ofProject(frontend) { nodeModules =>
-      (
-        nodeModules / Ace.keybindingPath +++ 
-        nodeModules / Ace.themePath +++
-        nodeModules / Ace.modePath
-      ).allPaths
-    }.value,
-    
+    compile in Compile := (compile in Compile).dependsOn(scalaJSPipeline).value,
+    npmAssets ++= NpmAssets
+      .ofProject(frontend) { nodeModules =>
+        (
+          nodeModules / Ace.keybindingPath +++
+            nodeModules / Ace.themePath +++
+            nodeModules / Ace.modePath
+        ).allPaths
+      }
+      .value,
     libraryDependencies ++= Seq(
       "org.http4s" %% "http4s-blaze-server" % http4sV,
       "org.http4s" %% "http4s-circe" % http4sV,
@@ -103,27 +103,23 @@ lazy val backend = (project in file("backend"))
       "org.fusesource.jansi" % "jansi" % "1.18",
       "ch.qos.logback" % "logback-classic" % "1.2.3"
     ),
-    
     WebKeys.packagePrefix in Assets := Backend.assetPath,
     managedClasspath in Runtime += (packageBin in Assets).value,
-    
     // Run fastOptJS on reStart
-    reStart := (reStart dependsOn (fastOptJS in (frontend, Compile))).evaluated,
+    reStart := reStart.dependsOn(fastOptJS in (frontend, Compile)).evaluated,
     // Run reStart when frontend changes have been made
     watchSources ++= (watchSources in frontend).value,
     // Main class
     mainClass in reStart := Some(Backend.developMainClass),
-
     buildOptions in docker := BuildOptions(
       cache = false,
       removeIntermediateContainers = BuildOptions.Remove.Always,
       pullBaseImage = BuildOptions.Pull.Always
     ),
-    
     dockerfile in docker := {
       val app: File = assembly.value
       val appTarget = s"${Application.name}.jar"
-      val port = sys.env.getOrElse("PORT","8090").toInt
+      val port = sys.env.getOrElse("PORT", "8090").toInt
 
       new Dockerfile {
         from("openjdk:8-jre-alpine")
@@ -132,7 +128,6 @@ lazy val backend = (project in file("backend"))
         cmd("java", "-jar", appTarget)
       }
     },
-
     imageNames in docker := Seq(
       ImageName("registry.heroku.com/concussion-io/web:latest")
     )
@@ -166,7 +161,7 @@ lazy val frontend = (project in file("frontend"))
     includeFilter in webpackMonitoredFiles := "*",
     emitSourceMaps := false,
     scalaJSUseMainModuleInitializer := true,
-    useYarn := true,    
+    useYarn := true,
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomV,
       "com.github.japgolly.scalajs-react" %%% "core" % scalaJsReactV,

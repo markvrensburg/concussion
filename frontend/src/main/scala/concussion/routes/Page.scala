@@ -1,9 +1,11 @@
 package concussion
 package routes
 
+import cats.effect.IO
 import concussion.component._
 import concussion.component.editor._
 import concussion.styles.LogoStyle
+import concussion.util.Namer
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.extra.router.RouterCtl
 import japgolly.scalajs.react.vdom.html_<^._
@@ -20,15 +22,15 @@ object Page {
   case object Editor extends Page
   case object NotFound extends Page
 
-  def landing(r: Random)(ctl: RouterCtl[Page]): VdomElement =
+  def landing(random: Random)(ctl: RouterCtl[Page]): VdomElement =
     <.div(
       LogoStyle.logoWrapper,
       ctl.setOnClick(Editor),
-      ^.dangerouslySetInnerHtml := Logo(r)
+      ^.dangerouslySetInnerHtml := Logo(random)
     )
 
-  def editor: VdomElement =
-    NodeEditor()
+  def editor(random: Random, namer: Namer[IO]): VdomElement =
+    NodeEditor(random, namer)
 
   def notFound(r: Random, size: (Int, Int)): VdomElement = {
 

@@ -12,10 +12,13 @@ import scalacss.ScalaCssReact._
 object Connector {
 
   val radius: Double = 6
-  private val strokeWidth: Double = 4
-  private val bezierWeight = 0.7
+  private val strokeWidth: Double = 2
+  private val bezierWeight = 0.5
 
-  final case class Props(from: Port, to: Port) {
+  private def clamp(min: Double, max: Double)(value: Double) =
+    Math.max(min, Math.min(max, value))
+
+  final case class Props(from: Port, to: Port, dashed: Boolean) {
 
     private val orderPortX = Vector(from, to).sortBy(_.x)
     private val orderPortY = Vector(from, to).sortBy(_.y)
@@ -39,27 +42,29 @@ object Connector {
         case _                           => (radius + height, radius)
       }
 
-      val dx = width * bezierWeight
+      val dx = clamp(50, 500)(width * bezierWeight)
       val c1 = from.orientation match {
         case Right => x_1 + dx
         case Left  => x_1 - dx
-        case None  => x_1
+        case _     => x_1
       }
 
       val c2 = to.orientation match {
         case Right => x_2 + dx
         case Left  => x_2 - dx
-        case None  => x_2
+        case _     => x_2
       }
 
       val connectorPath = s"M$x_1 $y_1 C $c1 $y_1 $c2 $y_2 $x_2 $y_2"
+
+      val dashes = if (dashed) "stroke-dasharray: 4" else ""
 
       svg(
         style := "height: 100%; width: 100%",
         path(
           `class` := "connector",
           d := connectorPath,
-          style := s"fill:none; stroke: white; stroke-opacity: 0.6; stroke-width: $strokeWidth;"
+          style := s"stroke-width: $strokeWidth; $dashes"
         ),
         circle(style := s"fill: white;", cx := x_1, cy := y_1, r := radius),
         circle(style := s"fill: white;", cx := x_2, cy := y_2, r := radius)
@@ -84,6 +89,6 @@ object Connector {
       )
       .build
 
-  def apply(from: Port, to: Port): Unmounted[Props, Unit, Unit] =
-    component(Props(from, to))
+  def apply(from: Port, to: Port, dashed: Boolean = false): Unmounted[Props, Unit, Unit] =
+    component(Props(from, to, dashed))
 }

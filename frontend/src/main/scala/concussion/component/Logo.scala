@@ -55,13 +55,13 @@ object Logo {
 
   import scalatags.Text.implicits._
 
-  private def createPaths(r: Random) =
+  private def createPaths(random: Random) =
     sections.zipWithIndex.map(section => {
       path(
         id := s"section${section._2 + 1}",
         `class` := "glow",
         d := section._1,
-        style := s"fill:#ffffff;fill-opacity:${0.4 + (0.75 - 0.4) * r.nextDouble};fill-rule:evenodd;"
+        style := s"fill:#ffffff;fill-opacity:${0.4 + (0.75 - 0.4) * random.nextDouble};fill-rule:evenodd;"
       )
     })
 

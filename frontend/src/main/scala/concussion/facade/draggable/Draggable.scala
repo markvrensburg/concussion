@@ -102,6 +102,13 @@ object Draggable {
   private val component = JsComponent[Props, Children.Varargs, Null](RawComponent)
 
   def apply(
+      key: String,
+      p: Props,
+      children: VdomNode
+  ): UnmountedMapped[Id, Props, Null, RawMounted[Props, Null], Props, Null] =
+    component.withKey(key).apply(p)(children)
+
+  def apply(
       p: Props,
       children: VdomNode
   ): UnmountedMapped[Id, Props, Null, RawMounted[Props, Null], Props, Null] =

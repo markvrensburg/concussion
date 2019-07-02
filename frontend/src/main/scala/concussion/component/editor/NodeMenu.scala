@@ -16,11 +16,15 @@ import react.semanticui.modules.sidebar.Sidebar.Pusher
 import react.semanticui.modules.sidebar.SidebarAnimation._
 import react.semanticui.modules.sidebar.SidebarWidth._
 
+import scala.util.Random
+
 object NodeMenu {
+
+  final case class Props(random: Random, addNode: NodeType => Callback)
 
   final class Backend() {
 
-    def render(C: PropsChildren) =
+    def render(props: Props, children: PropsChildren) =
       Sidebar.Pushable(
         Pushable.props(),
         Sidebar(
@@ -32,24 +36,45 @@ object NodeMenu {
             className = "node-menu"
           ),
           MenuItem(
-            MenuItem.props(as = "a"),
-            Icon(Icon.props(name = "home")),
-            "HOME"
+            MenuItem.props(),
+            <.div(
+              ^.cls := "logo-menu",
+              ^.dangerouslySetInnerHtml := Logo(props.random)
+            )
+          ),
+          MenuItem(
+            MenuItem.props(as = "a", onClick = props.addNode(Input)),
+            Icon(Icon.props(name = "sitemap")),
+            "INPUT"
+          ),
+          MenuItem(
+            MenuItem.props(as = "a", onClick = props.addNode(Output)),
+            Icon(Icon.props(name = "sitemap")),
+            "OUTPUT"
+          ),
+          MenuItem(
+            MenuItem.props(as = "a", onClick = props.addNode(Processor)),
+            Icon(Icon.props(name = "sitemap")),
+            "PROCESSOR"
           )
         ),
         Sidebar.Pusher(
           Pusher.props(),
-          <.div()(C)
+          <.div()(children)
         )
       )
   }
 
   private val component =
     ScalaComponent
-      .builder[Unit]("NodeMenu")
+      .builder[Props]("NodeMenu")
       .renderBackendWithChildren[Backend]
       .build
 
-  def apply(children: VdomNode): Unmounted[Unit, Unit, Backend] =
-    component(children)
+  def apply(
+      random: Random,
+      addNode: NodeType => Callback = _ => Callback.empty,
+      children: VdomNode
+  ): Unmounted[Props, Unit, Backend] =
+    component(Props(random, addNode))(children)
 }

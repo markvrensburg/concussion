@@ -1,8 +1,10 @@
 package concussion.component.editor
 
+import cats.effect.IO
 import concussion.facade.ace.AceEditor
 import concussion.facade.draggable.{Draggable, DraggableBounds, Grid}
 import concussion.styles.PageStyle
+import concussion.util.Namer
 import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.vdom.html_<^._
 import japgolly.scalajs.react._
@@ -12,7 +14,10 @@ import react.semanticui.elements.header.Header
 import react.semanticui.elements.icon.Icon
 import react.semanticui.elements.segment.{Segment, SegmentAttached}
 import react.semanticui.textalignment.Center
+import concussion.util.CatsReact._
 import scalacss.ScalaCssReact._
+
+import scala.util.Random
 
 object NodeEditor {
 
@@ -25,14 +30,25 @@ object NodeEditor {
   final case class State(
       connectionState: ConnectionState,
       offset: (Double, Double),
-      connections: Set[Connection] = Set.empty
+      connections: Set[Connection] = Set.empty,
+      nodes: Map[String, NodeType] = Map.empty
   )
 
-  final class Backend($ : BackendScope[Unit, State]) {
+  final case class Props(random: Random, namer: Namer[IO])
+
+  final class Backend($ : BackendScope[Props, State]) {
 
     private val bounds = DraggableBounds(-199, null, 0, null)
 
     private val editorRef = Ref[html.Element]
+
+    private def addNode(props: Props)(nodeType: NodeType): Callback =
+      for {
+        id <- props.namer.nextName(NodeType.nodeTypes.encode(nodeType)).toCallback
+        _ <- $.modState(state => {
+          state.copy(nodes = state.nodes + (id -> nodeType))
+        })
+      } yield ()
 
     private def onPortClick(port: Port): Callback =
       $.modState(state => {
@@ -68,7 +84,7 @@ object NodeEditor {
         }
       })
 
-    private def adjustConnection(orientation: PortOrientation): Callback =
+    private def onPortHover(orientation: PortOrientation): Callback =
       $.modState(state => {
         state.connectionState match {
           case Connecting(from, to) =>
@@ -79,8 +95,9 @@ object NodeEditor {
         }
       })
 
-    private val input =
+    private def input(key: String) =
       Draggable(
+        key,
         Draggable.props(grid = Grid(5, 5), handle = ".dragger", bounds = bounds),
         <.div(
           PageStyle.nodePos,
@@ -104,7 +121,7 @@ object NodeEditor {
               attached = SegmentAttached.Bottom,
               textAlign = Center
             ),
-            PortContainer("Port1", Right, onPortClick, adjustConnection),
+            PortContainer("Port1", Right, onPortClick, onPortHover),
             <.div(
               ^.width := "100%",
               ^.display := "flex",
@@ -116,8 +133,9 @@ object NodeEditor {
         )
       )
 
-    private val output =
+    private def output(key: String) =
       Draggable(
+        key,
         Draggable.props(grid = Grid(5, 5), handle = ".dragger", bounds = bounds),
         <.div(
           PageStyle.nodePos,
@@ -141,7 +159,7 @@ object NodeEditor {
               attached = SegmentAttached.Bottom,
               textAlign = Center
             ),
-            PortContainer("Port1", Left, onPortClick, adjustConnection),
+            PortContainer("Port1", Left, onPortClick, onPortHover),
             <.div(
               ^.width := "100%",
               ^.display := "flex",
@@ -170,8 +188,9 @@ object NodeEditor {
 //    private val updateDrag: Draggable.DraggableEventHandler =
 //      (mouse, data) => Callback(println(s"${mouse.clientX},${mouse.clientY}; ${data.x},${data.y}"))
 
-    private val processor =
+    private def processor(key: String) =
       Draggable(
+        key,
         Draggable
           .props(
             grid = Grid(5, 5),
@@ -210,8 +229,8 @@ object NodeEditor {
           ),
           Segment(
             Segment.props(inverted = true, compact = true, attached = SegmentAttached.Bottom),
-            PortContainer("Port1", Left, onPortClick, adjustConnection),
-            PortContainer("Port2", Right, onPortClick, adjustConnection),
+            PortContainer("Port1", Left, onPortClick, onPortHover),
+            PortContainer("Port2", Right, onPortClick, onPortHover),
             <.div(
               ^.width := "100%",
               ^.display := "flex",
@@ -247,8 +266,10 @@ object NodeEditor {
       })
     }
 
-    def render(state: State): VdomElement =
+    def render(props: Props, state: State): VdomElement =
       NodeMenu(
+        props.random,
+        addNode(props),
         <.div(
           PageStyle.editor,
           <.div.withRef(editorRef)(
@@ -257,14 +278,18 @@ object NodeEditor {
             Infobar(),
             Toolbar(),
             //Nodes
-            input,
-            processor,
-            processor,
-            output,
+            state.nodes.toTagMod(
+              n =>
+                n._2 match {
+                  case Input     => input(n._1)
+                  case Output    => output(n._1)
+                  case Processor => processor(n._1)
+                }
+            ),
             //Connectors
             state.connections.toTagMod(c => Connector(c.port1, c.port2)),
             state.connectionState match {
-              case Connecting(from, to) => Connector(from, to)
+              case Connecting(from, to) => Connector(from, to, dashed = true)
               case NotConnecting        => EmptyVdom
             },
             //Event Listeners
@@ -280,10 +305,11 @@ object NodeEditor {
 
   private val component =
     ScalaComponent
-      .builder[Unit]("NodeEditor")
+      .builder[Props]("NodeEditor")
       .initialState(State(NotConnecting, (0, 0)))
       .renderBackend[Backend]
       .build
 
-  def apply(): Unmounted[Unit, State, Backend] = component()
+  def apply(random: Random, namer: Namer[IO]): Unmounted[Props, State, Backend] =
+    component(Props(random, namer))
 }

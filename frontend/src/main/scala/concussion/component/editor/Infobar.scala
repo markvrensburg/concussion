@@ -15,7 +15,7 @@ object Infobar {
         Menu.props(compact = true, inverted = true),
         MenuItem(
           MenuItem.props(name = "info"),
-          Input(defaultValue = "MAIN_PROGRAM")
+          Name(defaultValue = "MAIN_PROGRAM")
         )
       )
     )
