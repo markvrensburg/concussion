@@ -181,6 +181,7 @@ lazy val frontend = (project in file("frontend"))
       "html-webpack-plugin" -> "3.1.0",
       "imports-loader" -> "0.8.0",
       "expose-loader" -> "0.7.5",
+      "copy-webpack-plugin" -> "5.0.3",
       "semantic-ui-css" -> semanticUICssV
     )
   )

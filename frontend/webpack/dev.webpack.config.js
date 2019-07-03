@@ -16,7 +16,7 @@ module.exports = Merge(generatedConfig, commonConfig, {
       title: 'Concussion',
       filename: "index.html",
       template: Path.resolve(resourcesDir, './index.html'),
-      favicon: Path.resolve(resourcesDir, './favicon.ico'),
+      favicon: Path.resolve(resourcesDir, './favicon.ico')
     })
   ]
 });
