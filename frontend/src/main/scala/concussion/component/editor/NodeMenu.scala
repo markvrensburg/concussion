@@ -16,11 +16,14 @@ import react.semanticui.modules.sidebar.Sidebar.Pusher
 import react.semanticui.modules.sidebar.SidebarAnimation._
 import react.semanticui.modules.sidebar.SidebarWidth._
 
-import scala.util.Random
-
 object NodeMenu {
 
-  final case class Props(random: Random, addNode: NodeType => Callback)
+  final case class Props(
+      logo: String,
+      visible: Boolean,
+      addNode: NodeType => Callback,
+      onLogoClick: Callback
+  )
 
   final class Backend() {
 
@@ -31,7 +34,7 @@ object NodeMenu {
           Sidebar.props(
             as = As.Menu(Menu.props(inverted = true, vertical = true)),
             animation = Overlay,
-            visible = true,
+            visible = props.visible,
             width = Thin,
             className = "node-menu"
           ),
@@ -39,7 +42,8 @@ object NodeMenu {
             MenuItem.props(),
             <.div(
               ^.cls := "logo-menu",
-              ^.dangerouslySetInnerHtml := Logo(props.random)
+              ^.onClick --> props.onLogoClick,
+              ^.dangerouslySetInnerHtml := props.logo
             )
           ),
           MenuItem(
@@ -72,9 +76,11 @@ object NodeMenu {
       .build
 
   def apply(
-      random: Random,
+      logo: String,
+      visible: Boolean = true,
       addNode: NodeType => Callback = _ => Callback.empty,
+      onLogoClick: Callback = Callback.empty,
       children: VdomNode
   ): Unmounted[Props, Unit, Backend] =
-    component(Props(random, addNode))(children)
+    component(Props(logo, visible, addNode, onLogoClick))(children)
 }

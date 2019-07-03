@@ -1,6 +1,7 @@
 package concussion.component.editor
 
 import cats.effect.IO
+import concussion.component.Logo
 import concussion.facade.ace.AceEditor
 import concussion.facade.draggable.{Draggable, DraggableBounds, Grid}
 import concussion.styles.PageStyle
@@ -30,11 +31,13 @@ object NodeEditor {
   final case class State(
       connectionState: ConnectionState,
       offset: (Double, Double),
+      logo: String,
+      showMenu: Boolean = true,
       connections: Set[Connection] = Set.empty,
       nodes: Map[String, NodeType] = Map.empty
   )
 
-  final case class Props(random: Random, namer: Namer[IO])
+  final case class Props(namer: Namer[IO])
 
   final class Backend($ : BackendScope[Props, State]) {
 
@@ -42,8 +45,9 @@ object NodeEditor {
 
     private val editorRef = Ref[html.Element]
 
-    private def addNode(props: Props)(nodeType: NodeType): Callback =
+    private def addNode(nodeType: NodeType): Callback =
       for {
+        props <- $.props
         id <- props.namer.nextName(NodeType.nodeTypes.encode(nodeType)).toCallback
         _ <- $.modState(state => {
           state.copy(nodes = state.nodes + (id -> nodeType))
@@ -94,6 +98,22 @@ object NodeEditor {
           case NotConnecting => state
         }
       })
+
+    private val updateOffset =
+      editorRef.foreachCB(editor => {
+        val xOffset = editor.scrollLeft
+        val yOffset = editor.scrollTop
+        $.modState(_.copy(offset = (xOffset, yOffset)))
+      })
+
+    private val toggleMenu =
+      $.modState(
+        state =>
+          state.showMenu match {
+            case true  => state.copy(showMenu = false)
+            case false => state.copy(showMenu = true)
+          }
+      )
 
     private def input(key: String) =
       Draggable(
@@ -242,13 +262,6 @@ object NodeEditor {
         )
       )
 
-    private val updateOffset =
-      editorRef.foreachCB(editor => {
-        val xOffset = editor.scrollLeft
-        val yOffset = editor.scrollTop
-        $.modState(_.copy(offset = (xOffset, yOffset)))
-      })
-
     private def updateConnection(e: ReactMouseEvent): Callback = {
       val x = e.clientX
       val y = e.clientY
@@ -266,10 +279,12 @@ object NodeEditor {
       })
     }
 
-    def render(props: Props, state: State): VdomElement =
+    def render(state: State): VdomElement =
       NodeMenu(
-        props.random,
-        addNode(props),
+        state.logo,
+        state.showMenu,
+        addNode,
+        toggleMenu,
         <.div(
           PageStyle.editor,
           <.div.withRef(editorRef)(
@@ -303,13 +318,13 @@ object NodeEditor {
       )
   }
 
-  private val component =
+  private def component(random: Random) =
     ScalaComponent
       .builder[Props]("NodeEditor")
-      .initialState(State(NotConnecting, (0, 0)))
+      .initialState(State(NotConnecting, (0, 0), Logo(random)))
       .renderBackend[Backend]
       .build
 
   def apply(random: Random, namer: Namer[IO]): Unmounted[Props, State, Backend] =
-    component(Props(random, namer))
+    component(random)(Props(namer))
 }
