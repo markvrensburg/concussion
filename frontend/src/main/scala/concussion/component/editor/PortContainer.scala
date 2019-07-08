@@ -35,23 +35,6 @@ object PortContainer {
         ^.onMouseLeave --> props.onPortHover(None),
         Icon(Icon.props(name = "dot circle outline", className = "port-socket"))
       )
-//
-//    private val portOptions: VdomNode =
-//      Icon(Icon.props(name = "setting", color = Grey, link = true))
-//
-//    private val portOptionsContent: VdomNode =
-//      <.div("Port Options")
-
-//    private def portOptionsPopup(popupPosition: PopupPosition): VdomNode =
-//      Popup(
-//        Popup.props(
-//          trigger = portOptions,
-//          position = popupPosition,
-//          content = PopupContent.props(content = portOptionsContent),
-//          on = PopupOn.Click,
-//          hideOnScroll = true
-//        )
-//      )
 
     def render(props: Props): VdomElement = <.div(
       ^.width := "100%",

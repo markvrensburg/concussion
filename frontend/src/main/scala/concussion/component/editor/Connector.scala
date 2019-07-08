@@ -60,7 +60,7 @@ object Connector {
 
     lazy val p3: Point = Point(to.x, to.y)
 
-    lazy val dx: Double = Math.min(500, Math.abs(from.x - to.x) * bezierWeight)
+    lazy val dx: Double = Math.min(250, Math.abs(from.x - to.x) * bezierWeight)
 
     lazy val p1: Point = from.orientation match {
       case Right => Point(p0.x + dx, p0.y)

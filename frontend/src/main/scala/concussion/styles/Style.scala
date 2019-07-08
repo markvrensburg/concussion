@@ -55,25 +55,6 @@ object PageStyle extends Style {
     height(100.vh),
     width(100.vw)
   )
-
-  val nodeEditor: StyleA = style(
-    height(100.%%),
-    width(100.%%),
-    display.flex,
-    position.relative,
-    overflow.auto
-  )
-
-  val nodePos: StyleA = style(
-    left(200.px)
-  )
-
-  val portHandle: StyleA = style(
-    unsafeRoot(".port-socket")(
-      marginLeft(0.25.rem).important,
-      marginRight(0.25.rem).important
-    )
-  )
 }
 
 object LogoStyle extends Style {
@@ -151,6 +132,13 @@ object ConnectorStyle extends Style {
     pointerEvents.none
   )
 
+  val portHandle: StyleA = style(
+    unsafeRoot(".port-socket")(
+      marginLeft(0.25.rem).important,
+      marginRight(0.25.rem).important
+    )
+  )
+
   val connectorHover: StyleA = style(
     unsafeRoot(".connector")(
       svgFill := "none",
@@ -160,8 +148,20 @@ object ConnectorStyle extends Style {
   )
 }
 
-object NodeMenuStyle extends Style {
+object NodeStyle extends Style {
   import dsl._
+
+  val nodePos: StyleA = style(
+    left(200.px)
+  )
+
+  val nodeEditor: StyleA = style(
+    height(100.%%),
+    width(100.%%),
+    display.flex,
+    position.relative,
+    overflow.auto
+  )
 
   val nodeMenu: StyleA = style(
     unsafeRoot(".node-menu")(

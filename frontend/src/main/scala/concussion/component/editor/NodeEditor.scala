@@ -4,7 +4,7 @@ import cats.effect.IO
 import concussion.component.Logo
 import concussion.facade.ace.AceEditor
 import concussion.facade.draggable.{Draggable, DraggableBounds, Grid}
-import concussion.styles.PageStyle
+import concussion.styles.{NodeStyle, PageStyle}
 import concussion.util.Namer
 import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.vdom.html_<^._
@@ -46,6 +46,9 @@ object NodeEditor {
     private val editorRef = Ref[html.Element]
 
     private def addNode(nodeType: NodeType): Callback =
+//      editorRef.foreachCB { e =>
+//        val rect = e.getBoundingClientRect
+//        val center = (rect.width / 2, rect.height / 2)
       for {
         props <- $.props
         id <- props.namer.nextName(NodeType.nodeTypes.encode(nodeType)).toCallback
@@ -53,6 +56,7 @@ object NodeEditor {
           state.copy(nodes = state.nodes + (id -> nodeType))
         })
       } yield ()
+//      }
 
     private def onPortClick(port: Port): Callback =
       $.modState(state => {
@@ -118,9 +122,13 @@ object NodeEditor {
     private def input(key: String) =
       Draggable(
         key,
-        Draggable.props(grid = Grid(5, 5), handle = ".dragger", bounds = bounds),
+        Draggable
+          .props(grid = Grid(5, 5), handle = ".dragger", bounds = bounds, onDrag = updateDrag),
         <.div(
-          PageStyle.nodePos,
+//          ^.left := "50%",
+//          ^.top := "50%",
+//          ^.transform := "translate(-50%,-50%)",
+          NodeStyle.nodePos,
           Segment(
             Segment.props(
               className = "dragger",
@@ -156,9 +164,10 @@ object NodeEditor {
     private def output(key: String) =
       Draggable(
         key,
-        Draggable.props(grid = Grid(5, 5), handle = ".dragger", bounds = bounds),
+        Draggable
+          .props(grid = Grid(5, 5), handle = ".dragger", bounds = bounds, onDrag = updateDrag),
         <.div(
-          PageStyle.nodePos,
+          NodeStyle.nodePos,
           Segment(
             Segment.props(
               className = "dragger",
@@ -205,8 +214,8 @@ object NodeEditor {
     private val updateCode: AceEditor.OnChange =
       (e: ReactEvent) => Callback(println(e.toString))
 
-//    private val updateDrag: Draggable.DraggableEventHandler =
-//      (mouse, data) => Callback(println(s"${mouse.clientX},${mouse.clientY}; ${data.x},${data.y}"))
+    private val updateDrag: Draggable.DraggableEventHandler =
+      (mouse, data) => Callback(println(s"${mouse.clientX},${mouse.clientY}; ${data.x},${data.y}"))
 
     private def processor(key: String) =
       Draggable(
@@ -215,10 +224,11 @@ object NodeEditor {
           .props(
             grid = Grid(5, 5),
             handle = ".dragger",
-            bounds = bounds /*, onStop = updateDrag*/
+            bounds = bounds,
+            onDrag = updateDrag
           ),
         <.div(
-          PageStyle.nodePos,
+          NodeStyle.nodePos,
           Segment(
             Segment.props(
               className = "dragger",
@@ -234,16 +244,20 @@ object NodeEditor {
           ),
           Segment(
             Segment.props(inverted = true, compact = true, attached = SegmentAttached.Attached),
-            AceEditor(
-              AceEditor.props(
-                width = "210px",
-                mode = "yaml",
-                theme = "merbivore",
-                value = defaultText,
-                onChange = updateCode,
-                minLines = defaultText.lines.size,
-                maxLines = defaultText.lines.size,
-                debounceChangePeriod = 500
+            <.div(
+              ^.height := "100%",
+              ^.minWidth := "210px",
+              AceEditor(
+                AceEditor.props(
+                  width = "100%",
+                  mode = "yaml",
+                  theme = "merbivore",
+                  value = defaultText,
+                  onChange = updateCode,
+                  minLines = defaultText.lines.size,
+                  maxLines = defaultText.lines.size,
+                  debounceChangePeriod = 500
+                )
               )
             )
           ),
@@ -288,7 +302,7 @@ object NodeEditor {
         <.div(
           PageStyle.editor,
           <.div.withRef(editorRef)(
-            PageStyle.nodeEditor,
+            NodeStyle.nodeEditor,
             ^.id := "node-editor",
             Infobar(),
             Toolbar(),

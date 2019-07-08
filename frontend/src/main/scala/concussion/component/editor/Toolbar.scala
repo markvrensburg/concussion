@@ -19,17 +19,17 @@ object Toolbar {
         Menu.props(icon = MenuIcon.Labeled, compact = true, inverted = true),
         MenuItem(
           MenuItem.props(name = "play"),
-          Icon(Icon.props(name = "play")),
+          Icon(Icon.props(name = "play", link = true)),
           "Step"
         ),
         MenuItem(
           MenuItem.props(name = "forward"),
-          Icon(Icon.props(name = "forward")),
+          Icon(Icon.props(name = "forward", link = true)),
           "Run"
         ),
         MenuItem(
           MenuItem.props(name = "stop"),
-          Icon(Icon.props(name = "stop")),
+          Icon(Icon.props(name = "stop", link = true)),
           "Stop"
         )
       )
