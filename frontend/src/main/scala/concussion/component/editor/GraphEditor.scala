@@ -2,9 +2,9 @@ package concussion.component.editor
 
 import cats.effect.IO
 import concussion.component.Logo
-import concussion.facade.ace.AceEditor
+import concussion.facade.ace.{AceEditor, EditorProps}
 import concussion.facade.draggable.{Draggable, DraggableBounds, Grid}
-import concussion.styles.{NodeStyle, PageStyle}
+import concussion.styles.{GraphStyle, NodeStyle, PageStyle}
 import concussion.util.Namer
 import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.vdom.html_<^._
@@ -20,7 +20,7 @@ import scalacss.ScalaCssReact._
 
 import scala.util.Random
 
-object NodeEditor {
+object GraphEditor {
 
   sealed trait ConnectionState
   final case class Connecting(from: Port, to: Port) extends ConnectionState
@@ -75,7 +75,7 @@ object NodeEditor {
             }
 
             //Check if "from" - cancel in flight
-            //Check if in same node - do nothing
+            //Check if in same node - do nothing ? how node id...
             //Check if existing connection
             //Yes -
             //No - commit connection
@@ -211,8 +211,8 @@ object NodeEditor {
                                 |JMP LOOP
                                 |END:""".stripMargin
 
-    private val updateCode: AceEditor.OnChange =
-      (e: ReactEvent) => Callback(println(e.toString))
+//    private val updateCode: AceEditor.OnChange =
+//      (e: ReactEvent) => Callback(println(e.toString))
 
     private val updateDrag: Draggable.DraggableEventHandler =
       (mouse, data) => Callback(println(s"${mouse.clientX},${mouse.clientY}; ${data.x},${data.y}"))
@@ -253,10 +253,12 @@ object NodeEditor {
                   mode = "yaml",
                   theme = "merbivore",
                   value = defaultText,
-                  onChange = updateCode,
+                  //onChange = updateCode,
                   minLines = defaultText.lines.size,
                   maxLines = defaultText.lines.size,
-                  debounceChangePeriod = 500
+                  wrapEnabled = true,
+                  debounceChangePeriod = 500,
+                  editorProps = EditorProps(blockScrolling = true)
                 )
               )
             )
@@ -302,7 +304,7 @@ object NodeEditor {
         <.div(
           PageStyle.editor,
           <.div.withRef(editorRef)(
-            NodeStyle.nodeEditor,
+            GraphStyle.graphEditor,
             ^.id := "node-editor",
             Infobar(),
             Toolbar(),

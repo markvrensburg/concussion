@@ -35,6 +35,7 @@ object AceEditor {
     var keyboardHandler: js.UndefOr[String]
     var showGutter: js.UndefOr[Boolean]
     var wrapEnabled: js.UndefOr[Boolean]
+    var editorProps: js.UndefOr[EditorProps]
   }
 
   def props(
@@ -50,7 +51,8 @@ object AceEditor {
       readOnly: js.UndefOr[Boolean] = js.undefined,
       keyboardHandler: js.UndefOr[String] = js.undefined,
       showGutter: js.UndefOr[Boolean] = js.undefined,
-      wrapEnabled: js.UndefOr[Boolean] = js.undefined
+      wrapEnabled: js.UndefOr[Boolean] = js.undefined,
+      editorProps: js.UndefOr[EditorProps] = js.undefined
   ): Props = {
     val p = (new js.Object).asInstanceOf[Props]
     p.height = height
@@ -66,6 +68,7 @@ object AceEditor {
     p.keyboardHandler = keyboardHandler
     p.showGutter = showGutter
     p.wrapEnabled = wrapEnabled
+    p.editorProps = editorProps
     p
   }
 

@@ -148,19 +148,23 @@ object ConnectorStyle extends Style {
   )
 }
 
-object NodeStyle extends Style {
+object GraphStyle extends Style {
   import dsl._
 
-  val nodePos: StyleA = style(
-    left(200.px)
-  )
-
-  val nodeEditor: StyleA = style(
+  val graphEditor: StyleA = style(
     height(100.%%),
     width(100.%%),
     display.flex,
     position.relative,
     overflow.auto
+  )
+}
+
+object NodeStyle extends Style {
+  import dsl._
+
+  val nodePos: StyleA = style(
+    left(200.px)
   )
 
   val nodeMenu: StyleA = style(

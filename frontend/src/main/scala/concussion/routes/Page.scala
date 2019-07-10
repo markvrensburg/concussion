@@ -30,7 +30,7 @@ object Page {
     )
 
   def editor(random: Random, namer: Namer[IO]): VdomElement =
-    NodeEditor(random, namer)
+    GraphEditor(random, namer)
 
   def notFound(r: Random, size: (Int, Int)): VdomElement = {
 
