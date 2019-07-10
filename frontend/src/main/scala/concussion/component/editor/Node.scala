@@ -30,7 +30,7 @@ object NodeType {
 
 object Node {
 
-  final case class State(ports: Map[String, Simple[html.Element]] = Map.empty)
+  final case class State(ports: Vector[(String, Simple[html.Element])] = Vector.empty)
 
   final case class Props(
       id: String,
@@ -48,7 +48,7 @@ object Node {
         props <- $.props
         id <- props.namer.nextName(s"${props.id}_Port").toCallback
         _ <- $.modState(state => {
-          state.copy(ports = state.ports + (id -> Ref[html.Element]))
+          state.copy(ports = state.ports :+ (id -> Ref[html.Element]))
         })
       } yield ()
 
@@ -64,6 +64,7 @@ object Node {
           //          ^.top := "50%",
           //          ^.transform := "translate(-50%,-50%)",
           NodeStyle.nodePos,
+          ^.id := props.id,
           Segment(
             Segment.props(
               className = "dragger",
@@ -87,7 +88,7 @@ object Node {
             //Ports
             <.div(
               state.ports.toList.toTagMod(
-                p => PortContainer("Port", Right, p._2, props.onPortClick, props.onPortHover)
+                p => PortContainer(p._1, "Port", Right, p._2, props.onPortClick, props.onPortHover)
               )
             ),
             <.div(
@@ -111,6 +112,7 @@ object Node {
           .props(grid = Grid(5, 5), handle = ".dragger", bounds = bounds, onDrag = updateDrag),
         <.div(
           NodeStyle.nodePos,
+          ^.id := props.id,
           Segment(
             Segment.props(
               className = "dragger",
@@ -134,7 +136,7 @@ object Node {
             //Ports
             <.div(
               state.ports.toList.toTagMod(
-                p => PortContainer("Port", Left, p._2, props.onPortClick, props.onPortHover)
+                p => PortContainer(p._1, "Port", Left, p._2, props.onPortClick, props.onPortHover)
               )
             ),
             <.div(
@@ -180,6 +182,7 @@ object Node {
           ),
         <.div(
           NodeStyle.nodePos,
+          ^.id := props.id,
           Segment(
             Segment.props(
               className = "dragger",
@@ -219,7 +222,7 @@ object Node {
             //Ports
             <.div(
               state.ports.toList.toTagMod(
-                p => PortContainer("Port", Left, p._2, props.onPortClick, props.onPortHover)
+                p => PortContainer(p._1, "Port", Left, p._2, props.onPortClick, props.onPortHover)
               )
             ),
             <.div(
@@ -251,7 +254,7 @@ object Node {
           props.namer
             .nextName(s"${props.id}_Port")
             .toCallback
-            .map(name => State(ports = Map(name -> Ref[html.Element])))
+            .map(name => State(ports = Vector(name -> Ref[html.Element])))
       )
       .renderBackend[Backend]
       .build

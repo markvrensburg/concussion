@@ -26,8 +26,8 @@ object GraphEditor {
       offset: (Double, Double),
       logo: String,
       showMenu: Boolean = true,
-      connections: Set[Connection] = Set.empty,
-      nodes: Map[String, NodeType] = Map.empty
+      connections: Vector[Connection] = Vector.empty,
+      nodes: Vector[(String, NodeType)] = Vector.empty
   )
 
   final case class Props(namer: Namer[IO])
@@ -44,7 +44,7 @@ object GraphEditor {
         props <- $.props
         id <- props.namer.nextName(NodeType.nodeTypes.encode(nodeType)).toCallback
         _ <- $.modState(state => {
-          state.copy(nodes = state.nodes + (id -> nodeType))
+          state.copy(nodes = state.nodes :+ (id -> nodeType))
         })
       } yield ()
 //      }
@@ -64,7 +64,7 @@ object GraphEditor {
               state.copy(connectionState = NotConnecting)
             else {
               val connection = Connection(from, currentPort)
-              val connections = state.connections + connection
+              val connections = state.connections :+ connection
               state.copy(connectionState = NotConnecting, connections = connections)
             }
 

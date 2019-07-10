@@ -36,40 +36,41 @@ object PortContainer {
         Icon(Icon.props(name = "dot circle outline", className = "port-socket"))
       )
 
-    def render(props: Props): VdomElement = <.div(
-      ^.width := "100%",
-      ^.display := "flex",
-      ^.justifyContent := {
+    def render(props: Props): VdomElement =
+      <.div(
+        ^.width := "100%",
+        ^.display := "flex",
+        ^.justifyContent := {
+          props.orientation match {
+            case Right => "flex-end"
+            case _     => "flex-start"
+          }
+        },
         props.orientation match {
-          case Right => "flex-end"
-          case _     => "flex-start"
-        }
-      },
-      props.orientation match {
-        case Right =>
-          React.Fragment(
-            Icon(
-              Icon.props(name = "angle left", color = Grey, link = true)
-            ),
-            Icon(
-              Icon.props(name = "trash alternate outline", color = Grey, link = true)
-            ),
-            Name(defaultValue = props.name),
-            portSocket(props)
-          )
-        case _ =>
-          React.Fragment(
-            portSocket(props),
-            Name(defaultValue = props.name),
-            Icon(
-              Icon.props(name = "trash alternate outline", color = Grey, link = true)
-            ),
-            Icon(
-              Icon.props(name = "angle right", color = Grey, link = true)
+          case Right =>
+            React.Fragment(
+              Icon(
+                Icon.props(name = "angle left", color = Grey, link = true)
+              ),
+              Icon(
+                Icon.props(name = "trash alternate outline", color = Grey, link = true)
+              ),
+              Name(defaultValue = props.name),
+              portSocket(props)
             )
-          )
-      }
-    )
+          case _ =>
+            React.Fragment(
+              portSocket(props),
+              Name(defaultValue = props.name),
+              Icon(
+                Icon.props(name = "trash alternate outline", color = Grey, link = true)
+              ),
+              Icon(
+                Icon.props(name = "angle right", color = Grey, link = true)
+              )
+            )
+        }
+      )
   }
 
   private val component =
@@ -79,12 +80,13 @@ object PortContainer {
       .build
 
   def apply(
+      key: String,
       name: String,
       orientation: PortOrientation,
       portSocketRef: Simple[html.Element],
       onPortClick: Port => Callback = _ => Callback.empty,
       onPortHover: PortOrientation => Callback = _ => Callback.empty
   ): Unmounted[Props, Unit, Backend] =
-    component(Props(name, orientation, portSocketRef, onPortClick, onPortHover))
+    component.withKey(key)(Props(name, orientation, portSocketRef, onPortClick, onPortHover))
 
 }
