@@ -1,5 +1,6 @@
 package concussion.component.editor
 
+import japgolly.scalajs.react.Ref.Simple
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.vdom.html_<^._
@@ -12,16 +13,15 @@ object PortContainer {
   final case class Props(
       name: String,
       orientation: PortOrientation,
+      portSocketRef: Simple[html.Element],
       onPortClick: Port => Callback,
       onPortHover: PortOrientation => Callback
   )
 
   final class Backend() {
 
-    private val portSocketRef = Ref[html.Element]
-
     private def onPortClick(props: Props) =
-      portSocketRef.foreachCB(e => {
+      props.portSocketRef.foreachCB(e => {
         val rect = e.getBoundingClientRect
         val center =
           (rect.left + ((rect.right - rect.left) / 2), rect.top + ((rect.bottom - rect.top) / 2))
@@ -29,7 +29,7 @@ object PortContainer {
       })
 
     private def portSocket(props: Props) =
-      <.div.withRef(portSocketRef)(
+      <.div.withRef(props.portSocketRef)(
         ^.onMouseUp --> onPortClick(props),
         ^.onMouseEnter --> props.onPortHover(props.orientation),
         ^.onMouseLeave --> props.onPortHover(None),
@@ -81,9 +81,10 @@ object PortContainer {
   def apply(
       name: String,
       orientation: PortOrientation,
+      portSocketRef: Simple[html.Element],
       onPortClick: Port => Callback = _ => Callback.empty,
       onPortHover: PortOrientation => Callback = _ => Callback.empty
   ): Unmounted[Props, Unit, Backend] =
-    component(Props(name, orientation, onPortClick, onPortHover))
+    component(Props(name, orientation, portSocketRef, onPortClick, onPortHover))
 
 }

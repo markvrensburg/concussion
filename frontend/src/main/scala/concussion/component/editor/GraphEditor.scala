@@ -2,20 +2,13 @@ package concussion.component.editor
 
 import cats.effect.IO
 import concussion.component.Logo
-import concussion.facade.ace.{AceEditor, EditorProps}
-import concussion.facade.draggable.{Draggable, DraggableBounds, Grid}
-import concussion.styles.{GraphStyle, NodeStyle, PageStyle}
+import concussion.styles.{GraphStyle, PageStyle}
 import concussion.util.Namer
+import concussion.util.CatsReact._
 import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.vdom.html_<^._
 import japgolly.scalajs.react._
 import org.scalajs.dom.html
-import react.semanticui.colors.{Blue, Green, Red}
-import react.semanticui.elements.header.Header
-import react.semanticui.elements.icon.Icon
-import react.semanticui.elements.segment.{Segment, SegmentAttached}
-import react.semanticui.textalignment.Center
-import concussion.util.CatsReact._
 import scalacss.ScalaCssReact._
 
 import scala.util.Random
@@ -41,8 +34,6 @@ object GraphEditor {
 
   final class Backend($ : BackendScope[Props, State]) {
 
-    private val bounds = DraggableBounds(-199, null, 0, null)
-
     private val editorRef = Ref[html.Element]
 
     private def addNode(nodeType: NodeType): Callback =
@@ -57,6 +48,9 @@ object GraphEditor {
         })
       } yield ()
 //      }
+
+//    private def adjustPorts(ports: Set[Port]): Callback =
+//      $.modState(state => {})
 
     private def onPortClick(port: Port): Callback =
       $.modState(state => {
@@ -119,165 +113,6 @@ object GraphEditor {
           }
       )
 
-    private def input(key: String) =
-      Draggable(
-        key,
-        Draggable
-          .props(grid = Grid(5, 5), handle = ".dragger", bounds = bounds, onDrag = updateDrag),
-        <.div(
-//          ^.left := "50%",
-//          ^.top := "50%",
-//          ^.transform := "translate(-50%,-50%)",
-          NodeStyle.nodePos,
-          Segment(
-            Segment.props(
-              className = "dragger",
-              inverted = true,
-              compact = true,
-              attached = SegmentAttached.Top,
-              textAlign = Center
-            ),
-            Header(
-              Header.props(as = "h4", inverted = true, color = Green),
-              "INPUT"
-            )
-          ),
-          Segment(
-            Segment.props(
-              inverted = true,
-              compact = true,
-              attached = SegmentAttached.Bottom,
-              textAlign = Center
-            ),
-            PortContainer("Port1", Right, onPortClick, onPortHover),
-            <.div(
-              ^.width := "100%",
-              ^.display := "flex",
-              ^.justifyContent := "center",
-              ^.marginTop := ".25rem",
-              Icon(Icon.props(name = "plus circle", link = true))
-            )
-          )
-        )
-      )
-
-    private def output(key: String) =
-      Draggable(
-        key,
-        Draggable
-          .props(grid = Grid(5, 5), handle = ".dragger", bounds = bounds, onDrag = updateDrag),
-        <.div(
-          NodeStyle.nodePos,
-          Segment(
-            Segment.props(
-              className = "dragger",
-              inverted = true,
-              compact = true,
-              attached = SegmentAttached.Top,
-              textAlign = Center
-            ),
-            Header(
-              Header.props(as = "h4", inverted = true, color = Red),
-              "OUTPUT"
-            )
-          ),
-          Segment(
-            Segment.props(
-              inverted = true,
-              compact = true,
-              attached = SegmentAttached.Bottom,
-              textAlign = Center
-            ),
-            PortContainer("Port1", Left, onPortClick, onPortHover),
-            <.div(
-              ^.width := "100%",
-              ^.display := "flex",
-              ^.justifyContent := "center",
-              ^.marginTop := ".25rem",
-              Icon(Icon.props(name = "plus circle", link = true))
-            )
-          )
-        )
-      )
-
-    private val defaultText = """# Keep track of loops
-                                |MOV 5 ACC
-                                |SAV
-                                |MOV 3, ACC
-                                |LOOP:
-                                |SUB 1
-                                |JEZ END
-                                |SWP
-                                |JMP LOOP
-                                |END:""".stripMargin
-
-//    private val updateCode: AceEditor.OnChange =
-//      (e: ReactEvent) => Callback(println(e.toString))
-
-    private val updateDrag: Draggable.DraggableEventHandler =
-      (mouse, data) => Callback(println(s"${mouse.clientX},${mouse.clientY}; ${data.x},${data.y}"))
-
-    private def processor(key: String) =
-      Draggable(
-        key,
-        Draggable
-          .props(
-            grid = Grid(5, 5),
-            handle = ".dragger",
-            bounds = bounds,
-            onDrag = updateDrag
-          ),
-        <.div(
-          NodeStyle.nodePos,
-          Segment(
-            Segment.props(
-              className = "dragger",
-              inverted = true,
-              compact = true,
-              attached = SegmentAttached.Top,
-              textAlign = Center
-            ),
-            Header(
-              Header.props(as = "h4", inverted = true, color = Blue),
-              "PROCESSOR"
-            )
-          ),
-          Segment(
-            Segment.props(inverted = true, compact = true, attached = SegmentAttached.Attached),
-            <.div(
-              ^.height := "100%",
-              ^.minWidth := "210px",
-              AceEditor(
-                AceEditor.props(
-                  width = "100%",
-                  mode = "yaml",
-                  theme = "merbivore",
-                  value = defaultText,
-                  //onChange = updateCode,
-                  minLines = defaultText.lines.size,
-                  maxLines = defaultText.lines.size,
-                  wrapEnabled = true,
-                  debounceChangePeriod = 500,
-                  editorProps = EditorProps(blockScrolling = true)
-                )
-              )
-            )
-          ),
-          Segment(
-            Segment.props(inverted = true, compact = true, attached = SegmentAttached.Bottom),
-            PortContainer("Port1", Left, onPortClick, onPortHover),
-            PortContainer("Port2", Right, onPortClick, onPortHover),
-            <.div(
-              ^.width := "100%",
-              ^.display := "flex",
-              ^.justifyContent := "center",
-              ^.marginTop := ".25rem",
-              Icon(Icon.props(name = "plus circle", link = true))
-            )
-          )
-        )
-      )
-
     private def updateConnection(e: ReactMouseEvent): Callback = {
       val x = e.clientX
       val y = e.clientY
@@ -295,7 +130,7 @@ object GraphEditor {
       })
     }
 
-    def render(state: State): VdomElement =
+    def render(props: Props, state: State): VdomElement =
       NodeMenu(
         state.logo,
         state.showMenu,
@@ -307,16 +142,9 @@ object GraphEditor {
             GraphStyle.graphEditor,
             ^.id := "node-editor",
             Infobar(),
-            Toolbar(),
+            //Toolbar(),
             //Nodes
-            state.nodes.toTagMod(
-              n =>
-                n._2 match {
-                  case Input     => input(n._1)
-                  case Output    => output(n._1)
-                  case Processor => processor(n._1)
-                }
-            ),
+            state.nodes.toTagMod(n => Node(n._1, n._2, props.namer, onPortClick, onPortHover)),
             //Connectors
             state.connections.toTagMod(c => Connector(c.port1, c.port2)),
             state.connectionState match {

@@ -60,6 +60,16 @@ object NodeMenu {
             MenuItem.props(as = "a", onClick = props.addNode(Processor)),
             Icon(Icon.props(name = "sitemap")),
             "PROCESSOR"
+          ),
+          MenuItem(
+            MenuItem.props(as = "a"),
+            Icon(Icon.props(name = "sitemap")),
+            "MEMORY"
+          ),
+          MenuItem(
+            MenuItem.props(as = "a"),
+            Icon(Icon.props(name = "sitemap")),
+            "SUB-PROCESS"
           )
         ),
         Sidebar.Pusher(
