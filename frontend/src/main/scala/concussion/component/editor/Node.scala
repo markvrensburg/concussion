@@ -63,7 +63,6 @@ object Node {
                 Port(PortId(p._1, props.id), center._1, center._2, p._3)
               })
               .asCallback
-              .map(_.get) //todo make this method safer
           })
           .sequence
       } yield ports
@@ -90,7 +89,7 @@ object Node {
       for {
         props <- $.props
         ports <- getPorts
-        adjust <- props.adjustPorts(ports)
+        adjust <- props.adjustPorts(ports.filter(_.isDefined).map(_.get))
       } yield adjust
 
     private def deletePort(portId: PortId) =

@@ -10,6 +10,8 @@ import react.semanticui.elements.icon.Icon
 
 object PortContainer {
 
+  final case class State(doUpdate: Boolean = true)
+
   final case class Props(
       id: PortId,
       name: String,
@@ -23,13 +25,21 @@ object PortContainer {
       updateConnections: Callback = Callback.empty
   )
 
-  final class Backend($ : BackendScope[Props, Unit]) {
+  final class Backend($ : BackendScope[Props, State]) {
 
+    //todo look at better alternatives than using an "doUpdate" flag
     val updateConnections: Callback =
       for {
         props <- $.props
-        _ <- Callback(println(props.id))
-        _ <- props.updateConnections
+        state <- $.state
+        _ <- if (state.doUpdate) props.updateConnections >> $.setState(State(doUpdate = false))
+        else Callback.empty
+      } yield ()
+
+    private val onShiftClick: Callback =
+      for {
+        props <- $.props
+        _ <- $.setState(State(doUpdate = true)) >> props.onShiftClick
       } yield ()
 
     private val onPortClick =
@@ -61,7 +71,7 @@ object PortContainer {
 
     private def shift(props: Props) =
       <.div(
-        ^.onClick --> props.onShiftClick,
+        ^.onClick --> onShiftClick,
         Icon(
           Icon.props(
             name = if (props.orientation == Right) "angle left" else "angle right",
@@ -103,8 +113,9 @@ object PortContainer {
   private val component =
     ScalaComponent
       .builder[Props]("PortContainer")
+      .initialState(State())
       .renderBackend[Backend]
-      //.componentDidUpdate(_.backend.updateConnections)
+      .componentDidUpdate(_.backend.updateConnections)
       .build
 
   def apply(
@@ -118,7 +129,7 @@ object PortContainer {
       onDeleteClick: Callback = Callback.empty,
       onShiftClick: Callback = Callback.empty,
       updateConnections: Callback = Callback.empty
-  ): Unmounted[Props, Unit, Backend] =
+  ): Unmounted[Props, State, Backend] =
     component(
       Props(
         id,
