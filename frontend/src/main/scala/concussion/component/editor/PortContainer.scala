@@ -11,29 +11,64 @@ import react.semanticui.elements.icon.Icon
 object PortContainer {
 
   final case class Props(
+      id: PortId,
       name: String,
       orientation: PortOrientation,
       portSocketRef: Simple[html.Element],
+      canDelete: Boolean,
       onPortClick: Port => Callback,
-      onPortHover: PortOrientation => Callback
+      onPortHover: PortOrientation => Callback,
+      onDeleteClick: Callback,
+      onShiftClick: Callback,
+      updateConnections: Callback = Callback.empty
   )
 
-  final class Backend() {
+  final class Backend($ : BackendScope[Props, Unit]) {
 
-    private def onPortClick(props: Props) =
-      props.portSocketRef.foreachCB(e => {
-        val rect = e.getBoundingClientRect
-        val center =
-          (rect.left + ((rect.right - rect.left) / 2), rect.top + ((rect.bottom - rect.top) / 2))
-        props.onPortClick(Port(center._1, center._2, props.orientation))
-      })
+    val updateConnections: Callback =
+      for {
+        props <- $.props
+        _ <- Callback(println(props.id))
+        _ <- props.updateConnections
+      } yield ()
+
+    private val onPortClick =
+      for {
+        props <- $.props
+        _ <- props.portSocketRef.foreachCB(e => {
+          val rect = e.getBoundingClientRect
+          val center =
+            (rect.left + ((rect.right - rect.left) / 2), rect.top + ((rect.bottom - rect.top) / 2))
+          props.onPortClick(Port(props.id, center._1, center._2, props.orientation))
+        })
+      } yield ()
 
     private def portSocket(props: Props) =
       <.div.withRef(props.portSocketRef)(
-        ^.onMouseUp --> onPortClick(props),
+        ^.onMouseUp --> onPortClick,
         ^.onMouseEnter --> props.onPortHover(props.orientation),
         ^.onMouseLeave --> props.onPortHover(None),
         Icon(Icon.props(name = "dot circle outline", className = "port-socket"))
+      )
+
+    private def delete(props: Props) =
+      <.div(
+        ^.onClick --> props.onDeleteClick,
+        Icon(
+          Icon.props(name = "trash alternate outline", color = Grey, link = true)
+        )
+      )
+
+    private def shift(props: Props) =
+      <.div(
+        ^.onClick --> props.onShiftClick,
+        Icon(
+          Icon.props(
+            name = if (props.orientation == Right) "angle left" else "angle right",
+            color = Grey,
+            link = true
+          )
+        )
       )
 
     def render(props: Props): VdomElement =
@@ -49,12 +84,8 @@ object PortContainer {
         props.orientation match {
           case Right =>
             React.Fragment(
-              Icon(
-                Icon.props(name = "angle left", color = Grey, link = true)
-              ),
-              Icon(
-                Icon.props(name = "trash alternate outline", color = Grey, link = true)
-              ),
+              shift(props),
+              delete(props),
               Name(defaultValue = props.name),
               portSocket(props)
             )
@@ -62,12 +93,8 @@ object PortContainer {
             React.Fragment(
               portSocket(props),
               Name(defaultValue = props.name),
-              Icon(
-                Icon.props(name = "trash alternate outline", color = Grey, link = true)
-              ),
-              Icon(
-                Icon.props(name = "angle right", color = Grey, link = true)
-              )
+              delete(props),
+              shift(props)
             )
         }
       )
@@ -77,16 +104,34 @@ object PortContainer {
     ScalaComponent
       .builder[Props]("PortContainer")
       .renderBackend[Backend]
+      //.componentDidUpdate(_.backend.updateConnections)
       .build
 
   def apply(
-      key: String,
+      id: PortId,
       name: String,
       orientation: PortOrientation,
       portSocketRef: Simple[html.Element],
+      canDelete: Boolean = true,
       onPortClick: Port => Callback = _ => Callback.empty,
-      onPortHover: PortOrientation => Callback = _ => Callback.empty
+      onPortHover: PortOrientation => Callback = _ => Callback.empty,
+      onDeleteClick: Callback = Callback.empty,
+      onShiftClick: Callback = Callback.empty,
+      updateConnections: Callback = Callback.empty
   ): Unmounted[Props, Unit, Backend] =
-    component.withKey(key)(Props(name, orientation, portSocketRef, onPortClick, onPortHover))
+    component(
+      Props(
+        id,
+        name,
+        orientation,
+        portSocketRef,
+        canDelete,
+        onPortClick,
+        onPortHover,
+        onDeleteClick,
+        onShiftClick,
+        updateConnections
+      )
+    )
 
 }

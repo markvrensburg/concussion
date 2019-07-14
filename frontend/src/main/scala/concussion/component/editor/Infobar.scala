@@ -2,6 +2,7 @@ package concussion.component.editor
 
 import concussion.styles.InfobarStyle
 import japgolly.scalajs.react._
+import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.vdom.html_<^._
 import react.semanticui.collections.menu.{Menu, MenuItem}
 import react.semanticui.colors.Grey
@@ -22,7 +23,7 @@ object Infobar {
         MenuItem(
           MenuItem.props(name = "new"),
           Icon(
-            Icon.props(name = "sitemap", color = Grey, link = true)
+            Icon.props(name = "file outline", color = Grey, link = true)
           )
         ),
         MenuItem(
@@ -46,6 +47,6 @@ object Infobar {
       .renderStatic(infobar)
       .build
 
-  def apply() = component()
+  def apply(): Unmounted[Unit, Unit, Unit] = component()
 
 }

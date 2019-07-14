@@ -1,17 +1,19 @@
 package concussion.component.editor
 
+import cats.implicits._
 import cats.effect.IO
 import concussion.facade.ace.{AceEditor, EditorProps}
-import concussion.facade.draggable.{Draggable, DraggableBounds, Grid}
+import concussion.facade.draggable.{Draggable, DraggableBounds, DraggableData, Grid}
 import concussion.styles.NodeStyle
 import concussion.util.Namer
-import concussion.util.CatsReact._
 import enum.Enum
 import japgolly.scalajs.react.Ref.Simple
 import japgolly.scalajs.react._
+import japgolly.scalajs.react.CatsReact._
+import concussion.util.CatsIOReact._
 import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.vdom.html_<^._
-import org.scalajs.dom.html
+import org.scalajs.dom.{MouseEvent, html}
 import react.semanticui.colors.{Blue, Green, Red}
 import react.semanticui.elements.header.Header
 import react.semanticui.elements.icon.Icon
@@ -30,7 +32,9 @@ object NodeType {
 
 object Node {
 
-  final case class State(ports: Vector[(String, Simple[html.Element])] = Vector.empty)
+  final case class State(
+      ports: Vector[(String, Simple[html.Element], PortOrientation)] = Vector.empty
+  )
 
   final case class Props(
       id: String,
@@ -38,33 +42,89 @@ object Node {
       namer: Namer[IO],
       onPortClick: Port => Callback,
       onPortHover: PortOrientation => Callback,
-      adjustPorts: Set[Port] => Callback
+      adjustPorts: Vector[Port] => Callback
   )
 
   final class Backend($ : BackendScope[Props, State]) {
 
-    private def addPort: Callback =
+    private val getPorts =
+      for {
+        props <- $.props
+        state <- $.state
+        ports <- state.ports
+          .map(p => {
+            p._2.get
+              .map(e => {
+                val rect = e.getBoundingClientRect
+                val center = (
+                  rect.left + ((rect.right - rect.left) / 2),
+                  rect.top + ((rect.bottom - rect.top) / 2)
+                )
+                Port(PortId(p._1, props.id), center._1, center._2, p._3)
+              })
+              .asCallback
+              .map(_.get) //todo make this method safer
+          })
+          .sequence
+      } yield ports
+
+    private val addPort =
       for {
         props <- $.props
         id <- props.namer.nextName(s"${props.id}_Port").toCallback
         _ <- $.modState(state => {
-          state.copy(ports = state.ports :+ (id -> Ref[html.Element]))
+          state.copy(
+            ports = state.ports :+ (
+              (
+                id,
+                Ref[html.Element],
+                if (props.nodeType == Input) Right
+                else Left
+              )
+            )
+          )
         })
       } yield ()
+
+    private val updateConnections =
+      for {
+        props <- $.props
+        ports <- getPorts
+        adjust <- props.adjustPorts(ports)
+      } yield adjust
+
+    private def deletePort(portId: PortId) =
+      $.modState(state => {
+        state.copy(ports = state.ports.filter(_._1 != portId.id)) //todo make id's type safe
+      })
+
+    private def shiftPort(portId: PortId) =
+      $.modState(state => {
+        val ports = state.ports.map {
+          case (id, _, orientation) if id == portId.id => (id, Ref[html.Element], orientation.swap)
+          case port                                    => port
+        }
+        state.copy(ports = ports)
+      })
 
     private val bounds = DraggableBounds(-199, null, 0, null)
 
     private def input(props: Props, state: State) =
       Draggable(
-        props.id,
         Draggable
-          .props(grid = Grid(5, 5), handle = ".dragger", bounds = bounds, onDrag = updateDrag),
+          .props(
+            grid = Grid(5, 5),
+            handle = ".dragger",
+            bounds = bounds,
+            //onDrag = (_: MouseEvent, _: DraggableData) => updateConnections,
+            onStart = (_: MouseEvent, _: DraggableData) => Callback(println("Starting")),
+            onStop = (_: MouseEvent, _: DraggableData) => updateConnections
+          ),
         <.div(
           //          ^.left := "50%",
           //          ^.top := "50%",
           //          ^.transform := "translate(-50%,-50%)",
           NodeStyle.nodePos,
-          ^.id := props.id,
           Segment(
             Segment.props(
               className = "dragger",
@@ -86,10 +146,25 @@ object Node {
               textAlign = Center
             ),
             //Ports
-            <.div(
-              state.ports.toList.toTagMod(
-                p => PortContainer(p._1, "Port", Right, p._2, props.onPortClick, props.onPortHover)
-              )
+            React.Fragment(
+              state.ports.map(
+                p =>
+                  <.div(
+                    ^.key := p._1,
+                    PortContainer(
+                      PortId(p._1, props.id),
+                      "Port",
+                      p._3,
+                      p._2,
+                      canDelete = true,
+                      props.onPortClick,
+                      props.onPortHover,
+                      deletePort(PortId(p._1, props.id)),
+                      shiftPort(PortId(p._1, props.id)),
+                      updateConnections
+                    )
+                  )
+              ): _*
             ),
             <.div(
               ^.width := "100%",
@@ -107,12 +182,16 @@ object Node {
 
     private def output(props: Props, state: State) =
       Draggable(
-        props.id,
         Draggable
-          .props(grid = Grid(5, 5), handle = ".dragger", bounds = bounds, onDrag = updateDrag),
+          .props(
+            grid = Grid(5, 5),
+            handle = ".dragger",
+            bounds = bounds,
+            //onDrag = (_: MouseEvent, _: DraggableData) => updateConnections,
+            onStop = (_: MouseEvent, _: DraggableData) => updateConnections
+          ),
         <.div(
           NodeStyle.nodePos,
-          ^.id := props.id,
           Segment(
             Segment.props(
               className = "dragger",
@@ -134,10 +213,25 @@ object Node {
               textAlign = Center
             ),
             //Ports
-            <.div(
-              state.ports.toList.toTagMod(
-                p => PortContainer(p._1, "Port", Left, p._2, props.onPortClick, props.onPortHover)
-              )
+            React.Fragment(
+              state.ports.map(
+                p =>
+                  <.div(
+                    ^.key := p._1,
+                    PortContainer(
+                      PortId(p._1, props.id),
+                      "Port",
+                      p._3,
+                      p._2,
+                      canDelete = true,
+                      props.onPortClick,
+                      props.onPortHover,
+                      deletePort(PortId(p._1, props.id)),
+                      shiftPort(PortId(p._1, props.id)),
+                      updateConnections
+                    )
+                  )
+              ): _*
             ),
             <.div(
               ^.width := "100%",
@@ -167,22 +261,18 @@ object Node {
     //    private val updateCode: AceEditor.OnChange =
     //      (e: ReactEvent) => Callback(println(e.toString))
 
-    private val updateDrag: Draggable.DraggableEventHandler =
-      (mouse, data) => Callback(println(s"${mouse.clientX},${mouse.clientY}; ${data.x},${data.y}"))
-
     private def processor(props: Props, state: State) =
       Draggable(
-        props.id,
         Draggable
           .props(
             grid = Grid(5, 5),
             handle = ".dragger",
             bounds = bounds,
-            onDrag = updateDrag
+            //onDrag = (_: MouseEvent, _: DraggableData) => updateConnections,
+            onStop = (_: MouseEvent, _: DraggableData) => updateConnections
           ),
         <.div(
           NodeStyle.nodePos,
-          ^.id := props.id,
           Segment(
             Segment.props(
               className = "dragger",
@@ -220,10 +310,25 @@ object Node {
           Segment(
             Segment.props(inverted = true, compact = true, attached = SegmentAttached.Bottom),
             //Ports
-            <.div(
-              state.ports.toList.toTagMod(
-                p => PortContainer(p._1, "Port", Left, p._2, props.onPortClick, props.onPortHover)
-              )
+            React.Fragment(
+              state.ports.map(
+                p =>
+                  <.div(
+                    ^.key := p._1,
+                    PortContainer(
+                      PortId(p._1, props.id),
+                      "Port",
+                      p._3,
+                      p._2,
+                      canDelete = true,
+                      props.onPortClick,
+                      props.onPortHover,
+                      deletePort(PortId(p._1, props.id)),
+                      shiftPort(PortId(p._1, props.id)),
+                      updateConnections
+                    )
+                  )
+              ): _*
             ),
             <.div(
               ^.width := "100%",
@@ -248,13 +353,25 @@ object Node {
 
   private val component =
     ScalaComponent
-      .builder[Props]("NodeEditor")
+      .builder[Props]("Node")
       .initialStateCallbackFromProps(
         props =>
           props.namer
             .nextName(s"${props.id}_Port")
             .toCallback
-            .map(name => State(ports = Vector(name -> Ref[html.Element])))
+            .map(
+              name =>
+                State(
+                  ports = Vector(
+                    (
+                      name,
+                      Ref[html.Element],
+                      if (props.nodeType == Input) Right
+                      else Left
+                    )
+                  )
+                )
+            )
       )
       .renderBackend[Backend]
       .build
@@ -265,7 +382,7 @@ object Node {
       namer: Namer[IO],
       onPortClick: Port => Callback = _ => Callback.empty,
       onPortHover: PortOrientation => Callback = _ => Callback.empty,
-      adjustPorts: Set[Port] => Callback = _ => Callback.empty
+      adjustPorts: Vector[Port] => Callback = _ => Callback.empty
   ): Unmounted[Props, State, Backend] =
     component(Props(id, nodeType, namer, onPortClick, onPortHover, adjustPorts))
 }

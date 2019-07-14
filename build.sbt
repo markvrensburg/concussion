@@ -166,6 +166,7 @@ lazy val frontend = (project in file("frontend"))
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomV,
       "com.github.japgolly.scalajs-react" %%% "core" % scalaJsReactV,
       "com.github.japgolly.scalajs-react" %%% "extra" % scalaJsReactV,
+      "com.github.japgolly.scalajs-react" %%% "ext-cats" % scalaJsReactV,
       "com.github.japgolly.scalacss" %%% "ext-react" % scalaCssV,
       "io.github.cquiroz.react" %%% "react-semantic-ui" % scalaJsReactSemanticUIV
     ),

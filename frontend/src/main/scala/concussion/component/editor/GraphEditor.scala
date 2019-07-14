@@ -4,7 +4,8 @@ import cats.effect.IO
 import concussion.component.Logo
 import concussion.styles.{GraphStyle, PageStyle}
 import concussion.util.Namer
-import concussion.util.CatsReact._
+import japgolly.scalajs.react.CatsReact._
+import concussion.util.CatsIOReact._
 import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.vdom.html_<^._
 import japgolly.scalajs.react._
@@ -49,14 +50,29 @@ object GraphEditor {
       } yield ()
 //      }
 
-//    private def adjustPorts(ports: Set[Port]): Callback =
-//      $.modState(state => {})
+    private def adjustPorts(ports: Vector[Port]): Callback =
+      $.modState(state => {
+        val connections = state.connections.map {
+          case c @ Connection(Port(id, _, _, _), port) if ports.exists(_.id == id) =>
+            ports
+              .find(_.id == id)
+              .map(p => Connection(Port(id, p.x, p.y, p.orientation), port))
+              .getOrElse(c)
+          case c @ Connection(port, Port(id, _, _, _)) =>
+            ports
+              .find(_.id == id)
+              .map(p => Connection(port, Port(id, p.x, p.y, p.orientation)))
+              .getOrElse(c)
+
+        }
+        state.copy(connections = connections)
+      })
 
     private def onPortClick(port: Port): Callback =
       $.modState(state => {
         val portX = state.offset._1 + port.x
         val portY = state.offset._2 + port.y
-        val currentPort = Port(portX, portY, port.orientation)
+        val currentPort = Port(port.id, portX, portY, port.orientation)
 
         state.connectionState match {
           case Connecting(from, _) => {
@@ -122,7 +138,7 @@ object GraphEditor {
             state.copy(
               connectionState = Connecting(
                 from,
-                Port(state.offset._1 + x, state.offset._2 + y, to.orientation)
+                Port(PortId("", ""), state.offset._1 + x, state.offset._2 + y, to.orientation) //todo move connecting component out
               )
             )
           case NotConnecting => state
@@ -144,7 +160,15 @@ object GraphEditor {
             Infobar(),
             //Toolbar(),
             //Nodes
-            state.nodes.toTagMod(n => Node(n._1, n._2, props.namer, onPortClick, onPortHover)),
+            React.Fragment(
+              state.nodes.map(
+                n =>
+                  <.div(
+                    ^.key := n._1,
+                    Node(n._1, n._2, props.namer, onPortClick, onPortHover, adjustPorts)
+                  )
+              ): _*
+            ),
             //Connectors
             state.connections.toTagMod(c => Connector(c.port1, c.port2)),
             state.connectionState match {
@@ -164,7 +188,7 @@ object GraphEditor {
 
   private def component(random: Random) =
     ScalaComponent
-      .builder[Props]("NodeEditor")
+      .builder[Props]("GraphEditor")
       .initialState(State(NotConnecting, (0, 0), Logo(random)))
       .renderBackend[Backend]
       .build
