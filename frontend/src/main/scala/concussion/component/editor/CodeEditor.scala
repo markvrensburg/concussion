@@ -42,6 +42,7 @@ object CodeEditor {
       .builder[Props]("CodeEditor")
       .initialStateFromProps(props => State(props.initialCode))
       .renderBackend[Backend]
+      .shouldComponentUpdate(lc => CallbackTo(lc.currentState.code != lc.nextState.code))
       .build
 
   def apply(initialCode: String = "", maxLines: Int = 12): Unmounted[Props, State, Backend] =
