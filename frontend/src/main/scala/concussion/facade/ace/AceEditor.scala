@@ -25,6 +25,7 @@ object AceEditor {
     var height: js.UndefOr[String]
     var width: js.UndefOr[String]
     var value: js.UndefOr[String]
+    var placeholder: js.UndefOr[String]
     var onChange: js.UndefOr[raw.RawOnChange]
     var minLines: js.UndefOr[JsNumber]
     var maxLines: js.UndefOr[JsNumber]
@@ -42,6 +43,7 @@ object AceEditor {
       height: js.UndefOr[String] = js.undefined,
       width: js.UndefOr[String] = js.undefined,
       value: js.UndefOr[String] = js.undefined,
+      placeholder: js.UndefOr[String] = js.undefined,
       onChange: js.UndefOr[OnChange] = js.undefined,
       minLines: js.UndefOr[JsNumber] = js.undefined,
       maxLines: js.UndefOr[JsNumber] = js.undefined,
@@ -58,6 +60,7 @@ object AceEditor {
     p.height = height
     p.width = width
     p.value = value
+    p.placeholder = placeholder
     p.onChange = onChange.map(cb => (s: String) => cb(s).runNow())
     p.minLines = minLines
     p.maxLines = maxLines

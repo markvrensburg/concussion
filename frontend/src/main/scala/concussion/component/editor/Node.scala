@@ -245,17 +245,6 @@ object Node {
         )
       )
 
-    private val defaultText = """# Keep track of loops
-                                |MOV 5 ACC
-                                |SAV
-                                |MOV 3, ACC
-                                |LOOP:
-                                |SUB 1
-                                |JEZ END
-                                |SWP
-                                |JMP LOOP
-                                |END:""".stripMargin
-
     private def processor(props: Props, state: State) =
       Draggable(
         Draggable
@@ -283,7 +272,7 @@ object Node {
           ),
           Segment(
             Segment.props(inverted = true, compact = true, attached = SegmentAttached.Attached),
-            CodeEditor(defaultText)
+            CodeEditor()
           ),
           Segment(
             Segment.props(inverted = true, compact = true, attached = SegmentAttached.Bottom),

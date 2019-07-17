@@ -54,13 +54,20 @@ object Connector {
     lazy val width: Double = bottomRight.x - topLeft.x
   }
 
+  private def clamp(min: Double, max: Double)(value: Double) =
+    Math.max(min, Math.min(max, value))
+
   final case class Props(from: Port, to: Port, dashed: Boolean) {
 
     lazy val p0: Point = Point(from.x, from.y)
 
     lazy val p3: Point = Point(to.x, to.y)
 
-    lazy val dx: Double = Math.min(250, Math.abs(from.x - to.x) * bezierWeight)
+    lazy val dx: Double = {
+      val width = Math.abs(from.x - to.x)
+      val height = Math.abs(from.y - to.y)
+      if (width <= 50 && height <= 50) 0 else clamp(50, 250)(width * bezierWeight)
+    }
 
     lazy val p1: Point = from.orientation match {
       case Right => Point(p0.x + dx, p0.y)

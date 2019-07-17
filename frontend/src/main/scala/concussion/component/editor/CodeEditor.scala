@@ -26,6 +26,7 @@ object CodeEditor {
             mode = "yaml",
             theme = "merbivore",
             value = state.code,
+            placeholder = "Type code here",
             onChange = updateCode,
             minLines = state.code.lines.size,
             maxLines = props.maxLines,
