@@ -18,7 +18,7 @@ object AceEditor {
   @JSImport("react-ace", JSImport.Default)
   object RawComponent extends js.Object
 
-  type OnChange = ReactEvent => Callback
+  type OnChange = String => Callback
 
   @js.native
   trait Props extends js.Object {
@@ -58,7 +58,7 @@ object AceEditor {
     p.height = height
     p.width = width
     p.value = value
-    p.onChange = onChange.map(cb => (e: ReactEvent) => cb(e).runNow())
+    p.onChange = onChange.map(cb => (s: String) => cb(s).runNow())
     p.minLines = minLines
     p.maxLines = maxLines
     p.debounceChangePeriod = debounceChangePeriod

@@ -62,12 +62,12 @@ object NodeMenu {
             "PROCESSOR"
           ),
           MenuItem(
-            MenuItem.props(as = "a"),
+            MenuItem.props(as = "a", disabled = true),
             Icon(Icon.props(name = "sitemap")),
             "MEMORY"
           ),
           MenuItem(
-            MenuItem.props(as = "a"),
+            MenuItem.props(as = "a", disabled = true),
             Icon(Icon.props(name = "sitemap")),
             "SUB-PROCESS"
           )

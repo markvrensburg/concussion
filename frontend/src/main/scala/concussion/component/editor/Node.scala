@@ -2,7 +2,6 @@ package concussion.component.editor
 
 import cats.implicits._
 import cats.effect.IO
-import concussion.facade.ace.{AceEditor, EditorProps}
 import concussion.facade.draggable.{Draggable, DraggableBounds, DraggableData, Grid}
 import concussion.styles.NodeStyle
 import concussion.util.Namer
@@ -257,9 +256,6 @@ object Node {
                                 |JMP LOOP
                                 |END:""".stripMargin
 
-    //    private val updateCode: AceEditor.OnChange =
-    //      (e: ReactEvent) => Callback(println(e.toString))
-
     private def processor(props: Props, state: State) =
       Draggable(
         Draggable
@@ -287,24 +283,7 @@ object Node {
           ),
           Segment(
             Segment.props(inverted = true, compact = true, attached = SegmentAttached.Attached),
-            <.div(
-              ^.height := "100%",
-              ^.minWidth := "210px",
-              AceEditor(
-                AceEditor.props(
-                  width = "100%",
-                  mode = "yaml",
-                  theme = "merbivore",
-                  value = defaultText,
-                  //onChange = updateCode,
-                  minLines = defaultText.lines.size,
-                  maxLines = defaultText.lines.size,
-                  wrapEnabled = true,
-                  debounceChangePeriod = 500,
-                  editorProps = EditorProps(blockScrolling = true)
-                )
-              )
-            )
+            CodeEditor(defaultText)
           ),
           Segment(
             Segment.props(inverted = true, compact = true, attached = SegmentAttached.Bottom),

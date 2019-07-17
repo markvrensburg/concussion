@@ -10,7 +10,7 @@ import react.semanticui.elements.icon.Icon
 
 object PortContainer {
 
-  final case class State(doUpdate: Boolean = true)
+  final case class State(doUpdate: Boolean)
 
   final case class Props(
       id: PortId,
@@ -113,7 +113,7 @@ object PortContainer {
   private val component =
     ScalaComponent
       .builder[Props]("PortContainer")
-      .initialState(State())
+      .initialState(State(doUpdate = false))
       .renderBackend[Backend]
       .componentDidUpdate(_.backend.updateConnections)
       .build

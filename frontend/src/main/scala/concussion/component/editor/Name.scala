@@ -36,7 +36,7 @@ object Name {
 
   private def component(initialLength: Int) =
     ScalaComponent
-      .builder[Props]("Input")
+      .builder[Props]("Name")
       .initialState(State(initialLength))
       .renderBackend[Backend]
       .build
