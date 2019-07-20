@@ -44,6 +44,7 @@ object Node {
       onPortClick: Port => Callback,
       onPortHover: PortOrientation => Callback,
       adjustPorts: Vector[Port] => Callback,
+      deletePorts: Vector[PortId] => Callback,
       deleteNode: Callback
   )
 
@@ -102,9 +103,21 @@ object Node {
       } yield ()
 
     private def deletePort(portId: PortId) =
-      $.modState(state => {
-        state.copy(ports = state.ports.filter(_._1 != portId.id), doUpdate = true) //todo make id's type safe
-      })
+      for {
+        props <- $.props
+        _ <- $.modState(state => {
+          state.copy(ports = state.ports.filter(_._1 != portId.id), doUpdate = true) //todo make id's type safe
+        })
+        _ <- props.deletePorts(Vector(portId))
+      } yield ()
+
+    private val onDelete: Callback =
+      for {
+        props <- $.props
+        state <- $.state
+        _ <- props.deletePorts(state.ports.map(p => PortId(p._1, props.id)))
+        _ <- props.deleteNode
+      } yield ()
 
     private def shiftPort(portId: PortId) =
       $.modState(state => {
@@ -131,13 +144,13 @@ object Node {
 
     private val bounds = DraggableBounds(-199, null, 0, null)
 
-    private def nodeOptions(props: Props) =
+    private val nodeOptions =
       <.div(
         ^.width := "100%",
         ^.display := "flex",
         ^.justifyContent := "center",
         <.div(
-          ^.onClick --> props.deleteNode,
+          ^.onClick --> onDelete,
           Icon(
             Icon.props(name = "trash alternate outline", color = Grey, link = true)
           )
@@ -178,7 +191,7 @@ object Node {
               Header.props(as = "h4", inverted = true, color = Green),
               "INPUT"
             ),
-            nodeOptions(props)
+            nodeOptions
           ),
           Segment(
             Segment.props(
@@ -236,7 +249,7 @@ object Node {
               Header.props(as = "h4", inverted = true, color = Red),
               "OUTPUT"
             ),
-            nodeOptions(props)
+            nodeOptions
           ),
           Segment(
             Segment.props(
@@ -294,7 +307,7 @@ object Node {
               Header.props(as = "h4", inverted = true, color = Blue),
               "PROCESSOR"
             ),
-            nodeOptions(props)
+            nodeOptions
           ),
           Segment(
             Segment.props(inverted = true, compact = true, attached = SegmentAttached.Attached),
@@ -378,7 +391,10 @@ object Node {
       onPortClick: Port => Callback = _ => Callback.empty,
       onPortHover: PortOrientation => Callback = _ => Callback.empty,
       adjustPorts: Vector[Port] => Callback = _ => Callback.empty,
+      deletePorts: Vector[PortId] => Callback = _ => Callback.empty,
       deleteNode: Callback = Callback.empty
   ): Unmounted[Props, State, Backend] =
-    component(Props(id, nodeType, namer, onPortClick, onPortHover, adjustPorts, deleteNode))
+    component(
+      Props(id, nodeType, namer, onPortClick, onPortHover, adjustPorts, deletePorts, deleteNode)
+    )
 }

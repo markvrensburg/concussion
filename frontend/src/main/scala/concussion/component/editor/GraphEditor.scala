@@ -53,7 +53,7 @@ object GraphEditor {
 
     private def adjustPorts(ports: Vector[Port]): Callback =
       $.modState(state => {
-        val connections = state.connections.map {
+        val adjusted = state.connections.map {
           case c @ Connection(Port(id, _, _, _), port) if ports.exists(_.id == id) =>
             ports
               .find(_.id == id)
@@ -64,9 +64,18 @@ object GraphEditor {
               .find(_.id == id)
               .map(p => Connection(port, Port(id, p.x, p.y, p.orientation)))
               .getOrElse(c)
-
+          case c => c
         }
-        state.copy(connections = connections)
+        state.copy(connections = adjusted)
+      })
+
+    private def deletePorts(ports: Vector[PortId]): Callback =
+      $.modState(state => {
+        val remaining =
+          state.connections.filter(
+            (c: Connection) => !ports.contains(c.port1.id) && !ports.contains(c.port2.id)
+          )
+        state.copy(connections = remaining)
       })
 
     private def onPortClick(port: Port): Callback =
@@ -173,6 +182,7 @@ object GraphEditor {
                       onPortClick,
                       onPortHover,
                       adjustPorts,
+                      deletePorts,
                       deleteNode(n._1)
                     )
                   )
