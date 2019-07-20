@@ -4,17 +4,26 @@ import concussion.facade.ace.{AceEditor, EditorProps}
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.vdom.html_<^._
+import scala.concurrent.duration._
+import scala.scalajs.js
 
 object CodeEditor {
 
   final case class State(code: String)
 
-  final case class Props(initialCode: String, maxLines: Int)
+  final case class Props(initialCode: String, maxLines: Int, onChange: String => Callback)
 
   final class Backend($ : BackendScope[Props, State]) {
 
     private val updateCode: AceEditor.OnChange =
-      (s: String) => $.modState(_.copy(code = s))
+      (newCode: String) =>
+        for {
+          props <- $.props
+          _ <- $.modState(_.copy(code = newCode))
+          //todo timer is a hacky solution to wait for refs to update
+          //_ <- props.onChange(newCode)
+          _ <- CallbackTo(js.timers.setTimeout(25.milliseconds)(props.onChange(newCode).runNow()))
+        } yield ()
 
     def render(props: Props, state: State): VdomElement =
       <.div(
@@ -31,7 +40,7 @@ object CodeEditor {
             minLines = state.code.lines.size,
             maxLines = props.maxLines,
             wrapEnabled = true,
-            debounceChangePeriod = 100,
+//            debounceChangePeriod = 20,
             editorProps = EditorProps(blockScrolling = true)
           )
         )
@@ -46,7 +55,11 @@ object CodeEditor {
       .shouldComponentUpdate(lc => CallbackTo(lc.currentState.code != lc.nextState.code))
       .build
 
-  def apply(initialCode: String = "", maxLines: Int = 12): Unmounted[Props, State, Backend] =
-    component(Props(initialCode, maxLines))
+  def apply(
+      initialCode: String = "",
+      maxLines: Int = 12,
+      onChange: String => Callback = _ => Callback.empty
+  ): Unmounted[Props, State, Backend] =
+    component(Props(initialCode, maxLines, onChange))
 
 }

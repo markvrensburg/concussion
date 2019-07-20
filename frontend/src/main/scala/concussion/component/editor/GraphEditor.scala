@@ -38,9 +38,6 @@ object GraphEditor {
     private val editorRef = Ref[html.Element]
 
     private def addNode(nodeType: NodeType): Callback =
-//      editorRef.foreachCB { e =>
-//        val rect = e.getBoundingClientRect
-//        val center = (rect.width / 2, rect.height / 2)
       for {
         props <- $.props
         id <- props.namer.nextName(NodeType.nodeTypes.encode(nodeType)).toCallback
@@ -48,7 +45,11 @@ object GraphEditor {
           state.copy(nodes = state.nodes :+ (id -> nodeType))
         })
       } yield ()
-//      }
+
+    private def deleteNode(nodeId: String): Callback =
+      $.modState(state => {
+        state.copy(nodes = state.nodes.filter(_._1 != nodeId))
+      })
 
     private def adjustPorts(ports: Vector[Port]): Callback =
       $.modState(state => {
@@ -165,7 +166,15 @@ object GraphEditor {
                 n =>
                   <.div(
                     ^.key := n._1,
-                    Node(n._1, n._2, props.namer, onPortClick, onPortHover, adjustPorts)
+                    Node(
+                      n._1,
+                      n._2,
+                      props.namer,
+                      onPortClick,
+                      onPortHover,
+                      adjustPorts,
+                      deleteNode(n._1)
+                    )
                   )
               ): _*
             ),

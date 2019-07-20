@@ -10,8 +10,6 @@ import react.semanticui.elements.icon.Icon
 
 object PortContainer {
 
-  final case class State(doUpdate: Boolean)
-
   final case class Props(
       id: PortId,
       name: String,
@@ -22,27 +20,12 @@ object PortContainer {
       onPortHover: PortOrientation => Callback,
       onDeleteClick: Callback,
       onShiftClick: Callback,
-      updateConnections: Callback = Callback.empty
+      onNameChange: String => Callback
   )
 
-  final class Backend($ : BackendScope[Props, State]) {
+  final class Backend($ : BackendScope[Props, Unit]) {
 
-    //todo look at better alternatives than using an "doUpdate" flag
-    val updateConnections: Callback =
-      for {
-        props <- $.props
-        state <- $.state
-        _ <- if (state.doUpdate) props.updateConnections >> $.setState(State(doUpdate = false))
-        else Callback.empty
-      } yield ()
-
-    private val onShiftClick: Callback =
-      for {
-        props <- $.props
-        _ <- $.setState(State(doUpdate = true)) >> props.onShiftClick
-      } yield ()
-
-    private val onPortClick =
+    private val onPortClick: Callback =
       for {
         props <- $.props
         _ <- props.portSocketRef.foreachCB(e => {
@@ -53,7 +36,13 @@ object PortContainer {
         })
       } yield ()
 
-    private def portSocket(props: Props) =
+//    private def onNameChange(newName: String): Callback =
+//      for {
+//        props <- $.props
+//        _ <- $.setState(State(doUpdate = true)) >> props.onNameChange(newName)
+//      } yield ()
+
+    private def portSocket(props: Props): VdomNode =
       <.div.withRef(props.portSocketRef)(
         ^.onMouseUp --> onPortClick,
         ^.onMouseEnter --> props.onPortHover(props.orientation),
@@ -61,17 +50,22 @@ object PortContainer {
         Icon(Icon.props(name = "dot circle outline", className = "port-socket"))
       )
 
-    private def delete(props: Props) =
-      <.div(
-        ^.onClick --> props.onDeleteClick,
-        Icon(
-          Icon.props(name = "trash alternate outline", color = Grey, link = true)
+    private def delete(props: Props): Option[VdomNode] =
+      if (props.canDelete)
+        Some(
+          <.div(
+            ^.onClick --> props.onDeleteClick,
+            Icon(
+              Icon.props(name = "trash alternate outline", color = Grey, link = true)
+            )
+          )
         )
-      )
+      else
+        Option.empty
 
-    private def shift(props: Props) =
+    private def shift(props: Props): VdomNode =
       <.div(
-        ^.onClick --> onShiftClick,
+        ^.onClick --> props.onShiftClick,
         Icon(
           Icon.props(
             name = if (props.orientation == Right) "angle left" else "angle right",
@@ -96,13 +90,13 @@ object PortContainer {
             React.Fragment(
               shift(props),
               delete(props),
-              Name(defaultValue = props.name),
+              Name(defaultValue = props.name /*, onChange = onNameChange*/ ),
               portSocket(props)
             )
           case _ =>
             React.Fragment(
               portSocket(props),
-              Name(defaultValue = props.name),
+              Name(defaultValue = props.name /*, onChange = onNameChange*/ ),
               delete(props),
               shift(props)
             )
@@ -113,9 +107,7 @@ object PortContainer {
   private val component =
     ScalaComponent
       .builder[Props]("PortContainer")
-      .initialState(State(doUpdate = false))
       .renderBackend[Backend]
-      .componentDidUpdate(_.backend.updateConnections)
       .build
 
   def apply(
@@ -128,8 +120,8 @@ object PortContainer {
       onPortHover: PortOrientation => Callback = _ => Callback.empty,
       onDeleteClick: Callback = Callback.empty,
       onShiftClick: Callback = Callback.empty,
-      updateConnections: Callback = Callback.empty
-  ): Unmounted[Props, State, Backend] =
+      onNameChange: String => Callback = _ => Callback.empty
+  ): Unmounted[Props, Unit, Backend] =
     component(
       Props(
         id,
@@ -141,7 +133,7 @@ object PortContainer {
         onPortHover,
         onDeleteClick,
         onShiftClick,
-        updateConnections
+        onNameChange
       )
     )
 
