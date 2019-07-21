@@ -42,7 +42,7 @@ object Node {
       nodeType: NodeType,
       namer: Namer[IO],
       onPortClick: Port => Callback,
-      onPortHover: PortOrientation => Callback,
+      onPortHover: Port => Callback,
       adjustPorts: Vector[Port] => Callback,
       deletePorts: Vector[PortId] => Callback,
       deleteNode: Callback
@@ -389,7 +389,7 @@ object Node {
       nodeType: NodeType,
       namer: Namer[IO],
       onPortClick: Port => Callback = _ => Callback.empty,
-      onPortHover: PortOrientation => Callback = _ => Callback.empty,
+      onPortHover: Port => Callback = _ => Callback.empty,
       adjustPorts: Vector[Port] => Callback = _ => Callback.empty,
       deletePorts: Vector[PortId] => Callback = _ => Callback.empty,
       deleteNode: Callback = Callback.empty

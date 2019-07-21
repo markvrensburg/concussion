@@ -37,7 +37,11 @@ object GraphEditor {
 
     private val editorRef = Ref[html.Element]
 
-    private def addNode(nodeType: NodeType): Callback =
+    private def addNode(
+        nodeType: NodeType
+//        ports: Vector[(PortOrientation, String)] = Vector.empty,
+//        code: Option[String] = Option.empty
+    ): Callback =
       for {
         props <- $.props
         id <- props.namer.nextName(NodeType.nodeTypes.encode(nodeType)).toCallback
@@ -112,12 +116,12 @@ object GraphEditor {
         }
       })
 
-    private def onPortHover(orientation: PortOrientation): Callback =
+    private def onPortHover(port: Port): Callback =
       $.modState(state => {
         state.connectionState match {
           case Connecting(from, to) =>
             state.copy(
-              connectionState = Connecting(from, to.copy(orientation = orientation))
+              connectionState = Connecting(from, to.copy(orientation = port.orientation))
             )
           case NotConnecting => state
         }

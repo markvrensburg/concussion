@@ -57,7 +57,7 @@ object Connector {
   private def clamp(min: Double, max: Double)(value: Double) =
     Math.max(min, Math.min(max, value))
 
-  final case class Props(from: Port, to: Port, fixed: Boolean, dashed: Boolean) {
+  final case class Props(from: Port, to: Port, dashed: Boolean) {
 
     lazy val p0: Point = Point(from.x, from.y)
 
@@ -203,8 +203,7 @@ object Connector {
   def apply(
       from: Port,
       to: Port,
-      fixed: Boolean = true,
       dashed: Boolean = false
   ): Unmounted[Props, Unit, Unit] =
-    component(Props(from, to, fixed, dashed))
+    component(Props(from, to, dashed))
 }

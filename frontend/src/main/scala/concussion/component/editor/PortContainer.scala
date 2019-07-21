@@ -17,7 +17,7 @@ object PortContainer {
       portSocketRef: Simple[html.Element],
       canDelete: Boolean,
       onPortClick: Port => Callback,
-      onPortHover: PortOrientation => Callback,
+      onPortHover: Port => Callback,
       onDeleteClick: Callback,
       onShiftClick: Callback,
       onNameChange: String => Callback
@@ -25,28 +25,25 @@ object PortContainer {
 
   final class Backend($ : BackendScope[Props, Unit]) {
 
-    private val onPortClick: Callback =
+    private def onPortEvent(
+        callback: Port => Callback,
+        orientation: Option[PortOrientation] = Option.empty
+    ): Callback =
       for {
         props <- $.props
         _ <- props.portSocketRef.foreachCB(e => {
           val rect = e.getBoundingClientRect
           val center =
             (rect.left + ((rect.right - rect.left) / 2), rect.top + ((rect.bottom - rect.top) / 2))
-          props.onPortClick(Port(props.id, center._1, center._2, props.orientation))
+          callback(Port(props.id, center._1, center._2, orientation.getOrElse(props.orientation)))
         })
       } yield ()
 
-//    private def onNameChange(newName: String): Callback =
-//      for {
-//        props <- $.props
-//        _ <- $.setState(State(doUpdate = true)) >> props.onNameChange(newName)
-//      } yield ()
-
     private def portSocket(props: Props): VdomNode =
       <.div.withRef(props.portSocketRef)(
-        ^.onMouseUp --> onPortClick,
-        ^.onMouseEnter --> props.onPortHover(props.orientation),
-        ^.onMouseLeave --> props.onPortHover(None),
+        ^.onMouseUp --> onPortEvent(props.onPortClick),
+        ^.onMouseEnter --> onPortEvent(props.onPortHover),
+        ^.onMouseLeave --> onPortEvent(props.onPortHover, Some(None)),
         Icon(Icon.props(name = "dot circle outline", className = "port-socket"))
       )
 
@@ -90,13 +87,13 @@ object PortContainer {
             React.Fragment(
               shift(props),
               delete(props),
-              Name(defaultValue = props.name /*, onChange = onNameChange*/ ),
+              Name(defaultValue = props.name, onChange = props.onNameChange),
               portSocket(props)
             )
           case _ =>
             React.Fragment(
               portSocket(props),
-              Name(defaultValue = props.name /*, onChange = onNameChange*/ ),
+              Name(defaultValue = props.name, onChange = props.onNameChange),
               delete(props),
               shift(props)
             )
@@ -108,6 +105,9 @@ object PortContainer {
     ScalaComponent
       .builder[Props]("PortContainer")
       .renderBackend[Backend]
+      .shouldComponentUpdate(
+        lc => CallbackTo(lc.currentProps.orientation != lc.nextProps.orientation)
+      )
       .build
 
   def apply(
@@ -117,7 +117,7 @@ object PortContainer {
       portSocketRef: Simple[html.Element],
       canDelete: Boolean = true,
       onPortClick: Port => Callback = _ => Callback.empty,
-      onPortHover: PortOrientation => Callback = _ => Callback.empty,
+      onPortHover: Port => Callback = _ => Callback.empty,
       onDeleteClick: Callback = Callback.empty,
       onShiftClick: Callback = Callback.empty,
       onNameChange: String => Callback = _ => Callback.empty
