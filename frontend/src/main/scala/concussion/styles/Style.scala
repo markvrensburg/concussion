@@ -164,7 +164,8 @@ object NodeStyle extends Style {
   import dsl._
 
   val nodePos: StyleA = style(
-    left(200.px)
+    left(170.px),
+    top(20.px)
   )
 
   val nodeMenu: StyleA = style(

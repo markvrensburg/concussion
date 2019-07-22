@@ -61,12 +61,24 @@ object GraphEditor {
           case c @ Connection(Port(id, _, _, _), port) if ports.exists(_.id == id) =>
             ports
               .find(_.id == id)
-              .map(p => Connection(Port(id, p.x, p.y, p.orientation), port))
+              .map(
+                p =>
+                  Connection(
+                    Port(id, state.offset._1 + p.x, state.offset._2 + p.y, p.orientation),
+                    port
+                  )
+              )
               .getOrElse(c)
           case c @ Connection(port, Port(id, _, _, _)) =>
             ports
               .find(_.id == id)
-              .map(p => Connection(port, Port(id, p.x, p.y, p.orientation)))
+              .map(
+                p =>
+                  Connection(
+                    port,
+                    Port(id, state.offset._1 + p.x, state.offset._2 + p.y, p.orientation)
+                  )
+              )
               .getOrElse(c)
           case c => c
         }

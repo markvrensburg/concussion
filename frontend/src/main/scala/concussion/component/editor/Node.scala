@@ -142,7 +142,7 @@ object Node {
     private def onCodeChange(newCode: String) =
       $.modState(_.copy(code = Some(newCode), doUpdate = true))
 
-    private val bounds = DraggableBounds(-199, null, 0, null)
+    private val bounds = DraggableBounds(-169, null, -20, null)
 
     private val nodeOptions =
       <.div(
@@ -156,7 +156,7 @@ object Node {
           )
         ),
         <.div(
-          //^.onClick --> ???,
+          //^.onClick --> onClone
           Icon(
             Icon.props(name = "clone outline", color = Grey, link = true)
           )
