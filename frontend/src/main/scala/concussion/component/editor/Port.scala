@@ -1,4 +1,6 @@
-package concussion.component.editor
+package concussion
+package component
+package editor
 
 sealed trait PortOrientation {
   def swap: PortOrientation = this match {

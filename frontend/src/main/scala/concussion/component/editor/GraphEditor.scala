@@ -1,4 +1,6 @@
-package concussion.component.editor
+package concussion
+package component
+package editor
 
 import cats.effect.IO
 import concussion.component.Logo
@@ -26,7 +28,6 @@ object GraphEditor {
       connectionState: ConnectionState,
       offset: (Double, Double),
       logo: String,
-      showMenu: Boolean = true,
       connections: Vector[Connection] = Vector.empty,
       nodes: Vector[(String, NodeType)] = Vector.empty
   )
@@ -146,15 +147,6 @@ object GraphEditor {
         $.modState(_.copy(offset = (xOffset, yOffset)))
       })
 
-    private val toggleMenu =
-      $.modState(
-        state =>
-          state.showMenu match {
-            case true  => state.copy(showMenu = false)
-            case false => state.copy(showMenu = true)
-          }
-      )
-
     private def updateConnection(e: ReactMouseEvent): Callback = {
       val x = e.clientX
       val y = e.clientY
@@ -175,9 +167,7 @@ object GraphEditor {
     def render(props: Props, state: State): VdomElement =
       NodeMenu(
         state.logo,
-        state.showMenu,
         addNode,
-        toggleMenu,
         <.div(
           PageStyle.editor,
           <.div.withRef(editorRef)(

@@ -1,4 +1,6 @@
-package concussion.component.editor
+package concussion
+package component
+package editor
 
 import concussion.facade.ace.{AceEditor, EditorProps}
 import japgolly.scalajs.react._

@@ -1,4 +1,5 @@
-package concussion.util
+package concussion
+package util
 
 import cats.implicits._
 import cats.effect.Sync

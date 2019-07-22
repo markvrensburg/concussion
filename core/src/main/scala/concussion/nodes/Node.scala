@@ -1,5 +1,4 @@
-package concussion.nodes
+package concussion
+package nodes
 
-sealed abstract class Node {
-
-}
+sealed abstract class Node {}

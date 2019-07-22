@@ -20,21 +20,26 @@ object NodeMenu {
 
   final case class Props(
       logo: String,
-      visible: Boolean,
-      addNode: NodeType => Callback,
-      onLogoClick: Callback
+      addNode: NodeType => Callback
   )
 
-  final class Backend() {
+  final case class State(visible: Boolean = true)
 
-    def render(props: Props, children: PropsChildren) =
+  final class Backend($ : BackendScope[Props, State]) {
+
+    private val onLogoClick: Callback =
+      $.modState(state => {
+        state.copy(visible = !state.visible)
+      })
+
+    def render(props: Props, state: State, children: PropsChildren) =
       Sidebar.Pushable(
         Pushable.props(),
         Sidebar(
           Sidebar.props(
             as = As.Menu(Menu.props(inverted = true, vertical = true)),
             animation = Overlay,
-            visible = props.visible,
+            visible = state.visible,
             width = Thin,
             className = "node-menu"
           ),
@@ -42,7 +47,7 @@ object NodeMenu {
             MenuItem.props(),
             <.div(
               ^.cls := "logo-menu",
-              ^.onClick --> props.onLogoClick,
+              ^.onClick --> onLogoClick,
               ^.dangerouslySetInnerHtml := props.logo
             )
           ),
@@ -82,15 +87,14 @@ object NodeMenu {
   private val component =
     ScalaComponent
       .builder[Props]("NodeMenu")
+      .initialState(State())
       .renderBackendWithChildren[Backend]
       .build
 
   def apply(
       logo: String,
-      visible: Boolean = true,
       addNode: NodeType => Callback = _ => Callback.empty,
-      onLogoClick: Callback = Callback.empty,
       children: VdomNode
-  ): Unmounted[Props, Unit, Backend] =
-    component(Props(logo, visible, addNode, onLogoClick))(children)
+  ): Unmounted[Props, State, Backend] =
+    component(Props(logo, addNode))(children)
 }

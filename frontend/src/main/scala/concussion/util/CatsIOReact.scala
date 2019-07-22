@@ -1,4 +1,5 @@
-package concussion.util
+package concussion
+package util
 
 import cats.~>
 import cats.effect.IO

@@ -1,4 +1,6 @@
-package concussion.component.editor
+package concussion
+package component
+package editor
 
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.component.Scala.Unmounted

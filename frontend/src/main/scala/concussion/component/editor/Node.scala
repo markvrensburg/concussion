@@ -1,4 +1,6 @@
-package concussion.component.editor
+package concussion
+package component
+package editor
 
 import cats.implicits._
 import cats.effect.IO

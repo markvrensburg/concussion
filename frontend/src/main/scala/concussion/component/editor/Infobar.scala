@@ -1,4 +1,6 @@
-package concussion.component.editor
+package concussion
+package component
+package editor
 
 import concussion.styles.InfobarStyle
 import japgolly.scalajs.react._
