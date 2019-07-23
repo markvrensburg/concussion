@@ -4,17 +4,20 @@ import cats.implicits._
 import cats.effect.Concurrent
 import cats.effect.concurrent.Deferred
 import fs2.Stream
+import scala.language.higherKinds
 
 //.evalMap(_ => state.get) over "run" stream for state
-class Language[F[_]: Concurrent,A](implicit 
-                                   numeric: Numeric[A],
-                                   operandDSL: OperandDSL[F,A],
-                                   counterDSL: CounterDSL[F],
-                                   labelDSL: LabelDSL[F],
-                                   nodeDSL: NodeDSL[F,A]) {
+class Language[F[_]: Concurrent, A](
+    implicit
+    numeric: Numeric[A],
+    operandDSL: OperandDSL[F, A],
+    counterDSL: CounterDSL[F],
+    labelDSL: LabelDSL[F],
+    nodeDSL: NodeDSL[F, A]
+) {
 
   //Read and Write: Move value from source to destination
-  def mov(source: Operand[A], destination: Reference[A]): Stream[F,Unit] = {
+  def mov(source: Operand[A], destination: Reference[A]): Stream[F, Unit] = {
 
     def read(cell: Deferred[F, A]) =
       Stream.eval(operandDSL.read(source).flatMap(cell.complete))
@@ -26,57 +29,57 @@ class Language[F[_]: Concurrent,A](implicit
   }
 
   //Add value in register ACC to value at source and store it in register ACC
-  def add(value: Operand[A]): Stream[F,Unit] =
+  def add(value: Operand[A]): Stream[F, Unit] =
     Stream.eval(for {
       _ <- counterDSL.inc
       acc <- nodeDSL.getAcc
       addend <- operandDSL.read(value)
-      _ <- nodeDSL.setAcc(numeric.plus(acc,addend))
+      _ <- nodeDSL.setAcc(numeric.plus(acc, addend))
     } yield ())
 
   //Subtract value in register ACC from value at source and store it in register ACC
-  def sub(value: Operand[A]): Stream[F,Unit] =
+  def sub(value: Operand[A]): Stream[F, Unit] =
     Stream.eval(for {
       _ <- counterDSL.inc
       acc <- nodeDSL.getAcc
       subtrahend <- operandDSL.read(value)
-      _ <- nodeDSL.setAcc(numeric.minus(acc,subtrahend))
+      _ <- nodeDSL.setAcc(numeric.minus(acc, subtrahend))
     } yield ())
 
   //If register ACC has value equal to zero, jump to program counter with label
-  def jez(label: Immediate[String]): Stream[F,Unit] =
+  def jez(label: Immediate[String]): Stream[F, Unit] =
     Stream.eval(for {
       acc <- nodeDSL.getAcc
-      _ <- if (numeric.equiv(acc,numeric.zero)) labelDSL.jump(label.value) else counterDSL.inc
+      _ <- if (numeric.equiv(acc, numeric.zero)) labelDSL.jump(label.value) else counterDSL.inc
     } yield ())
 
   //If register ACC has value greater than zero, jump to program counter with label
-  def jgz(label: Immediate[String]): Stream[F,Unit] =
+  def jgz(label: Immediate[String]): Stream[F, Unit] =
     Stream.eval(for {
       acc <- nodeDSL.getAcc
-      _ <- if (numeric.gt(acc,numeric.zero)) labelDSL.jump(label.value) else counterDSL.inc
+      _ <- if (numeric.gt(acc, numeric.zero)) labelDSL.jump(label.value) else counterDSL.inc
     } yield ())
 
   //If register ACC has value less than zero, jump to program counter with label
-  def jlz(label: Immediate[String]): Stream[F,Unit] =
+  def jlz(label: Immediate[String]): Stream[F, Unit] =
     Stream.eval(for {
       acc <- nodeDSL.getAcc
-      _ <- if (numeric.lt(acc,numeric.zero)) labelDSL.jump(label.value) else counterDSL.inc
+      _ <- if (numeric.lt(acc, numeric.zero)) labelDSL.jump(label.value) else counterDSL.inc
     } yield ())
 
   //Jump to program counter with label
-  def jmp(label: Immediate[String]): Stream[F,Unit] =
+  def jmp(label: Immediate[String]): Stream[F, Unit] =
     Stream.eval(labelDSL.jump(label.value))
 
   //Jump to program counter (current + offset)
-  def jro(offset: Immediate[Int]): Stream[F,Unit] =
+  def jro(offset: Immediate[Int]): Stream[F, Unit] =
     Stream.eval(for {
       current <- counterDSL.get
       _ <- counterDSL.set(current + offset.value)
     } yield ())
 
   //Store contents of register ACC into BAK
-  def sav: Stream[F,Unit] =
+  def sav: Stream[F, Unit] =
     Stream.eval(for {
       _ <- counterDSL.inc
       acc <- nodeDSL.getAcc
@@ -84,7 +87,7 @@ class Language[F[_]: Concurrent,A](implicit
     } yield ())
 
   //Swap contents of register ACC and BAK
-  def swp: Stream[F,Unit] =
+  def swp: Stream[F, Unit] =
     Stream.eval(for {
       _ <- counterDSL.inc
       acc <- nodeDSL.getAcc
@@ -94,6 +97,6 @@ class Language[F[_]: Concurrent,A](implicit
     } yield ())
 
   //Do nothing: Increment program counter
-  def nop: Stream[F,Unit] =
+  def nop: Stream[F, Unit] =
     Stream.eval(counterDSL.inc)
 }

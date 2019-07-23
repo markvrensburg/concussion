@@ -32,10 +32,3 @@ final case class Point(x: Double, y: Double) {
   def min(point: Point): Point = Point(minByX(point).x, minByY(point).y)
 
 }
-
-final case class Rect(topLeft: Point, bottomRight: Point) {
-
-  lazy val height: Double = bottomRight.y - topLeft.y
-
-  lazy val width: Double = bottomRight.x - topLeft.x
-}

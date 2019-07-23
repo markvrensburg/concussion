@@ -1,6 +1,6 @@
 package concussion
 package random
 
-trait Gen[F[_],A] {
+import scala.language.higherKinds
 
-}
+trait Gen[F[_], A] {}

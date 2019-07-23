@@ -45,7 +45,7 @@ object PortContainer {
       <.div.withRef(props.portSocketRef)(
         ^.onMouseUp --> onPortEvent(props.onPortClick),
         ^.onMouseEnter --> onPortEvent(props.onPortHover),
-        ^.onMouseLeave --> onPortEvent(props.onPortHover, Some(None)),
+        ^.onMouseLeave --> onPortEvent(props.onPortHover, Some(Neutral)),
         Icon(Icon.props(name = "dot circle outline", className = "port-socket"))
       )
 

@@ -103,8 +103,10 @@ object GraphEditor {
 
         state.connectionState match {
           case Connecting(from, _) => {
-            if (currentPort == from)
+            if (currentPort.id == from.id)
               state.copy(connectionState = NotConnecting)
+            else if (currentPort.id.nodeId == from.id.nodeId)
+              state
             else {
               val connection = Connection(from, currentPort)
               val connections = state.connections :+ connection
@@ -118,9 +120,8 @@ object GraphEditor {
             //No - commit connection
           }
           case NotConnecting => {
-
             state.copy(
-              connectionState = Connecting(currentPort, currentPort.copy(orientation = None))
+              connectionState = Connecting(currentPort, currentPort.copy(orientation = Neutral))
             )
             //Check if connection already exists:
             //Yes - Delete existing and change to in flight
@@ -132,6 +133,7 @@ object GraphEditor {
     private def onPortHover(port: Port): Callback =
       $.modState(state => {
         state.connectionState match {
+          case Connecting(from, _) if port.id.nodeId == from.id.nodeId => state
           case Connecting(from, to) =>
             state.copy(
               connectionState = Connecting(from, to.copy(orientation = port.orientation))

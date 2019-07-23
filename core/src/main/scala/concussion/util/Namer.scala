@@ -4,6 +4,7 @@ package util
 import cats.implicits._
 import cats.effect.Sync
 import cats.effect.concurrent.Ref
+import scala.language.higherKinds
 
 trait Namer[F[_]] {
   def nextName(prefix: String): F[String]
