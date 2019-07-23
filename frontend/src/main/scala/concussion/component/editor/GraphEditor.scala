@@ -22,7 +22,17 @@ object GraphEditor {
   final case class Connecting(from: Port, to: Port) extends ConnectionState
   case object NotConnecting extends ConnectionState
 
-  final case class Connection(port1: Port, port2: Port)
+  final case class Connection(port1: Port, port2: Port) {
+    def containsId(portId: PortId): Boolean =
+      (port1.id == portId) || (port2.id == portId)
+
+    def connectsTo(portId: PortId): Option[Port] = this match {
+      case Connection(Port(id, _, _, _), port) if id == portId => Some(port)
+      case Connection(port, Port(id, _, _, _)) if id == portId => Some(port)
+      case _                                                   => None
+
+    }
+  }
 
   final case class State(
       connectionState: ConnectionState,
@@ -37,6 +47,12 @@ object GraphEditor {
   final class Backend($ : BackendScope[Props, State]) {
 
     private val editorRef = Ref[html.Element]
+
+    private def findConnector(port: Port, connections: Vector[Connection]): Option[Port] =
+      connections.find(_.containsId(port.id)).flatMap(_.connectsTo(port.id))
+
+    private def filterConnector(port: Port, connections: Vector[Connection]): Vector[Connection] =
+      connections.filter(!_.containsId(port.id))
 
     private def addNode(
         nodeType: NodeType
@@ -108,24 +124,33 @@ object GraphEditor {
             else if (currentPort.id.nodeId == from.id.nodeId)
               state
             else {
-              val connection = Connection(from, currentPort)
-              val connections = state.connections :+ connection
-              state.copy(connectionState = NotConnecting, connections = connections)
+              findConnector(currentPort, state.connections) match {
+                case Some(connectedPort) =>
+                  val connection = Connection(from, currentPort)
+                  val connections = filterConnector(currentPort, state.connections) :+ connection
+                  state.copy(
+                    connectionState = Connecting(connectedPort, currentPort),
+                    connections = connections
+                  )
+                case None =>
+                  val connection = Connection(from, currentPort)
+                  val connections = state.connections :+ connection
+                  state.copy(connectionState = NotConnecting, connections = connections)
+              }
             }
-
-            //Check if "from" - cancel in flight
-            //Check if in same node - do nothing ? how node id...
-            //Check if existing connection
-            //Yes -
-            //No - commit connection
           }
           case NotConnecting => {
-            state.copy(
-              connectionState = Connecting(currentPort, currentPort.copy(orientation = Neutral))
-            )
-            //Check if connection already exists:
-            //Yes - Delete existing and change to in flight
-            //No - Start new inflight
+            findConnector(currentPort, state.connections) match {
+              case Some(connectedPort) =>
+                state.copy(
+                  connectionState = Connecting(connectedPort, currentPort),
+                  connections = filterConnector(currentPort, state.connections)
+                )
+              case None =>
+                state.copy(
+                  connectionState = Connecting(currentPort, currentPort.copy(orientation = Neutral))
+                )
+            }
           }
         }
       })
