@@ -8,17 +8,15 @@ import vdom.html_<^._
 
 object Name {
 
-  final case class State(length: Int)
+  final case class State(value: String)
 
   final case class Props(defaultValue: String, onChange: String => Callback)
 
   final class Backend($ : BackendScope[Props, State]) {
 
     private def onChange(next: String => Callback)(e: ReactEventFromInput) = {
-      val newValue = e.target.value
-      $.modState(_.copy(length = if (newValue.length <= 0) 5 else newValue.length)) >> next(
-        newValue
-      )
+      val newValue = e.target.value.replaceAll(" ", "_")
+      $.modState(_.copy(value = newValue)) >> next(newValue)
     }
 
     def render(props: Props, state: State): VdomElement =
@@ -27,27 +25,24 @@ object Name {
         <.input(
           ^.`type` := "text",
           ^.fontFamily := "monospace",
-          ^.size := state.length,
-          ^.defaultValue := props.defaultValue,
+          ^.size := { if (state.value.length <= 0) 5 else state.value.length },
+          ^.value := state.value,
           ^.onChange ==> onChange(props.onChange)
         )
       )
   }
 
-  private def component(initialLength: Int) =
+  private val component =
     ScalaComponent
       .builder[Props]("Name")
-      .initialState(State(initialLength))
+      .initialStateFromProps(p => State(p.defaultValue))
       .renderBackend[Backend]
       .build
 
   def apply(
       defaultValue: String = "",
-      initialLength: Int = 5,
       onChange: String => Callback = _ => Callback.empty
   ): Unmounted[Props, State, Backend] =
-    component(if (defaultValue.isEmpty) initialLength else defaultValue.length)(
-      Props(defaultValue, onChange)
-    )
+    component(Props(defaultValue, onChange))
 
 }
