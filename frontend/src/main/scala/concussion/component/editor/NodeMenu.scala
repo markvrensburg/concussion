@@ -2,6 +2,7 @@ package concussion
 package component
 package editor
 
+import concussion.nodes._
 import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.{PropsChildren, _}
 import japgolly.scalajs.react.vdom.html_<^._

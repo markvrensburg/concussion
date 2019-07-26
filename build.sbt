@@ -76,10 +76,9 @@ lazy val backend = (project in file("backend"))
     test in assembly := {},
     assemblyMergeStrategy in assembly := {
       case PathList(ps @ _*) if ps.last.endsWith("BuildInfo$.class") => MergeStrategy.first
-      case x => {
+      case x =>
         val oldStrategy = (assemblyMergeStrategy in assembly).value
         oldStrategy(x)
-      }
     },
     mainClass in assembly := Some(Backend.mainClass),
     scalaJSProjects := Seq(frontend),

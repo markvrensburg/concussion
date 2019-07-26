@@ -151,6 +151,8 @@ object ConnectorStyle extends Style {
 object GraphStyle extends Style {
   import dsl._
 
+  val nodeEditorId: String = "node-editor"
+
   val graphEditor: StyleA = style(
     height(100.%%),
     width(100.%%),

@@ -5,9 +5,9 @@ package editor
 import cats.implicits._
 import cats.effect.IO
 import concussion.facade.draggable.{Draggable, DraggableBounds, DraggableData, Grid}
+import concussion.nodes._
 import concussion.styles.NodeStyle
 import concussion.util.Namer
-import enum.Enum
 import japgolly.scalajs.react.Ref.Simple
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.CatsReact._
@@ -21,15 +21,6 @@ import react.semanticui.elements.icon.Icon
 import react.semanticui.elements.segment.{Segment, SegmentAttached}
 import react.semanticui.textalignment.Center
 import scalacss.ScalaCssReact._
-
-sealed trait NodeType
-case object Input extends NodeType
-case object Output extends NodeType
-case object Processor extends NodeType
-
-object NodeType {
-  val nodeTypes: Enum[NodeType] = Enum.derived[NodeType]
-}
 
 object Node {
 

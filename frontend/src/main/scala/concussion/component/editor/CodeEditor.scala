@@ -22,8 +22,7 @@ object CodeEditor {
         for {
           props <- $.props
           _ <- $.modState(_.copy(code = newCode))
-          //todo timer is a hacky solution to wait for refs to update
-          //_ <- props.onChange(newCode)
+          //js.timer is a hacky solution to wait for refs to update; use Timer[IO]?
           _ <- CallbackTo(js.timers.setTimeout(25.milliseconds)(props.onChange(newCode).runNow()))
         } yield ()
 
@@ -42,7 +41,6 @@ object CodeEditor {
             minLines = state.code.lines.size,
             maxLines = props.maxLines,
             wrapEnabled = true,
-//            debounceChangePeriod = 20,
             editorProps = EditorProps(blockScrolling = true)
           )
         )

@@ -2,13 +2,14 @@ package concussion
 
 import cats.Monad
 import cats.implicits._
+import scala.language.higherKinds
 
-trait OperandDSL[F[_],A] {
+trait OperandDSL[F[_], A] {
   def read(operand: Operand[A]): F[A]
   def write(value: A, reference: Reference[A]): F[Unit]
 }
 
-trait NodeDSL[F[_],A] {
+trait NodeDSL[F[_], A] {
   def getAcc: F[A]
   def getBak: F[A]
   def setAcc(value: A): F[Unit]

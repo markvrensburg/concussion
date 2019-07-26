@@ -4,6 +4,7 @@ package editor
 
 import cats.effect.IO
 import concussion.component.Logo
+import concussion.nodes._
 import concussion.styles.{GraphStyle, PageStyle}
 import concussion.util.Namer
 import japgolly.scalajs.react.CatsReact._
@@ -118,7 +119,7 @@ object GraphEditor {
         val currentPort = Port(port.id, portX, portY, port.orientation)
 
         state.connectionState match {
-          case Connecting(from, _) => {
+          case Connecting(from, _) =>
             if (currentPort.id == from.id)
               state.copy(connectionState = NotConnecting)
             else if (currentPort.id.nodeId == from.id.nodeId)
@@ -138,8 +139,7 @@ object GraphEditor {
                   state.copy(connectionState = NotConnecting, connections = connections)
               }
             }
-          }
-          case NotConnecting => {
+          case NotConnecting =>
             findConnector(currentPort, state.connections) match {
               case Some(connectedPort) =>
                 state.copy(
@@ -151,7 +151,6 @@ object GraphEditor {
                   connectionState = Connecting(currentPort, currentPort.copy(orientation = Neutral))
                 )
             }
-          }
         }
       })
 
@@ -174,22 +173,22 @@ object GraphEditor {
         $.modState(_.copy(offset = (xOffset, yOffset)))
       })
 
-    private def updateConnection(e: ReactMouseEvent): Callback = {
-      val x = e.clientX
-      val y = e.clientY
-      $.modState(state => {
-        state.connectionState match {
-          case Connecting(from, to) =>
-            state.copy(
-              connectionState = Connecting(
-                from,
-                Port(PortId("", ""), state.offset._1 + x, state.offset._2 + y, to.orientation) //todo move connecting component out
-              )
-            )
-          case NotConnecting => state
-        }
-      })
-    }
+//    private def updateConnection(e: ReactMouseEvent): Callback = {
+//      val x = e.clientX
+//      val y = e.clientY
+//      $.modState(state => {
+//        state.connectionState match {
+//          case Connecting(from, to) =>
+//            state.copy(
+//              connectionState = Connecting(
+//                from,
+//                Port(PortId("", ""), state.offset._1 + x, state.offset._2 + y, to.orientation) //todo move connecting component out
+//              )
+//            )
+//          case NotConnecting => state
+//        }
+//      })
+//    }
 
     def render(props: Props, state: State): VdomElement =
       NodeMenu(
@@ -199,9 +198,8 @@ object GraphEditor {
           PageStyle.editor,
           <.div.withRef(editorRef)(
             GraphStyle.graphEditor,
-            ^.id := "node-editor",
+            ^.id := GraphStyle.nodeEditorId,
             Infobar(),
-            //Toolbar(),
             //Nodes
             React.Fragment(
               state.nodes.map(
@@ -222,17 +220,29 @@ object GraphEditor {
               ): _*
             ),
             //Connectors
-            state.connections.toTagMod(c => Connector(c.port1, c.port2)),
+            state.connections.toTagMod(
+              c =>
+                Connector(
+                  (c.port1.x, c.port1.y, c.port1.orientation),
+                  (c.port2.x, c.port2.y, c.port2.orientation)
+                )
+            ),
             state.connectionState match {
-              case Connecting(from, to) => Connector(from, to, dashed = true)
-              case NotConnecting        => EmptyVdom
+              case Connecting(from, to) =>
+                InFlightConnector(from, Some(to))
+//                Connector(
+//                  (from.x, from.y, from.orientation),
+//                  (to.x, to.y, to.orientation),
+//                  dashed = true
+//                )
+              case NotConnecting => EmptyVdom
             },
             //Event Listeners
-            ^.onScroll --> updateOffset,
-            (state.connectionState match {
-              case Connecting(_, _) => Option[TagMod](^.onMouseMove ==> updateConnection)
-              case NotConnecting    => Option.empty[TagMod]
-            }).whenDefined
+            ^.onScroll --> updateOffset
+//            (state.connectionState match {
+//              case Connecting(_, _) => Option[TagMod](^.onMouseMove ==> updateConnection)
+//              case NotConnecting    => Option.empty[TagMod]
+//            }).whenDefined
           )
         )
       )

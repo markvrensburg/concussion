@@ -88,7 +88,7 @@ class StaticFileService(developmentMode: Boolean) {
     HttpRoutes.of[F] {
       case GET -> Root                => indexRoute
       case GET -> Root / "index.html" => indexRoute
-      case req @ GET -> Root / asset if supportedStaticExtensions.exists(asset.endsWith) => {
+      case req @ GET -> Root / asset if supportedStaticExtensions.exists(asset.endsWith) =>
         StaticFile
           .fromResource[F](s"${assetPath.getOrElse("")}$asset", blockingEc, req.some)
           .orElse(
@@ -97,7 +97,6 @@ class StaticFileService(developmentMode: Boolean) {
           )
           .fold(NotFound())(_.pure[F])
           .flatten
-      }
     }
   }
 }
