@@ -38,7 +38,8 @@ object Node {
       onPortHover: Port => Callback,
       adjustPorts: Vector[Port] => Callback,
       deletePorts: Vector[PortId] => Callback,
-      deleteNode: Callback
+      deleteNode: Callback,
+      bringToFront: Callback
   )
 
   final class Backend($ : BackendScope[Props, State]) {
@@ -56,7 +57,7 @@ object Node {
                   rect.left + ((rect.right - rect.left) / 2),
                   rect.top + ((rect.bottom - rect.top) / 2)
                 )
-                Port(PortId(p._1, props.id), center._1, center._2, p._3)
+                Port(PortId(p._1, props.id), Anchor(center._1, center._2, p._3))
               })
               .asCallback
           })
@@ -69,7 +70,7 @@ object Node {
         state <- $.state
         ports <- getPorts
         _ <- if (force || state.doUpdate)
-          props.adjustPorts(ports.filter(_.isDefined).map(_.get)) >> $.modState(
+          props.adjustPorts(ports.mapFilter(identity)) >> $.modState(
             _.copy(doUpdate = false)
           )
         else
@@ -163,8 +164,7 @@ object Node {
             grid = Grid(5, 5),
             handle = ".dragger",
             bounds = bounds,
-            //onDrag = (_: MouseEvent, _: DraggableData) => updateConnections,
-            onStart = (_: MouseEvent, _: DraggableData) => Callback(println("Starting")),
+            onStart = (_: MouseEvent, _: DraggableData) => props.bringToFront,
             onStop = (_: MouseEvent, _: DraggableData) => updateConnections(force = true)
           ),
         <.div(
@@ -225,7 +225,7 @@ object Node {
             grid = Grid(5, 5),
             handle = ".dragger",
             bounds = bounds,
-            //onDrag = (_: MouseEvent, _: DraggableData) => updateConnections,
+            onStart = (_: MouseEvent, _: DraggableData) => props.bringToFront,
             onStop = (_: MouseEvent, _: DraggableData) => updateConnections(force = true)
           ),
         <.div(
@@ -283,7 +283,7 @@ object Node {
             grid = Grid(5, 5),
             handle = ".dragger",
             bounds = bounds,
-            //onDrag = (_: MouseEvent, _: DraggableData) => updateConnections,
+            onStart = (_: MouseEvent, _: DraggableData) => props.bringToFront,
             onStop = (_: MouseEvent, _: DraggableData) => updateConnections(force = true)
           ),
         <.div(
@@ -385,9 +385,20 @@ object Node {
       onPortHover: Port => Callback = _ => Callback.empty,
       adjustPorts: Vector[Port] => Callback = _ => Callback.empty,
       deletePorts: Vector[PortId] => Callback = _ => Callback.empty,
-      deleteNode: Callback = Callback.empty
+      deleteNode: Callback = Callback.empty,
+      bringToFront: Callback = Callback.empty
   ): Unmounted[Props, State, Backend] =
     component(
-      Props(id, nodeType, namer, onPortClick, onPortHover, adjustPorts, deletePorts, deleteNode)
+      Props(
+        id,
+        nodeType,
+        namer,
+        onPortClick,
+        onPortHover,
+        adjustPorts,
+        deletePorts,
+        deleteNode,
+        bringToFront
+      )
     )
 }

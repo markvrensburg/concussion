@@ -22,37 +22,29 @@ object Connector {
     Math.max(min, Math.min(max, value))
 
   final case class Props(
-      from: (Double, Double, PortOrientation),
-      to: (Double, Double, PortOrientation),
+      from: Anchor,
+      to: Anchor,
       dashed: Boolean
   ) {
 
-    val fromX = from._1
-    val fromY = from._2
-    val fromOrientation = from._3
+    lazy val p0: Point = Point(from.x, from.y)
 
-    val toX = to._1
-    val toY = to._2
-    val toOrientation = to._3
-
-    lazy val p0: Point = Point(fromX, fromY)
-
-    lazy val p3: Point = Point(toX, toY)
+    lazy val p3: Point = Point(to.x, to.y)
 
     lazy val dx: Double = {
-      val width = Math.abs(fromX - toX)
-      val height = Math.abs(fromY - toY)
+      val width = Math.abs(from.x - to.x)
+      val height = Math.abs(from.y - to.y)
       if (width <= 50 && height <= 50 || height <= radius) 0
       else clamp(50, 250)(width * bezierWeight)
     }
 
-    lazy val p1: Point = fromOrientation match {
+    lazy val p1: Point = from.orientation match {
       case Right => Point(p0.x + dx, p0.y)
       case Left  => Point(p0.x - dx, p0.y)
       case _     => Point(p0.x, p0.y)
     }
 
-    lazy val p2: Point = toOrientation match {
+    lazy val p2: Point = to.orientation match {
       case Right => Point(p3.x + dx, p3.y)
       case Left  => Point(p3.x - dx, p3.y)
       case _     => Point(p3.x, p3.y)
@@ -178,8 +170,8 @@ object Connector {
       .build
 
   def apply(
-      from: (Double, Double, PortOrientation),
-      to: (Double, Double, PortOrientation),
+      from: Anchor,
+      to: Anchor,
       dashed: Boolean = false
   ): Unmounted[Props, Unit, Unit] =
     component(Props(from, to, dashed))

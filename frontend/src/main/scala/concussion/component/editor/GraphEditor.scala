@@ -20,7 +20,7 @@ import scala.util.Random
 object GraphEditor {
 
   sealed trait ConnectionState
-  final case class Connecting(from: Port, to: Port) extends ConnectionState
+  final case class Connecting(from: Port, to: Option[Anchor]) extends ConnectionState
   case object NotConnecting extends ConnectionState
 
   final case class Connection(port1: Port, port2: Port) {
@@ -28,9 +28,9 @@ object GraphEditor {
       (port1.id == portId) || (port2.id == portId)
 
     def connectsTo(portId: PortId): Option[Port] = this match {
-      case Connection(Port(id, _, _, _), port) if id == portId => Some(port)
-      case Connection(port, Port(id, _, _, _)) if id == portId => Some(port)
-      case _                                                   => None
+      case Connection(Port(id, _), port) if id == portId => Some(port)
+      case Connection(port, Port(id, _)) if id == portId => Some(port)
+      case _                                             => None
 
     }
   }
@@ -73,28 +73,48 @@ object GraphEditor {
         state.copy(nodes = state.nodes.filter(_._1 != nodeId))
       })
 
+    private def bringToFront(nodeId: String): Callback =
+      $.modState(state => {
+        val split = state.nodes.span(_._1 != nodeId)
+        state.copy(nodes = split._1 ++ split._2.tail :+ split._2.head)
+      })
+
     private def adjustPorts(ports: Vector[Port]): Callback =
       $.modState(state => {
         val adjusted = state.connections.map {
-          case c @ Connection(Port(id, _, _, _), port) if ports.exists(_.id == id) =>
+          case c @ Connection(Port(id, _), port) if ports.exists(_.id == id) =>
             ports
               .find(_.id == id)
               .map(
                 p =>
                   Connection(
-                    Port(id, state.offset._1 + p.x, state.offset._2 + p.y, p.orientation),
+                    Port(
+                      id,
+                      Anchor(
+                        state.offset._1 + p.anchor.x,
+                        state.offset._2 + p.anchor.y,
+                        p.anchor.orientation
+                      )
+                    ),
                     port
                   )
               )
               .getOrElse(c)
-          case c @ Connection(port, Port(id, _, _, _)) =>
+          case c @ Connection(port, Port(id, _)) =>
             ports
               .find(_.id == id)
               .map(
                 p =>
                   Connection(
                     port,
-                    Port(id, state.offset._1 + p.x, state.offset._2 + p.y, p.orientation)
+                    Port(
+                      id,
+                      Anchor(
+                        state.offset._1 + p.anchor.x,
+                        state.offset._2 + p.anchor.y,
+                        p.anchor.orientation
+                      )
+                    )
                   )
               )
               .getOrElse(c)
@@ -114,9 +134,9 @@ object GraphEditor {
 
     private def onPortClick(port: Port): Callback =
       $.modState(state => {
-        val portX = state.offset._1 + port.x
-        val portY = state.offset._2 + port.y
-        val currentPort = Port(port.id, portX, portY, port.orientation)
+        val portX = state.offset._1 + port.anchor.x
+        val portY = state.offset._2 + port.anchor.y
+        val currentPort = Port(port.id, Anchor(portX, portY, port.anchor.orientation))
 
         state.connectionState match {
           case Connecting(from, _) =>
@@ -130,7 +150,7 @@ object GraphEditor {
                   val connection = Connection(from, currentPort)
                   val connections = filterConnector(currentPort, state.connections) :+ connection
                   state.copy(
-                    connectionState = Connecting(connectedPort, currentPort),
+                    connectionState = Connecting(connectedPort, Some(currentPort.anchor)),
                     connections = connections
                   )
                 case None =>
@@ -143,12 +163,12 @@ object GraphEditor {
             findConnector(currentPort, state.connections) match {
               case Some(connectedPort) =>
                 state.copy(
-                  connectionState = Connecting(connectedPort, currentPort),
+                  connectionState = Connecting(connectedPort, Some(currentPort.anchor)),
                   connections = filterConnector(currentPort, state.connections)
                 )
               case None =>
                 state.copy(
-                  connectionState = Connecting(currentPort, currentPort.copy(orientation = Neutral))
+                  connectionState = Connecting(currentPort, None)
                 )
             }
         }
@@ -158,9 +178,12 @@ object GraphEditor {
       $.modState(state => {
         state.connectionState match {
           case Connecting(from, _) if port.id.nodeId == from.id.nodeId => state
-          case Connecting(from, to) =>
+          case Connecting(from, _) =>
             state.copy(
-              connectionState = Connecting(from, to.copy(orientation = port.orientation))
+              connectionState = Connecting(
+                from,
+                Some(Anchor(port.anchor.x, port.anchor.y, port.anchor.orientation))
+              )
             )
           case NotConnecting => state
         }
@@ -172,23 +195,6 @@ object GraphEditor {
         val yOffset = editor.scrollTop
         $.modState(_.copy(offset = (xOffset, yOffset)))
       })
-
-//    private def updateConnection(e: ReactMouseEvent): Callback = {
-//      val x = e.clientX
-//      val y = e.clientY
-//      $.modState(state => {
-//        state.connectionState match {
-//          case Connecting(from, to) =>
-//            state.copy(
-//              connectionState = Connecting(
-//                from,
-//                Port(PortId("", ""), state.offset._1 + x, state.offset._2 + y, to.orientation) //todo move connecting component out
-//              )
-//            )
-//          case NotConnecting => state
-//        }
-//      })
-//    }
 
     def render(props: Props, state: State): VdomElement =
       NodeMenu(
@@ -214,7 +220,8 @@ object GraphEditor {
                       onPortHover,
                       adjustPorts,
                       deletePorts,
-                      deleteNode(n._1)
+                      deleteNode(n._1),
+                      bringToFront(n._1)
                     )
                   )
               ): _*
@@ -223,26 +230,17 @@ object GraphEditor {
             state.connections.toTagMod(
               c =>
                 Connector(
-                  (c.port1.x, c.port1.y, c.port1.orientation),
-                  (c.port2.x, c.port2.y, c.port2.orientation)
+                  Anchor(c.port1.anchor.x, c.port1.anchor.y, c.port1.anchor.orientation),
+                  Anchor(c.port2.anchor.x, c.port2.anchor.y, c.port2.anchor.orientation)
                 )
             ),
             state.connectionState match {
               case Connecting(from, to) =>
-                InFlightConnector(from, Some(to))
-//                Connector(
-//                  (from.x, from.y, from.orientation),
-//                  (to.x, to.y, to.orientation),
-//                  dashed = true
-//                )
+                InFlightConnector(from.anchor, to)
               case NotConnecting => EmptyVdom
             },
             //Event Listeners
             ^.onScroll --> updateOffset
-//            (state.connectionState match {
-//              case Connecting(_, _) => Option[TagMod](^.onMouseMove ==> updateConnection)
-//              case NotConnecting    => Option.empty[TagMod]
-//            }).whenDefined
           )
         )
       )

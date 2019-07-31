@@ -13,6 +13,8 @@ case object Right extends PortOrientation
 case object Left extends PortOrientation
 case object Neutral extends PortOrientation
 
+final case class Anchor(x: Double, y: Double, orientation: PortOrientation)
+
 final case class PortId(id: String, nodeId: String)
 
-final case class Port(id: PortId, x: Double, y: Double, orientation: PortOrientation)
+final case class Port(id: PortId, anchor: Anchor)

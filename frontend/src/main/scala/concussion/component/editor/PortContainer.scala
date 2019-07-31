@@ -37,7 +37,9 @@ object PortContainer {
           val rect = e.getBoundingClientRect
           val center =
             (rect.left + ((rect.right - rect.left) / 2), rect.top + ((rect.bottom - rect.top) / 2))
-          callback(Port(props.id, center._1, center._2, orientation.getOrElse(props.orientation)))
+          callback(
+            Port(props.id, Anchor(center._1, center._2, orientation.getOrElse(props.orientation)))
+          )
         })
       } yield ()
 
