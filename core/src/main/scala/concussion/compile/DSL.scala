@@ -1,7 +1,9 @@
 package concussion
+package compile
 
 import cats.Monad
 import cats.implicits._
+
 import scala.language.higherKinds
 
 trait OperandDSL[F[_], A] {

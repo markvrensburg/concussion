@@ -1,9 +1,11 @@
 package concussion
+package compile
 
-import cats.implicits._
 import cats.effect.Concurrent
 import cats.effect.concurrent.Deferred
+import cats.implicits._
 import fs2.Stream
+
 import scala.language.higherKinds
 
 //.evalMap(_ => state.get) over "run" stream for state
@@ -19,10 +21,10 @@ class Language[F[_]: Concurrent, A](
   //Read and Write: Move value from source to destination
   def mov(source: Operand[A], destination: Reference[A]): Stream[F, Unit] = {
 
-    def read(cell: Deferred[F, A]) =
+    def read(cell: Deferred[F, A]): Stream[F, Unit] =
       Stream.eval(operandDSL.read(source).flatMap(cell.complete))
 
-    def write(cell: Deferred[F, A]) =
+    def write(cell: Deferred[F, A]): Stream[F, Unit] =
       Stream.eval(cell.get.flatMap(operandDSL.write(_, destination)))
 
     Stream.eval(counterDSL.inc *> Deferred[F, A]).flatMap(temp => read(temp) ++ write(temp))

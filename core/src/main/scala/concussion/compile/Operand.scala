@@ -1,4 +1,5 @@
 package concussion
+package compile
 
 sealed trait Operand[A]
 

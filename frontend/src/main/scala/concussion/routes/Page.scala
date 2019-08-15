@@ -4,12 +4,10 @@ package routes
 import cats.effect.IO
 import concussion.component._
 import concussion.component.editor._
-import concussion.styles.LogoStyle
 import concussion.util.Namer
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.extra.router.RouterCtl
 import japgolly.scalajs.react.vdom.html_<^._
-import scalacss.ScalaCssReact._
 
 import scala.scalajs.js
 import scala.util.Random
@@ -23,27 +21,17 @@ object Page {
   case object NotFound extends Page
 
   def landing(random: Random)(ctl: RouterCtl[Page]): VdomElement =
-    <.div(
-      LogoStyle.logoWrapper,
-      ctl.setOnClick(Editor),
-      ^.dangerouslySetInnerHtml := Logo(random)
-    )
+    LandingPage(random, ctl)
 
   def editor(random: Random, namer: Namer[IO]): VdomElement =
     GraphEditor(random, namer)
 
   def notFound(r: Random, size: (Int, Int)): VdomElement = {
 
-    def background = {
-      val c1 = r.nextInt(360)
-      val c2 = c1 + r.nextInt(20)
-      s"linear-gradient(to right, hsl($c1, 50%, 10%), hsl($c2, 40%, 50%))"
-    }
-
     def logo =
       <.div(
         ^.cls := "logo-container",
-        ^.background := background,
+        ^.background := Background(r),
         ^.borderRadius := "5px",
         ^.dangerouslySetInnerHtml := Logo(r)
       )

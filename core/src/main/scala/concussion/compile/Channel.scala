@@ -1,9 +1,11 @@
 package concussion
+package compile
 
-import cats.implicits._
 import cats.effect.Concurrent
 import cats.effect.concurrent.{MVar, Semaphore}
+import cats.implicits._
 import fs2.{Pipe, Stream}
+
 import scala.language.higherKinds
 
 abstract class CVar[F[_], A] {

@@ -31,7 +31,6 @@ object GraphEditor {
       case Connection(Port(id, _), port) if id == portId => Some(port)
       case Connection(port, Port(id, _)) if id == portId => Some(port)
       case _                                             => None
-
     }
   }
 
@@ -58,7 +57,6 @@ object GraphEditor {
     private def addNode(
         nodeType: NodeType
 //        ports: Vector[(PortOrientation, String)] = Vector.empty,
-//        code: Option[String] = Option.empty
     ): Callback =
       for {
         props <- $.props
@@ -76,7 +74,10 @@ object GraphEditor {
     private def bringToFront(nodeId: String): Callback =
       $.modState(state => {
         val split = state.nodes.span(_._1 != nodeId)
-        state.copy(nodes = split._1 ++ split._2.tail :+ split._2.head)
+        state.copy(nodes = split match {
+          case (front, node +: back) => front ++ back :+ node
+          case (front, node)         => front ++ node
+        })
       })
 
     private def adjustPorts(ports: Vector[Port]): Callback =

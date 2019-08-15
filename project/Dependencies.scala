@@ -9,7 +9,7 @@ object Dependencies {
   val scalaTagsV = "0.6.7"
 
   //Backend
-  val http4sV = "0.20.6"
+  val http4sV = "0.20.10"
   val pureConfigV = "0.11.1"
 
   //Frontend
