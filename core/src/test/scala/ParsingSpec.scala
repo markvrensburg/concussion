@@ -2,62 +2,147 @@ import org.scalatest._
 import atto._
 import Atto._
 import atto.ParseResult._
-import cats.data.Validated.Valid
-import concussion._
-import concussion.compile.{Comment, Immediate, Label, Reference, Statement}
+import cats.data.NonEmptyList
+import cats.implicits._
+import concussion.compile._
 import concussion.compile.Parsing._
 
 class ParsingSpec extends FunSuite {
 
-  test("MOV should parse correctly") {
+  test("Opcode: MOV should parse") {
     assert(
-      opcode[Byte].parseOnly("MOV 8  ACC.4") == Done(".4", MOV(Immediate(8), Reference("ACC")))
+      opcode[Byte]
+        .parseOnly("MOV 42 ACC") == Done("", MOV(Immediate(42), Reference("ACC")))
     )
   }
 
-  test("MOV should not parse") {
+  test("Opcode: MOV should not parse") {
     assert(
-      opcode[Byte].parseOnly("MOV ACC 3") == Fail("MOV ACC 3", List(), "Error parsing opcode")
-    )
-  }
-
-  test("Parse comment") {
-    assert(
-      parse[Byte]("# comment") == Valid(
-        Vector(Statement(None, None, Some(Comment("comment"))))
+      opcode[Byte].parseOnly("MOV ACC 3") == Fail(
+        "3",
+        List("MOV", "Name must start with letter"),
+        "Failure reading:letter"
       )
     )
   }
 
-  test("Parse label") {
+  test("Opcode: JRO should parse") {
     assert(
-      parse[Byte]("label:") == Valid(
-        Vector(Statement(Some(Label("label")), None, None))
+      opcode[Byte].parseOnly("JRO 42") == Done("", JRO(42))
+    )
+  }
+
+  test("Opcode: JRO should not parse") {
+    assert(
+      opcode[Byte].parseOnly("JRO A") == Fail(
+        "A",
+        List("JRO", "int"),
+        "Failure reading:bigInt"
       )
     )
   }
 
-  test("Parse statement") {
+  test("Opcode: JMP should parse") {
     assert(
-      parse[Byte]("label: mov 8 acc #comment") == Valid(
-        Vector(Statement(Some(Label("label")), None, None))
+      opcode[Byte].parseOnly("JMP 42") == Done("", JMP("42"))
+    )
+  }
+
+  test("Opcode: JMP should not parse") {
+    assert(
+      opcode[Byte].parseOnly("JMP") == Fail(
+        "",
+        List("JMP", "Expected space"),
+        "not enough bytes"
       )
     )
   }
 
-  test("Parse program") {
+  test("Opcode: Invalid opcode should not parse") {
     assert(
-      parse[Byte]("MOV 8 ACC #mov") == Valid(
-        Vector(Statement(None, Some(MOV(Immediate(8), Reference("ACC"))), None))
+      opcode[Byte].parseOnly("MAV ACC 3") == Fail(
+        " ACC 3",
+        List(),
+        "Invalid opcode: MAV"
       )
     )
   }
 
-  test("Parse program fail") {
+  test("Comment: comment should parse") {
     assert(
-      parse[Byte]("MOV 8 7\nMOV ACC") == Valid(
-        Vector(Statement(None, Some(MOV(Immediate(8), Reference("ACC"))), None))
+      comment.parseOnly("# comment") == Done("", Comment("comment"))
+    )
+  }
+
+  test("Comment: comment should not parse") {
+    assert(
+      comment.parseOnly("comment") == Fail(
+        "comment",
+        List("Expected hash(#)"),
+        "Failure reading:'#'"
       )
+    )
+  }
+
+  test("Label: label should parse") {
+    assert(
+      label.parseOnly("label:") == Done("", Label("label"))
+    )
+  }
+
+  test("Label: label should not parse") {
+    assert(
+      label.parseOnly("label") == Fail(
+        "",
+        List("Expected colon(:)"),
+        "Failure reading:':'"
+      )
+    )
+  }
+
+  test("Statement: statement should parse") {
+    assert(
+      parse[Byte]("label: mov 8 acc #comment") == Vector(
+        Statement(
+          Some(Label("label")),
+          Some(MOV(Immediate(8), Reference("acc"))),
+          Some(Comment("comment"))
+        )
+      ).rightNel
+    )
+  }
+
+  test("Statement: statement should not parse") {
+    assert(
+      parse[Byte]("label mov 8 acc #comment") == (1, "List(); Invalid opcode: LAB").leftNel
+    )
+  }
+
+  test("Program: program should parse") {
+    assert(
+      parse[Byte]("MOV 42 ACC\nADD 42") == Vector(
+        Statement(
+          None,
+          Some(MOV(Immediate(42), Reference("ACC"))),
+          None
+        ),
+        Statement(
+          None,
+          Some(ADD(Immediate(42))),
+          None
+        )
+      ).rightNel
+    )
+  }
+
+  test("Program: program should not parse") {
+    assert(
+      parse[Byte]("MOV 42 42\nADD 42\nJRO A") == NonEmptyList
+        .of(
+          (1, "List(MOV, Name must start with letter); Failure reading:letter"),
+          (3, "List(JRO, int); Failure reading:bigInt")
+        )
+        .asLeft
     )
   }
 }
