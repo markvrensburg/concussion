@@ -12,9 +12,6 @@ sealed trait Graph[V] {
 
   def *(right: Graph[V]): Graph[V] =
     connect(this, right)
-
-  def ->(right: Graph[V]): Graph[V] =
-    connect(this, right)
 }
 
 object Graph {

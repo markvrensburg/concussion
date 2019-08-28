@@ -2,6 +2,7 @@ package concussion
 package compile
 
 import fs2.Stream
+
 import scala.language.higherKinds
 
 sealed trait Opcode[A] {
@@ -50,3 +51,5 @@ final case class Statement[A](
     opcode: Option[Opcode[A]],
     comment: Option[Comment]
 )
+
+case class Program[A](executables: Map[Int, Opcode[A]], labels: Map[String, Int])

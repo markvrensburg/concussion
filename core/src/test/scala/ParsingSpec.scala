@@ -68,6 +68,16 @@ class ParsingSpec extends FunSuite {
     )
   }
 
+  test("Opcode: Incomplete opcode should not parse") {
+    assert(
+      opcode[Byte].parseOnly("MO ACC 3") == Fail(
+        " ACC 3",
+        List("Expected 3 letter opcode", "ManyN(3, letter)"),
+        "Failure reading:letter"
+      )
+    )
+  }
+
   test("Comment: comment should parse") {
     assert(
       comment.parseOnly("# comment") == Done("", Comment("comment"))

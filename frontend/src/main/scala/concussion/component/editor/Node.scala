@@ -4,7 +4,7 @@ package editor
 
 import cats.implicits._
 import cats.effect.IO
-import concussion.compile.Parsing
+import concussion.compile.Validation
 import concussion.facade.draggable.{Draggable, DraggableBounds, DraggableData, Grid}
 import concussion.nodes._
 import concussion.styles.NodeStyle
@@ -135,7 +135,7 @@ object Node {
       })
 
     private def onCodeChange(newCode: String) =
-      Callback(println(Parsing.parse[Long](newCode))) >> $.modState(
+      Callback(println(Validation.program[Long](newCode))) >> $.modState(
         _.copy(code = Some(newCode), doUpdate = true)
       )
 

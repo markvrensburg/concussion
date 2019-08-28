@@ -80,6 +80,7 @@ object Parsing {
   def opcode[A: Read]: Parser[Opcode[A]] =
     letter
       .manyN(3)
+      .named("Expected 3 letter opcode")
       .flatMap(_.mkString.toUpperCase match {
         case "MOV" =>
           (whitespace1 *> (operand[A] ~ (separator *> reference[A]))

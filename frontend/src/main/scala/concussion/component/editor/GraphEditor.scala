@@ -4,6 +4,7 @@ package editor
 
 import cats.effect.IO
 import concussion.component.Logo
+import concussion.geometry.Point
 import concussion.nodes._
 import concussion.styles.{GraphStyle, PageStyle}
 import concussion.util.Namer
@@ -36,7 +37,7 @@ object GraphEditor {
 
   final case class State(
       connectionState: ConnectionState,
-      offset: (Double, Double),
+      offset: Point,
       logo: String,
       connections: Vector[Connection] = Vector.empty,
       nodes: Vector[(String, NodeType)] = Vector.empty
@@ -92,8 +93,8 @@ object GraphEditor {
                     Port(
                       id,
                       Anchor(
-                        state.offset._1 + p.anchor.x,
-                        state.offset._2 + p.anchor.y,
+                        state.offset.x + p.anchor.x,
+                        state.offset.y + p.anchor.y,
                         p.anchor.orientation
                       )
                     ),
@@ -111,8 +112,8 @@ object GraphEditor {
                     Port(
                       id,
                       Anchor(
-                        state.offset._1 + p.anchor.x,
-                        state.offset._2 + p.anchor.y,
+                        state.offset.x + p.anchor.x,
+                        state.offset.y + p.anchor.y,
                         p.anchor.orientation
                       )
                     )
@@ -135,8 +136,8 @@ object GraphEditor {
 
     private def onPortClick(port: Port): Callback =
       $.modState(state => {
-        val portX = state.offset._1 + port.anchor.x
-        val portY = state.offset._2 + port.anchor.y
+        val portX = state.offset.x + port.anchor.x
+        val portY = state.offset.y + port.anchor.y
         val currentPort = Port(port.id, Anchor(portX, portY, port.anchor.orientation))
 
         state.connectionState match {
@@ -194,7 +195,7 @@ object GraphEditor {
       editorRef.foreachCB(editor => {
         val xOffset = editor.scrollLeft
         val yOffset = editor.scrollTop
-        $.modState(_.copy(offset = (xOffset, yOffset)))
+        $.modState(_.copy(offset = Point(xOffset, yOffset)))
       })
 
     def render(props: Props, state: State): VdomElement =
@@ -250,7 +251,7 @@ object GraphEditor {
   private def component(random: Random) =
     ScalaComponent
       .builder[Props]("GraphEditor")
-      .initialState(State(NotConnecting, (0, 0), Logo(random)))
+      .initialState(State(NotConnecting, Point(0, 0), Logo(random)))
       .renderBackend[Backend]
       .build
 
