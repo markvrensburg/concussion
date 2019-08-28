@@ -49,35 +49,35 @@ class Language[F[_]: Concurrent, A](
     } yield ())
 
   //If register ACC has value equal to zero, jump to program counter with label
-  def jez(label: Immediate[String]): Stream[F, Unit] =
+  def jez(label: String): Stream[F, Unit] =
     Stream.eval(for {
       acc <- nodeDSL.getAcc
-      _ <- if (numeric.equiv(acc, numeric.zero)) labelDSL.jump(label.value) else counterDSL.inc
+      _ <- if (numeric.equiv(acc, numeric.zero)) labelDSL.jump(label) else counterDSL.inc
     } yield ())
 
   //If register ACC has value greater than zero, jump to program counter with label
-  def jgz(label: Immediate[String]): Stream[F, Unit] =
+  def jgz(label: String): Stream[F, Unit] =
     Stream.eval(for {
       acc <- nodeDSL.getAcc
-      _ <- if (numeric.gt(acc, numeric.zero)) labelDSL.jump(label.value) else counterDSL.inc
+      _ <- if (numeric.gt(acc, numeric.zero)) labelDSL.jump(label) else counterDSL.inc
     } yield ())
 
   //If register ACC has value less than zero, jump to program counter with label
-  def jlz(label: Immediate[String]): Stream[F, Unit] =
+  def jlz(label: String): Stream[F, Unit] =
     Stream.eval(for {
       acc <- nodeDSL.getAcc
-      _ <- if (numeric.lt(acc, numeric.zero)) labelDSL.jump(label.value) else counterDSL.inc
+      _ <- if (numeric.lt(acc, numeric.zero)) labelDSL.jump(label) else counterDSL.inc
     } yield ())
 
   //Jump to program counter with label
-  def jmp(label: Immediate[String]): Stream[F, Unit] =
-    Stream.eval(labelDSL.jump(label.value))
+  def jmp(label: String): Stream[F, Unit] =
+    Stream.eval(labelDSL.jump(label))
 
   //Jump to program counter (current + offset)
-  def jro(offset: Immediate[Int]): Stream[F, Unit] =
+  def jro(offset: Int): Stream[F, Unit] =
     Stream.eval(for {
       current <- counterDSL.get
-      _ <- counterDSL.set(current + offset.value)
+      _ <- counterDSL.set(current + offset)
     } yield ())
 
   //Store contents of register ACC into BAK

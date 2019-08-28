@@ -1,12 +1,16 @@
 object Dependencies {
 
   //Core
-  val catsV = "1.6.0"
-  val catsEffectV = "1.2.0"
-  val fs2V = "1.0.4"
+  val catsV = "1.6.1"
+  val catsEffectV = "1.4.0"
+  val meowMtlV = "0.2.1"
+  val fs2V = "1.0.5"
   val attoV = "0.6.5"
   val enumV = "3.1"
-  val scalaTagsV = "0.6.7"
+  val scalaTagsV = "0.7.0"
+  //*Test
+  val scalacheckV = "1.14.0"
+  val scalatestV = "3.0.8"
 
   //Backend
   val http4sV = "0.20.10"

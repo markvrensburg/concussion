@@ -51,13 +51,14 @@ lazy val core = (crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure)
     buildInfoPackage := "info",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % catsV,
+      "com.olegpy" %%% "meow-mtl" % meowMtlV,
       "org.typelevel" %%% "cats-effect" % catsEffectV,
       "org.tpolecat" %%% "atto-core" % attoV,
       "co.fs2" %%% "fs2-core" % fs2V,
       "com.lihaoyi" %%% "scalatags" % scalaTagsV,
       "org.julienrf" %%% "enum" % enumV,
-      "org.scalacheck" %%% "scalacheck" % "1.14.0" % "test",
-      "org.scalatest" %%% "scalatest" % "3.0.5" % "test"
+      "org.scalacheck" %%% "scalacheck" % scalacheckV % "test",
+      "org.scalatest" %%% "scalatest" % scalatestV % "test"
     )
   )
   .jvmSettings(

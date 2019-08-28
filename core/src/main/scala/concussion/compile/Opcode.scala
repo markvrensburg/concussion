@@ -1,7 +1,28 @@
 package concussion
 package compile
 
-sealed trait Opcode[A]
+import fs2.Stream
+import scala.language.higherKinds
+
+sealed trait Opcode[A] {
+
+  def interperate[F[_]](language: Language[F, A]): Stream[F, Unit] = {
+    import language._
+    this match {
+      case MOV(source, destination) => mov(source, destination)
+      case ADD(value)               => add(value)
+      case SUB(value)               => sub(value)
+      case JEZ(label)               => jez(label)
+      case JGZ(label)               => jgz(label)
+      case JLZ(label)               => jlz(label)
+      case JMP(label)               => jmp(label)
+      case JRO(offset)              => jro(offset)
+      case SAV()                    => sav
+      case SWP()                    => swp
+      case NOP()                    => nop
+    }
+  }
+}
 
 sealed trait JumpLabel[A] extends Opcode[A] {
   val label: String
