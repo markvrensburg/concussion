@@ -8,8 +8,7 @@ import japgolly.scalajs.react._
 import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.extra.{EventListener, OnUnmount}
 import japgolly.scalajs.react.vdom.html_<^._
-import org.scalajs.dom
-import org.scalajs.dom.MouseEvent
+import org.scalajs.dom._
 
 object InFlightConnector {
 
@@ -30,7 +29,8 @@ object InFlightConnector {
         props <- $.props
         _ <- if (!props.fixed)
           $.modState(state => {
-            state.copy(x = e.clientX, y = e.clientY)
+            val element = document.getElementById(GraphStyle.nodeEditorId)
+            state.copy(x = e.clientX + element.scrollLeft, y = e.clientY + element.scrollTop)
           })
         else
           Callback.empty
@@ -62,7 +62,7 @@ object InFlightConnector {
         EventListener[MouseEvent].install(
           "mousemove",
           _.backend.onMouseMove,
-          _ => dom.document.getElementById(GraphStyle.nodeEditorId)
+          _ => document.getElementById(GraphStyle.nodeEditorId)
         )
       )
       .shouldComponentUpdate(lc => CallbackTo(!lc.currentProps.fixed))
