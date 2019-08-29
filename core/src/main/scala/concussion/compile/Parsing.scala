@@ -43,40 +43,6 @@ object Parsing {
       .named("Expected hash(#)")
       .map(Comment)
 
-  def MOVparser[A: Read]: Parser[Opcode[A]] =
-    (stringCI("MOV") *> whitespace1 *> (operand[A] ~ (separator *> reference[A])))
-      .map(op => MOV[A](op._1, op._2))
-
-  def ADDparser[A: Read]: Parser[Opcode[A]] =
-    (stringCI("ADD") *> whitespace1 *> operand[A]).map(ADD[A])
-
-  def SUBparser[A: Read]: Parser[Opcode[A]] =
-    (stringCI("SUB") *> whitespace1 *> operand[A]).map(SUB[A])
-
-  def JEZparser[A]: Parser[Opcode[A]] =
-    (stringCI("JEZ") *> whitespace1 *> named).map(JEZ[A])
-
-  def JGZparser[A]: Parser[Opcode[A]] =
-    (stringCI("JGZ") *> whitespace1 *> named).map(JGZ[A])
-
-  def JLZparser[A]: Parser[Opcode[A]] =
-    (stringCI("JLZ") *> whitespace1 *> named).map(JLZ[A])
-
-  def JMPparser[A]: Parser[Opcode[A]] =
-    (stringCI("JMP") *> whitespace1 *> named).map(JMP[A])
-
-  def JROparser[A: Read]: Parser[Opcode[A]] =
-    (stringCI("JRO") *> whitespace1 *> int).map(JRO[A])
-
-  def SAVparser[A]: Parser[Opcode[A]] =
-    stringCI("SAV").as(SAV[A]())
-
-  def SWPparser[A]: Parser[Opcode[A]] =
-    stringCI("SWP").as(SWP[A]())
-
-  def NOPparser[A]: Parser[Opcode[A]] =
-    stringCI("NOP").as(NOP[A]())
-
   def opcode[A: Read]: Parser[Opcode[A]] =
     letter
       .manyN(3)
@@ -98,7 +64,7 @@ object Parsing {
         case "JMP" =>
           (whitespace1 *> named.map(JMP[A])).named("JMP").widen[Opcode[A]]
         case "JRO" =>
-          (whitespace1 *> int.map(JRO[A])).named("JRO").widen[Opcode[A]]
+          (whitespace1 *> operand[A].map(JRO[A])).named("JRO").widen[Opcode[A]]
         case "SAV" =>
           ok(SAV[A]())
         case "SWP" =>
@@ -113,7 +79,6 @@ object Parsing {
       labelOpt <- whitespace *> opt(label) <* whitespace
       opcodeOpt <- opt(opcode[A]) <* whitespace
       commentOpt <- opt(comment)
-      //_ <- endOfInput
     } yield Statement(labelOpt, opcodeOpt, commentOpt)
 
   private def parseLine[A: Read](line: String): EitherNel[String, Statement[A]] =

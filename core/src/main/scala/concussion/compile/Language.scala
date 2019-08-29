@@ -74,10 +74,11 @@ class Language[F[_]: Concurrent, A](
     Stream.eval(labelDSL.jump(label))
 
   //Jump to program counter (current + offset)
-  def jro(offset: Int): Stream[F, Unit] =
+  def jro(offset: Operand[A]): Stream[F, Unit] =
     Stream.eval(for {
       current <- counterDSL.get
-      _ <- counterDSL.set(current + offset)
+      off <- operandDSL.read(offset)
+      _ <- counterDSL.set(current + numeric.toInt(off))
     } yield ())
 
   //Store contents of register ACC into BAK

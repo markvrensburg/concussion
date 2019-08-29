@@ -135,9 +135,14 @@ object Node {
       })
 
     private def onCodeChange(newCode: String) =
-      Callback(println(Validation.program[Long](newCode))) >> $.modState(
-        _.copy(code = Some(newCode), doUpdate = true)
-      )
+      for {
+        props <- $.props
+        _ <- $.modState { state =>
+          println(s"${props.id}: ${Validation.program[Long](newCode)}")
+          state.copy(code = Some(newCode), doUpdate = true)
+        }
+      } yield ()
+    //$.modState(_.copy(code = Some(newCode), doUpdate = true))
 
     private val bounds = DraggableBounds(-169, null, -20, null)
 
