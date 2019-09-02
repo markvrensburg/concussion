@@ -36,6 +36,10 @@ sealed trait LabelledGraph[V, E] {
 
   def hasVertex(v: V)(implicit ev: Eq[V]): Boolean =
     foldg[Boolean](false, _ === v, (_, vtx1, vtx2) => vtx1 || vtx2)
+
+  def toAdjacencyMap(implicit ev1: Eq[E], ev2: Monoid[E]): AdjacencyMap[V, E] =
+    foldg(AdjacencyMap.empty[V, E], AdjacencyMap.vertex[V, E], AdjacencyMap.connect[V, E])
+
 }
 
 object LabelledGraph {

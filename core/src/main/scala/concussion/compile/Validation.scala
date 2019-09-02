@@ -44,7 +44,7 @@ object Validation {
         case executable => executable.rightNel
       }
       .toList
-      .sequence
+      .parSequence
 
     executables.map(l => Program(l.toMap, program.labels))
   }
