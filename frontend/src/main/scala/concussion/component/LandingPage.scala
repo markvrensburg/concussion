@@ -2,7 +2,8 @@ package concussion.component
 
 import concussion.routes.Page
 import concussion.routes.Page.Editor
-import concussion.styles.LogoStyle
+import concussion.styles.{LayoutStyle, LogoStyle}
+import concussion.util.Events._
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.component.builder.Builder.Step4
@@ -23,8 +24,11 @@ object LandingPage {
 
   final class Backend() extends OnUnmount {
 
-    def onMouseEnter(id: String)(e: MouseEvent): Callback =
-      Callback(println((id, e.target)))
+    def onMouseEnter(id: String)(e: MouseEvent): Callback = Callback {
+      val layout = dom.document.getElementById(LayoutStyle.layoutId)
+      layout.dispatchEvent(mkBackgroundChangeEvent)
+      println((id, e.target))
+    }
 
     def render(props: Props, state: State): VdomElement =
       <.div(

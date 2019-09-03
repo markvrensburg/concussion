@@ -1,38 +1,24 @@
 package concussion
 
-import cats.effect.concurrent.Ref
 import info.BuildInfo
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.implicits._
+import japgolly.scalajs.react.CatsReact._
+import concussion.util.CatsIOReact._
 import concussion.component.Background
 import concussion.routes.Page
 import concussion.routes.Page._
 import concussion.styles.Style
 import concussion.util.Namer
-import japgolly.scalajs.react.React
 import japgolly.scalajs.react.extra.router._
-import japgolly.scalajs.react.vdom.html_<^._
 import org.scalajs.dom
 import scalacss.ProdDefaults._
 import scalacss.ScalaCssReact._
-
 import scala.util.Random
 
 object Main extends IOApp {
 
-  private def layout(background: String, page: Resolution[Page]) =
-    React.Fragment(
-      <.div(
-        ^.height := "100vh",
-        ^.width := "100vw",
-        ^.position := "fixed",
-        ^.zIndex := "-100",
-        ^.background := background
-      ),
-      page.render()
-    )
-
-  private def routerConfig(background: Ref[IO, String], random: Random, namer: Namer[IO]) =
+  private def routerConfig(random: Random, namer: Namer[IO]) =
     RouterConfigDsl[Page].buildConfig { dsl =>
       import dsl._
       (trimSlashes
@@ -41,7 +27,7 @@ object Main extends IOApp {
         | staticRoute("#notfound", NotFound) ~> render(notFound(random, (4, 3))))
         .notFound(redirectToPage(NotFound)(Redirect.Replace))
         .setTitle(page => s"${BuildInfo.name.capitalize} | $page")
-        .renderWith((_, page) => layout(background.get.unsafeRunSync, page))
+        .renderWith((_, page) => Layout(IO.delay(Background(random)).toCallback)(page.render()))
     }
 
   def run(args: List[String]): IO[ExitCode] =
@@ -49,8 +35,7 @@ object Main extends IOApp {
       _ <- Style.styles.values.toList.traverse(style => IO(style.addToDocument()))
       random <- IO(new Random)
       namer <- Namer[IO]
-      background <- Ref[IO].of(Background(random))
-      router <- IO(Router(BaseUrl.until_#, routerConfig(background, random, namer)))
+      router <- IO(Router(BaseUrl.until_#, routerConfig(random, namer)))
       exitCode <- IO(router().renderIntoDOM(dom.document.getElementById(BuildInfo.rootId)))
         .as(ExitCode.Success)
     } yield exitCode

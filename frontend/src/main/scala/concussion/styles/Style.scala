@@ -48,6 +48,19 @@ object DraggableStyle extends Style {
   )
 }
 
+object LayoutStyle extends Style {
+  import dsl._
+
+  val layoutId: String = "page-layout"
+
+  val layout: StyleA = style(
+    height(100.vh),
+    width(100.vw),
+    position.fixed,
+    zIndex(-100)
+  )
+}
+
 object PageStyle extends Style {
   import dsl._
 
