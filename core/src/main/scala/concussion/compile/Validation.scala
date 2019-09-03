@@ -37,14 +37,11 @@ object Validation {
       else
         (i, s"Label not found: $label").leftNel
 
-    val executables = program.executables
-      .map {
-        case executable @ (i, jl: JumpLabel[_]) =>
-          validateLabel(i + 1, jl.label).as(executable)
-        case executable => executable.rightNel
-      }
-      .toList
-      .parSequence
+    val executables = program.executables.toList.parTraverse {
+      case executable @ (i, jl: JumpLabel[_]) =>
+        validateLabel(i + 1, jl.label).as(executable)
+      case executable => executable.rightNel
+    }
 
     executables.map(l => Program(l.toMap, program.labels))
   }
