@@ -1,8 +1,8 @@
 package concussion
 
-import atto.Atto._
-import atto.ParseResult._
 import atto._
+import Atto._
+import ParseResult._
 import cats.data.NonEmptyList
 import cats.implicits._
 import concussion.compile.Parsing._

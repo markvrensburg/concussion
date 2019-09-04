@@ -3,8 +3,7 @@ package concussion
 import org.scalatest._
 import atto._
 import Atto._
-import atto.ParseResult._
-import cats.implicits._
+import ParseResult._
 import concussion.compile._
 import concussion.compile.Parsing._
 import scala.reflect.runtime.{universe => ru}
