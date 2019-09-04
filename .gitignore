@@ -3,3 +3,4 @@ target/
 .metals/
 .idea/
 .DS_Store
+*.log

@@ -64,8 +64,7 @@ lazy val core = (crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure)
   .jvmSettings(
     test in assembly := {}
   )
-  .jsSettings(
-    )
+  .jsSettings()
 
 lazy val coreJvm = core.jvm
 lazy val coreJs = core.js
