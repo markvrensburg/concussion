@@ -81,7 +81,9 @@ object Parsing {
       commentOpt <- opt(comment)
     } yield Statement(labelOpt, opcodeOpt, commentOpt)
 
-  private def parseLine[A: Read](line: String): EitherNel[String, Statement[A]] =
+  private def parseLine[A: Read](
+    line: String
+  ): EitherNel[String, Statement[A]] =
     statement.parseOnly(line) match {
       case ParseResult.Done(remain, result) if !remain.isEmpty =>
         result match {
@@ -101,7 +103,9 @@ object Parsing {
         result.either.toEitherNel
     }
 
-  def parse[A: Read](program: String): EitherNel[(Int, String), Vector[Statement[A]]] =
+  def parse[A: Read](
+    program: String
+  ): EitherNel[(Int, String), Vector[Statement[A]]] =
     program.lines.toVector.zipWithIndex
       .map(line => parseLine(line._1).leftMap(_.map((line._2 + 1, _))))
       .parSequence

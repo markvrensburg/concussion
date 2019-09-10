@@ -2,7 +2,7 @@ package concussion
 package component
 package editor
 
-import concussion.nodes._
+import concussion.domain._
 import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.{PropsChildren, _}
 import japgolly.scalajs.react.vdom.html_<^._
@@ -19,10 +19,7 @@ import react.semanticui.modules.sidebar.SidebarWidth._
 
 object NodeMenu {
 
-  final case class Props(
-      logo: String,
-      addNode: NodeType => Callback
-  )
+  final case class Props(logo: String, addNode: NodeType => Callback)
 
   final case class State(visible: Boolean = true)
 
@@ -30,7 +27,7 @@ object NodeMenu {
 
     private val onLogoClick: Callback =
       $.modState(state => {
-        state.copy(visible = !state.visible)
+        state //todo uncomment: state.copy(visible = !state.visible)
       })
 
     def render(props: Props, state: State, children: PropsChildren) =
@@ -78,10 +75,7 @@ object NodeMenu {
             "SUB-PROCESS"
           )
         ),
-        Sidebar.Pusher(
-          Pusher.props(),
-          <.div()(children)
-        )
+        Sidebar.Pusher(Pusher.props(), <.div()(children))
       )
   }
 

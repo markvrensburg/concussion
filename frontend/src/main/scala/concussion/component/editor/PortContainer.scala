@@ -2,6 +2,7 @@ package concussion
 package component
 package editor
 
+import concussion.domain._
 import japgolly.scalajs.react.Ref.Simple
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.component.Scala.Unmounted
@@ -15,7 +16,7 @@ object PortContainer {
   final case class Props(
       id: PortId,
       name: String,
-      orientation: PortOrientation,
+      orientation: Orientation,
       portSocketRef: Simple[html.Element],
       canDelete: Boolean,
       onPortClick: Port => Callback,
@@ -29,16 +30,26 @@ object PortContainer {
 
     private def onPortEvent(
         callback: Port => Callback,
-        orientation: Option[PortOrientation] = Option.empty
+        orientation: Option[Orientation] = Option.empty
     ): Callback =
       for {
         props <- $.props
         _ <- props.portSocketRef.foreachCB(e => {
           val rect = e.getBoundingClientRect
           val center =
-            (rect.left + ((rect.right - rect.left) / 2), rect.top + ((rect.bottom - rect.top) / 2))
+            (
+              rect.left + ((rect.right - rect.left) / 2),
+              rect.top + ((rect.bottom - rect.top) / 2)
+            )
           callback(
-            Port(props.id, Anchor(center._1, center._2, orientation.getOrElse(props.orientation)))
+            Port(
+              props.id,
+              Anchor(
+                center._1,
+                center._2,
+                orientation.getOrElse(props.orientation)
+              )
+            )
           )
         })
       } yield ()
@@ -57,7 +68,11 @@ object PortContainer {
           <.div(
             ^.onClick --> props.onDeleteClick,
             Icon(
-              Icon.props(name = "trash alternate outline", color = Grey, link = true)
+              Icon.props(
+                name = "trash alternate outline",
+                color = Grey,
+                link = true
+              )
             )
           )
         )
@@ -117,7 +132,7 @@ object PortContainer {
   def apply(
       id: PortId,
       name: String,
-      orientation: PortOrientation,
+      orientation: Orientation,
       portSocketRef: Simple[html.Element],
       canDelete: Boolean = true,
       onPortClick: Port => Callback = _ => Callback.empty,

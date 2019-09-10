@@ -5,7 +5,7 @@ package editor
 import cats.effect.IO
 import concussion.component.Logo
 import concussion.geometry.Point
-import concussion.nodes._
+import concussion.domain._
 import concussion.styles.{GraphStyle, PageStyle}
 import concussion.util.Namer
 import japgolly.scalajs.react.CatsReact._
@@ -52,7 +52,10 @@ object GraphEditor {
     private def findConnector(port: Port, connections: Vector[Connection]): Option[Port] =
       connections.find(_.containsId(port.id)).flatMap(_.connectsTo(port.id))
 
-    private def filterConnector(port: Port, connections: Vector[Connection]): Vector[Connection] =
+    private def filterConnector(
+        port: Port,
+        connections: Vector[Connection]
+    ): Vector[Connection] =
       connections.filter(!_.containsId(port.id))
 
     private def addNode(
@@ -61,7 +64,9 @@ object GraphEditor {
     ): Callback =
       for {
         props <- $.props
-        id <- props.namer.nextName(NodeType.nodeTypes.encode(nodeType)).toCallback
+        id <- props.namer
+          .nextName(NodeType.nodeTypes.encode(nodeType))
+          .toCallback
         _ <- $.modState(state => {
           state.copy(nodes = state.nodes :+ (id -> nodeType))
         })
@@ -138,7 +143,8 @@ object GraphEditor {
       $.modState(state => {
         val portX = state.offset.x + port.anchor.x
         val portY = state.offset.y + port.anchor.y
-        val currentPort = Port(port.id, Anchor(portX, portY, port.anchor.orientation))
+        val currentPort =
+          Port(port.id, Anchor(portX, portY, port.anchor.orientation))
 
         state.connectionState match {
           case Connecting(from, _) =>
@@ -150,7 +156,10 @@ object GraphEditor {
               findConnector(currentPort, state.connections) match {
                 case Some(connectedPort) =>
                   val connection = Connection(from, currentPort)
-                  val connections = filterConnector(currentPort, state.connections) :+ connection
+                  val connections = filterConnector(
+                    currentPort,
+                    state.connections
+                  ) :+ connection
                   state.copy(
                     connectionState = Connecting(connectedPort, Some(currentPort.anchor)),
                     connections = connections
@@ -158,7 +167,10 @@ object GraphEditor {
                 case None =>
                   val connection = Connection(from, currentPort)
                   val connections = state.connections :+ connection
-                  state.copy(connectionState = NotConnecting, connections = connections)
+                  state.copy(
+                    connectionState = NotConnecting,
+                    connections = connections
+                  )
               }
             }
           case NotConnecting =>
@@ -169,9 +181,7 @@ object GraphEditor {
                   connections = filterConnector(currentPort, state.connections)
                 )
               case None =>
-                state.copy(
-                  connectionState = Connecting(currentPort, None)
-                )
+                state.copy(connectionState = Connecting(currentPort, None))
             }
         }
       })
@@ -184,7 +194,9 @@ object GraphEditor {
             state.copy(
               connectionState = Connecting(
                 from,
-                Some(Anchor(port.anchor.x, port.anchor.y, port.anchor.orientation))
+                Some(
+                  Anchor(port.anchor.x, port.anchor.y, port.anchor.orientation)
+                )
               )
             )
           case NotConnecting => state
@@ -232,8 +244,16 @@ object GraphEditor {
             state.connections.toTagMod(
               c =>
                 Connector(
-                  Anchor(c.port1.anchor.x, c.port1.anchor.y, c.port1.anchor.orientation),
-                  Anchor(c.port2.anchor.x, c.port2.anchor.y, c.port2.anchor.orientation)
+                  Anchor(
+                    c.port1.anchor.x,
+                    c.port1.anchor.y,
+                    c.port1.anchor.orientation
+                  ),
+                  Anchor(
+                    c.port2.anchor.x,
+                    c.port2.anchor.y,
+                    c.port2.anchor.orientation
+                  )
                 )
             ),
             state.connectionState match {

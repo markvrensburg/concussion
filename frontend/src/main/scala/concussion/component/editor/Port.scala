@@ -2,18 +2,9 @@ package concussion
 package component
 package editor
 
-sealed trait PortOrientation {
-  def swap: PortOrientation = this match {
-    case Right   => Left
-    case Left    => Right
-    case Neutral => Neutral
-  }
-}
-case object Right extends PortOrientation
-case object Left extends PortOrientation
-case object Neutral extends PortOrientation
+import concussion.domain.Orientation
 
-final case class Anchor(x: Double, y: Double, orientation: PortOrientation)
+final case class Anchor(x: Double, y: Double, orientation: Orientation)
 
 final case class PortId(id: String, nodeId: String)
 

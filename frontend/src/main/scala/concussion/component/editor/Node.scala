@@ -6,7 +6,7 @@ import cats.implicits._
 import cats.effect.IO
 import concussion.compile.Validation
 import concussion.facade.draggable.{Draggable, DraggableBounds, DraggableData, Grid}
-import concussion.nodes._
+import concussion.domain._
 import concussion.styles.NodeStyle
 import concussion.util.Namer
 import japgolly.scalajs.react.Ref.Simple
@@ -26,7 +26,7 @@ import scalacss.ScalaCssReact._
 object Node {
 
   final case class State(
-      ports: Vector[(String, Simple[html.Element], PortOrientation, String)] = Vector.empty,
+      ports: Vector[(String, Simple[html.Element], Orientation, String)] = Vector.empty,
       code: Option[String] = Option.empty,
       doUpdate: Boolean = false
   )
@@ -101,7 +101,10 @@ object Node {
       for {
         props <- $.props
         _ <- $.modState(state => {
-          state.copy(ports = state.ports.filter(_._1 != portId.id), doUpdate = true) //todo make id's type safe
+          state.copy(
+            ports = state.ports.filter(_._1 != portId.id),
+            doUpdate = true
+          ) //todo make id's type safe
         })
         _ <- props.deletePorts(Vector(portId))
       } yield ()
@@ -154,14 +157,16 @@ object Node {
         <.div(
           ^.onClick --> onDelete,
           Icon(
-            Icon.props(name = "trash alternate outline", color = Grey, link = true)
+            Icon.props(
+              name = "trash alternate outline",
+              color = Grey,
+              link = true
+            )
           )
         ),
         <.div(
           //^.onClick --> onClone
-          Icon(
-            Icon.props(name = "clone outline", color = Grey, link = true)
-          )
+          Icon(Icon.props(name = "clone outline", color = Grey, link = true))
         )
       )
 
@@ -311,11 +316,19 @@ object Node {
             nodeOptions
           ),
           Segment(
-            Segment.props(inverted = true, compact = true, attached = SegmentAttached.Attached),
+            Segment.props(
+              inverted = true,
+              compact = true,
+              attached = SegmentAttached.Attached
+            ),
             CodeEditor(onChange = onCodeChange)
           ),
           Segment(
-            Segment.props(inverted = true, compact = true, attached = SegmentAttached.Bottom),
+            Segment.props(
+              inverted = true,
+              compact = true,
+              attached = SegmentAttached.Bottom
+            ),
             //Ports
             React.Fragment(
               state.ports.map(

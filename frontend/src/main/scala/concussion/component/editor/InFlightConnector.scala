@@ -2,6 +2,7 @@ package concussion
 package component
 package editor
 
+import concussion.domain._
 import concussion.geometry.Point
 import concussion.styles.GraphStyle
 import japgolly.scalajs.react._
@@ -12,13 +13,7 @@ import org.scalajs.dom._
 
 object InFlightConnector {
 
-  final case class Props(
-      from: Anchor,
-      to: Option[Anchor],
-      offset: Point,
-      fixed: Boolean,
-      dashed: Boolean
-  )
+  final case class Props(from: Anchor, to: Option[Anchor], offset: Point, fixed: Boolean, dashed: Boolean)
 
   final case class State(x: Double, y: Double)
 
@@ -30,7 +25,10 @@ object InFlightConnector {
         _ <- if (!props.fixed)
           $.modState(state => {
             val element = document.getElementById(GraphStyle.nodeEditorId)
-            state.copy(x = e.clientX + element.scrollLeft, y = e.clientY + element.scrollTop)
+            state.copy(
+              x = e.clientX + element.scrollLeft,
+              y = e.clientY + element.scrollTop
+            )
           })
         else
           Callback.empty

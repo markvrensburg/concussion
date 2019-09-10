@@ -10,7 +10,6 @@ import scala.language.higherKinds
 
 abstract class CVar[F[_], A] {
   def read: F[A]
-  def observe: F[A]
   def write(a: A): F[Unit]
   def isEmpty: F[Boolean]
 }
@@ -24,15 +23,12 @@ object CVar {
           override def read: F[A] =
             latch.release *> state.take <* latch.release
 
-          override def observe: F[A] =
-            state.read
-
           override def write(a: A): F[Unit] =
             latch.acquire *> state.put(a) <* latch.acquire
 
           override def isEmpty: F[Boolean] =
             state.isEmpty
-        }
+      }
     )
 }
 
@@ -50,12 +46,13 @@ abstract class Channel[F[_], A] {
 
 object Channel {
 
-  def apply[F[_], A](readChannel: CVar[F, A], writeChannel: CVar[F, A]): Channel[F, A] =
+  def apply[F[_], A](readCV: CVar[F, A], writeCV: CVar[F, A]): Channel[F, A] =
     new Channel[F, A] {
-      override def read: F[A] = readChannel.read
-      override def write(a: A): F[Unit] = writeChannel.write(a)
+      override def read: F[A] = readCV.read
+      override def write(a: A): F[Unit] = writeCV.write(a)
     }
 
-  def connection[F[_], A](cv1: CVar[F, A], cv2: CVar[F, A]): (Channel[F, A], Channel[F, A]) =
+  def connection[F[_], A](cv1: CVar[F, A],
+                          cv2: CVar[F, A]): (Channel[F, A], Channel[F, A]) =
     (Channel(cv1, cv2), Channel(cv2, cv1))
 }
