@@ -13,7 +13,9 @@ object CodeEditor {
 
   final case class State(code: String)
 
-  final case class Props(initialCode: String, maxLines: Int, onChange: String => Callback)
+  final case class Props(initialCode: String,
+                         maxLines: Int,
+                         onChange: String => Callback)
 
   final class Backend($ : BackendScope[Props, State]) {
 
@@ -22,8 +24,11 @@ object CodeEditor {
         for {
           props <- $.props
           _ <- $.modState(_.copy(code = newCode))
-          //js.timer is a hacky solution to wait for refs to update; use Timer[IO]?
-          _ <- CallbackTo(js.timers.setTimeout(25.milliseconds)(props.onChange(newCode).runNow()))
+          //js.timer is a hacky solution to wait for refs to update.
+          _ <- CallbackTo(
+            js.timers
+              .setTimeout(25.milliseconds)(props.onChange(newCode).runNow())
+          )
         } yield ()
 
     def render(props: Props, state: State): VdomElement =
@@ -52,13 +57,15 @@ object CodeEditor {
       .builder[Props]("CodeEditor")
       .initialStateFromProps(props => State(props.initialCode))
       .renderBackend[Backend]
-      .shouldComponentUpdate(lc => CallbackTo(lc.currentState.code != lc.nextState.code))
+      .shouldComponentUpdate(
+        lc => CallbackTo(lc.currentState.code != lc.nextState.code)
+      )
       .build
 
   def apply(
-      initialCode: String = "",
-      maxLines: Int = 12,
-      onChange: String => Callback = _ => Callback.empty
+    initialCode: String = "",
+    maxLines: Int = 12,
+    onChange: String => Callback = _ => Callback.empty
   ): Unmounted[Props, State, Backend] =
     component(Props(initialCode, maxLines, onChange))
 

@@ -1,7 +1,6 @@
 package concussion
 package domain
 
-import concussion.geometry.Point
 import enum.Enum
 
 sealed trait NodeType
@@ -14,12 +13,12 @@ object NodeType {
   val nodeTypes: Enum[NodeType] = Enum.derived[NodeType]
 }
 
-sealed trait Node
-final case class InputNode(id: String, position: Point, port: Port) extends Node
-final case class OutputNode(id: String, position: Point, port: Port)
-    extends Node
-final case class ProcessorNode(id: String,
-                               position: Point,
-                               code: String = "",
-                               ports: List[Port])
-    extends Node
+sealed trait Node[Meta, PortMeta]
+final case class InputNode[Meta, PortMeta](meta: Meta, port: Port[PortMeta])
+    extends Node[Meta, PortMeta]
+final case class OutputNode[Meta, PortMeta](meta: Meta, port: Port[PortMeta])
+    extends Node[Meta, PortMeta]
+final case class ProcessorNode[Meta, PortMeta](meta: Meta,
+                                               code: String = "",
+                                               ports: List[Port[PortMeta]])
+    extends Node[Meta, PortMeta]

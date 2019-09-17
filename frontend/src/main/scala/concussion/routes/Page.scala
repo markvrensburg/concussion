@@ -23,8 +23,8 @@ object Page {
   def landing(random: Random)(ctl: RouterCtl[Page]): VdomElement =
     LandingPage(random, ctl)
 
-  def editor(random: Random, namer: Namer[IO]): VdomElement =
-    GraphEditor(random, namer)
+  def editor(logo: String, namer: Namer[IO]): VdomElement =
+    GraphEditor(logo, namer)
 
   def notFound(r: Random, size: (Int, Int)): VdomElement = {
 

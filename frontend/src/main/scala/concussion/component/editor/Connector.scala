@@ -2,7 +2,7 @@ package concussion
 package component
 package editor
 
-import concussion.geometry.{Point, Rect}
+import concussion.geometry._
 import concussion.styles.ConnectorStyle
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.html_<^._
@@ -21,11 +21,7 @@ object Connector {
   private def clamp(min: Double, max: Double)(value: Double) =
     Math.max(min, Math.min(max, value))
 
-  final case class Props(
-      from: Anchor,
-      to: Anchor,
-      dashed: Boolean
-  ) {
+  final case class Props(from: Anchor, to: Anchor, dashed: Boolean) {
 
     lazy val p0: Point = Point(from.x, from.y)
 
@@ -60,7 +56,12 @@ object Connector {
 
       var h = (b * b) - (a * c)
 
-      @inline def q_(s: Double, t: Double, v1: Double, v2: Double, v3: Double, v4: Double) =
+      @inline def q_(s: Double,
+                     t: Double,
+                     v1: Double,
+                     v2: Double,
+                     v3: Double,
+                     v4: Double) =
         (s * s * s * v1) + (3.0 * s * s * t * v2) + (3.0 * s * t * t * v3) + (t * t * t * v4)
 
       if (h.x > 0.0) {
@@ -165,14 +166,12 @@ object Connector {
             ^.position := "absolute",
             ConnectorStyle.connector,
             ^.dangerouslySetInnerHtml := p.connector
-          )
+        )
       )
       .build
 
-  def apply(
-      from: Anchor,
-      to: Anchor,
-      dashed: Boolean = false
-  ): Unmounted[Props, Unit, Unit] =
+  def apply(from: Anchor,
+            to: Anchor,
+            dashed: Boolean = false): Unmounted[Props, Unit, Unit] =
     component(Props(from, to, dashed))
 }

@@ -2,8 +2,7 @@ package concussion
 package component
 package editor
 
-import concussion.domain._
-import concussion.geometry.Point
+import concussion.geometry._
 import concussion.styles.GraphStyle
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.component.Scala.Unmounted
@@ -13,7 +12,11 @@ import org.scalajs.dom._
 
 object InFlightConnector {
 
-  final case class Props(from: Anchor, to: Option[Anchor], offset: Point, fixed: Boolean, dashed: Boolean)
+  final case class Props(from: Anchor,
+                         to: Option[Anchor],
+                         offset: Point,
+                         fixed: Boolean,
+                         dashed: Boolean)
 
   final case class State(x: Double, y: Double)
 
@@ -66,13 +69,11 @@ object InFlightConnector {
       .shouldComponentUpdate(lc => CallbackTo(!lc.currentProps.fixed))
       .build
 
-  def apply(
-      from: Anchor,
-      to: Option[Anchor] = Option.empty,
-      offset: Point = Point(0, 0),
-      fixed: Boolean = false,
-      dashed: Boolean = true
-  ): Unmounted[Props, State, Backend] =
+  def apply(from: Anchor,
+            to: Option[Anchor] = Option.empty,
+            offset: Point = Point(0, 0),
+            fixed: Boolean = false,
+            dashed: Boolean = true): Unmounted[Props, State, Backend] =
     component(Props(from, to, offset, fixed, dashed))
 
 }

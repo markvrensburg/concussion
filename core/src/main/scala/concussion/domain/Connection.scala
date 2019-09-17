@@ -1,3 +1,4 @@
-package concussion.domain
+package concussion
+package domain
 
-final case class Connection(from: Port, to: Port)
+final case class Connection[A](from: A, to: A)

@@ -5,8 +5,14 @@ package editor
 import cats.implicits._
 import cats.effect.IO
 import concussion.compile.Validation
-import concussion.facade.draggable.{Draggable, DraggableBounds, DraggableData, Grid}
+import concussion.facade.draggable.{
+  Draggable,
+  DraggableBounds,
+  DraggableData,
+  Grid
+}
 import concussion.domain._
+import concussion.geometry._
 import concussion.styles.NodeStyle
 import concussion.util.Namer
 import japgolly.scalajs.react.Ref.Simple
@@ -23,31 +29,29 @@ import react.semanticui.elements.segment.{Segment, SegmentAttached}
 import react.semanticui.textalignment.Center
 import scalacss.ScalaCssReact._
 
-object Node {
+object NodeContainer {
 
   final case class State(
-      ports: Vector[(String, Simple[html.Element], Orientation, String)] = Vector.empty,
-      code: Option[String] = Option.empty,
-      doUpdate: Boolean = false
+    ports: Vector[(String, Simple[html.Element], Orientation, String)] =
+      Vector.empty,
+    code: Option[String] = Option.empty,
+    doUpdate: Boolean = false
   )
 
-  final case class Props(
-      id: String,
-      nodeType: NodeType,
-      namer: Namer[IO],
-      onPortClick: Port => Callback,
-      onPortHover: Port => Callback,
-      adjustPorts: Vector[Port] => Callback,
-      deletePorts: Vector[PortId] => Callback,
-      deleteNode: Callback,
-      bringToFront: Callback
-  )
+  final case class Props(id: String,
+                         nodeType: NodeType,
+                         namer: Namer[IO],
+                         onPortClick: EditPort => Callback,
+                         onPortHover: EditPort => Callback,
+                         adjustPorts: Vector[EditPort] => Callback,
+                         deletePorts: Vector[String] => Callback,
+                         deleteNode: Callback,
+                         bringToFront: Callback)
 
   final class Backend($ : BackendScope[Props, State]) {
 
     private val getPorts =
       for {
-        props <- $.props
         state <- $.state
         ports <- state.ports
           .map(p => {
@@ -58,7 +62,10 @@ object Node {
                   rect.left + ((rect.right - rect.left) / 2),
                   rect.top + ((rect.bottom - rect.top) / 2)
                 )
-                Port(PortId(p._1, props.id), Anchor(center._1, center._2, p._3))
+                EditPort(
+                  PortMeta(p._1, Anchor(center._1, center._2, p._3)),
+                  p._4
+                )
               })
               .asCallback
           })
@@ -97,12 +104,12 @@ object Node {
         })
       } yield ()
 
-    private def deletePort(portId: PortId) =
+    private def deletePort(portId: String) =
       for {
         props <- $.props
         _ <- $.modState(state => {
           state.copy(
-            ports = state.ports.filter(_._1 != portId.id),
+            ports = state.ports.filter(_._1 != portId),
             doUpdate = true
           ) //todo make id's type safe
         })
@@ -113,24 +120,24 @@ object Node {
       for {
         props <- $.props
         state <- $.state
-        _ <- props.deletePorts(state.ports.map(p => PortId(p._1, props.id)))
+        _ <- props.deletePorts(state.ports.map(_._1))
         _ <- props.deleteNode
       } yield ()
 
-    private def shiftPort(portId: PortId) =
+    private def shiftPort(portId: String) =
       $.modState(state => {
         val ports = state.ports.map {
-          case (id, ref, orientation, name) if id == portId.id =>
+          case (id, ref, orientation, name) if id == portId =>
             (id, ref, orientation.swap, name)
           case port => port
         }
         state.copy(ports = ports, doUpdate = true)
       })
 
-    private def changePortName(portId: PortId)(newName: String) =
+    private def changePortName(portId: String)(newName: String) =
       $.modState(state => {
         val ports = state.ports.map {
-          case (id, ref, orientation, _) if id == portId.id =>
+          case (id, ref, orientation, _) if id == portId =>
             (id, ref, orientation, newName)
           case port => port
         }
@@ -178,7 +185,8 @@ object Node {
             handle = ".dragger",
             bounds = bounds,
             onStart = (_: MouseEvent, _: DraggableData) => props.bringToFront,
-            onStop = (_: MouseEvent, _: DraggableData) => updateConnections(force = true)
+            onStop = (_: MouseEvent, _: DraggableData) =>
+              updateConnections(force = true)
           ),
         <.div(
           //          ^.left := "50%",
@@ -213,18 +221,18 @@ object Node {
                   <.div(
                     ^.key := p._1,
                     PortContainer(
-                      PortId(p._1, props.id),
+                      p._1,
                       p._4,
                       p._3,
                       p._2,
                       canDelete = false,
                       props.onPortClick,
                       props.onPortHover,
-                      deletePort(PortId(p._1, props.id)),
-                      shiftPort(PortId(p._1, props.id)),
-                      changePortName(PortId(p._1, props.id))
+                      deletePort(p._1),
+                      shiftPort(p._1),
+                      changePortName(p._1)
                     )
-                  )
+                )
               ): _*
             )
           )
@@ -239,7 +247,8 @@ object Node {
             handle = ".dragger",
             bounds = bounds,
             onStart = (_: MouseEvent, _: DraggableData) => props.bringToFront,
-            onStop = (_: MouseEvent, _: DraggableData) => updateConnections(force = true)
+            onStop = (_: MouseEvent, _: DraggableData) =>
+              updateConnections(force = true)
           ),
         <.div(
           NodeStyle.nodePos,
@@ -271,18 +280,18 @@ object Node {
                   <.div(
                     ^.key := p._1,
                     PortContainer(
-                      PortId(p._1, props.id),
+                      p._1,
                       p._4,
                       p._3,
                       p._2,
                       canDelete = false,
                       props.onPortClick,
                       props.onPortHover,
-                      deletePort(PortId(p._1, props.id)),
-                      shiftPort(PortId(p._1, props.id)),
-                      changePortName(PortId(p._1, props.id))
+                      deletePort(p._1),
+                      shiftPort(p._1),
+                      changePortName(p._1)
                     )
-                  )
+                )
               ): _*
             )
           )
@@ -297,7 +306,8 @@ object Node {
             handle = ".dragger",
             bounds = bounds,
             onStart = (_: MouseEvent, _: DraggableData) => props.bringToFront,
-            onStop = (_: MouseEvent, _: DraggableData) => updateConnections(force = true)
+            onStop = (_: MouseEvent, _: DraggableData) =>
+              updateConnections(force = true)
           ),
         <.div(
           NodeStyle.nodePos,
@@ -336,18 +346,18 @@ object Node {
                   <.div(
                     ^.key := p._1,
                     PortContainer(
-                      PortId(p._1, props.id),
+                      p._1,
                       p._4,
                       p._3,
                       p._2,
                       canDelete = true,
                       props.onPortClick,
                       props.onPortHover,
-                      deletePort(PortId(p._1, props.id)),
-                      shiftPort(PortId(p._1, props.id)),
-                      changePortName(PortId(p._1, props.id))
+                      deletePort(p._1),
+                      shiftPort(p._1),
+                      changePortName(p._1)
                     )
-                  )
+                )
               ): _*
             ),
             <.div(
@@ -391,23 +401,23 @@ object Node {
                       "Port"
                     )
                   )
-                )
-            )
+              )
+          )
       )
       .renderBackend[Backend]
       .componentDidUpdate(_.backend.updateConnections())
       .build
 
   def apply(
-      id: String,
-      nodeType: NodeType,
-      namer: Namer[IO],
-      onPortClick: Port => Callback = _ => Callback.empty,
-      onPortHover: Port => Callback = _ => Callback.empty,
-      adjustPorts: Vector[Port] => Callback = _ => Callback.empty,
-      deletePorts: Vector[PortId] => Callback = _ => Callback.empty,
-      deleteNode: Callback = Callback.empty,
-      bringToFront: Callback = Callback.empty
+    id: String,
+    nodeType: NodeType,
+    namer: Namer[IO],
+    onPortClick: EditPort => Callback = _ => Callback.empty,
+    onPortHover: EditPort => Callback = _ => Callback.empty,
+    adjustPorts: Vector[EditPort] => Callback = _ => Callback.empty,
+    deletePorts: Vector[String] => Callback = _ => Callback.empty,
+    deleteNode: Callback = Callback.empty,
+    bringToFront: Callback = Callback.empty
   ): Unmounted[Props, State, Backend] =
     component(
       Props(

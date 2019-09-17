@@ -2,7 +2,7 @@ package concussion
 package component
 package editor
 
-import concussion.domain._
+import concussion.geometry._
 import japgolly.scalajs.react.Ref.Simple
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.component.Scala.Unmounted
@@ -13,24 +13,22 @@ import react.semanticui.elements.icon.Icon
 
 object PortContainer {
 
-  final case class Props(
-      id: PortId,
-      name: String,
-      orientation: Orientation,
-      portSocketRef: Simple[html.Element],
-      canDelete: Boolean,
-      onPortClick: Port => Callback,
-      onPortHover: Port => Callback,
-      onDeleteClick: Callback,
-      onShiftClick: Callback,
-      onNameChange: String => Callback
-  )
+  final case class Props(id: String,
+                         name: String,
+                         orientation: Orientation,
+                         portSocketRef: Simple[html.Element],
+                         canDelete: Boolean,
+                         onPortClick: EditPort => Callback,
+                         onPortHover: EditPort => Callback,
+                         onDeleteClick: Callback,
+                         onShiftClick: Callback,
+                         onNameChange: String => Callback)
 
   final class Backend($ : BackendScope[Props, Unit]) {
 
     private def onPortEvent(
-        callback: Port => Callback,
-        orientation: Option[Orientation] = Option.empty
+      callback: EditPort => Callback,
+      orientation: Option[Orientation] = Option.empty
     ): Callback =
       for {
         props <- $.props
@@ -42,13 +40,16 @@ object PortContainer {
               rect.top + ((rect.bottom - rect.top) / 2)
             )
           callback(
-            Port(
-              props.id,
-              Anchor(
-                center._1,
-                center._2,
-                orientation.getOrElse(props.orientation)
-              )
+            EditPort(
+              PortMeta(
+                props.id,
+                Anchor(
+                  center._1,
+                  center._2,
+                  orientation.getOrElse(props.orientation)
+                )
+              ),
+              props.name
             )
           )
         })
@@ -84,11 +85,20 @@ object PortContainer {
         ^.onClick --> props.onShiftClick,
         Icon(
           Icon.props(
-            name = if (props.orientation == Right) "angle left" else "angle right",
+            name =
+              if (props.orientation == Right) "angle left" else "angle right",
             color = Grey,
             link = true
           )
         )
+      )
+
+    private def elements(props: Props): Vector[VdomNode] =
+      Vector(
+        portSocket(props),
+        Name(defaultValue = props.name, onChange = props.onNameChange),
+        delete(props),
+        shift(props)
       )
 
     def render(props: Props): VdomElement =
@@ -103,19 +113,9 @@ object PortContainer {
         },
         props.orientation match {
           case Right =>
-            React.Fragment(
-              shift(props),
-              delete(props),
-              Name(defaultValue = props.name, onChange = props.onNameChange),
-              portSocket(props)
-            )
+            React.Fragment(elements(props).reverse: _*)
           case _ =>
-            React.Fragment(
-              portSocket(props),
-              Name(defaultValue = props.name, onChange = props.onNameChange),
-              delete(props),
-              shift(props)
-            )
+            React.Fragment(elements(props): _*)
         }
       )
   }
@@ -125,21 +125,22 @@ object PortContainer {
       .builder[Props]("PortContainer")
       .renderBackend[Backend]
       .shouldComponentUpdate(
-        lc => CallbackTo(lc.currentProps.orientation != lc.nextProps.orientation)
+        lc =>
+          CallbackTo(lc.currentProps.orientation != lc.nextProps.orientation)
       )
       .build
 
   def apply(
-      id: PortId,
-      name: String,
-      orientation: Orientation,
-      portSocketRef: Simple[html.Element],
-      canDelete: Boolean = true,
-      onPortClick: Port => Callback = _ => Callback.empty,
-      onPortHover: Port => Callback = _ => Callback.empty,
-      onDeleteClick: Callback = Callback.empty,
-      onShiftClick: Callback = Callback.empty,
-      onNameChange: String => Callback = _ => Callback.empty
+    id: String,
+    name: String,
+    orientation: Orientation,
+    portSocketRef: Simple[html.Element],
+    canDelete: Boolean = true,
+    onPortClick: EditPort => Callback = _ => Callback.empty,
+    onPortHover: EditPort => Callback = _ => Callback.empty,
+    onDeleteClick: Callback = Callback.empty,
+    onShiftClick: Callback = Callback.empty,
+    onNameChange: String => Callback = _ => Callback.empty
   ): Unmounted[Props, Unit, Backend] =
     component(
       Props(
@@ -155,5 +156,4 @@ object PortContainer {
         onNameChange
       )
     )
-
 }
