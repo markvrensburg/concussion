@@ -14,7 +14,7 @@ object Dependencies {
 
   //Backend
   val http4sV = "0.20.10"
-  val pureConfigV = "0.11.1"
+  val pureConfigV = "0.12.0"
 
   //Frontend
   val scalaCssV = "0.5.6"
