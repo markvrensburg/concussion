@@ -4,7 +4,9 @@ import concussion.graph.Graph
 
 package object domain {
 
-  type Network[NMeta, PMeta] = Graph[(Port[PMeta], Node[NMeta])]
+  type Vertex[NMeta, PMeta] = (Port[PMeta], Node[NMeta])
+
+  type Network[NMeta, PMeta] = Graph[Vertex[NMeta, PMeta]]
 
   type BasicNode = Node[Unit]
   type BasicPort = Port[Unit]

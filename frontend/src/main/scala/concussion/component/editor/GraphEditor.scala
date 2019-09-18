@@ -3,7 +3,7 @@ package component
 package editor
 
 import cats.effect.IO
-import concussion.geometry.{Anchor, Point}
+import concussion.geometry.{Anchor, Neutral, Point}
 import concussion.domain._
 import concussion.graph.Graph
 import concussion.styles.{GraphStyle, PageStyle}
@@ -25,8 +25,6 @@ object GraphEditor {
 
   final case class State(connectionState: ConnectionState,
                          offset: Point,
-                         connections: Vector[EditConnection] = Vector.empty,
-                         nodes: Vector[EditNode] = Vector.empty,
                          network: EditNetwork = Graph.empty)
 
   final case class Props(logo: String, namer: Namer[IO])
@@ -35,33 +33,58 @@ object GraphEditor {
 
     private val editorRef = Ref[html.Element]
 
-    private def findConnector(
-      port: EditPort,
-      connections: Vector[EditConnection]
-    ): Option[EditPort] =
-      connections
-        .find(containsId(port.meta.id)(_))
-        .flatMap(connectsTo(port.meta.id)(_))
+//    private def findConnector(
+//      port: EditPort,
+//      connections: List[EditConnection]
+//    ): Option[EditPort] =
+//      connections
+//        .find(containsId(port.meta.id)(_))
+//        .flatMap(connectsTo(port.meta.id)(_))
 
-    private def filterConnector(
-      port: EditPort,
-      connections: Vector[EditConnection]
-    ): Vector[EditConnection] =
-      connections.filter(!containsId(port.meta.id)(_))
+//    private def filterConnector(port: EditPort,
+//                                network: EditNetwork): EditNetwork =
+//      network.removeEdge((v1, v2) => !containsId(port.meta.id)((v1, v2)))
+
+    private def distinctNodes(network: EditNetwork): List[EditNode] =
+      network.vertexList.groupBy(_._2.meta.id).values.toList.map(_.head._2)
+
+//    private def portsForNode(nodeId: String,
+//                             network: EditNetwork): List[EditPort] =
+//      network.vertexList.filter(_._2.meta.id == nodeId).map(_._1)
 
     private def addNode(nodeType: NodeType): Callback =
       for {
         props <- $.props
-        node <- Nodes.mkNode(nodeType, props.namer).toCallback
+        newNode <- Nodes.mkNode(nodeType, props.namer).toCallback
         _ <- $.modState(state => {
-          state.copy(nodes = state.nodes :+ node)
+          state.copy(
+            network = state.network + (
+              (
+                EditPort(PortMeta("ppp", Anchor(0, 0, Neutral)), "PORT"),
+                newNode
+              )
+            )
+          )
         })
       } yield ()
 
+//    private def addNode(node: EditNode, ports: List[EditPort]): Callback =
+//      for {
+//        props <- $.props
+//        newNode <- Nodes.copyNode(node, props.namer).toCallback
+//        _ <- $.modState(state => {
+//          state.copy(network = state.network + Graph.vertices(ports.map((_,node))))
+//        })
+//      } yield ()
+
     private def deleteNode(nodeId: String): Callback =
       $.modState(state => {
-        state.copy(nodes = state.nodes.filter(_.meta.id != nodeId))
+        state.copy(network = state.network.induce(_._2.meta.id != nodeId))
       })
+
+//    private def addPort(port: EditPort, node: EditNode): Callback =
+//
+//    private def deletePort(portId: String): Callback =
 
     private def bringToFront(nodeId: String): Callback =
 //      $.modState(state => {
@@ -74,121 +97,94 @@ object GraphEditor {
       Callback(println(nodeId))
 
     private def adjustPorts(ports: Vector[EditPort]): Callback =
-      $.modState(state => {
-        val adjusted = state.connections.map {
-          case c @ Connection(Port(meta: PortMeta, _), port)
-              if ports.exists(_.meta.id == meta.id) =>
+      $.modState(
+        state =>
+          state.copy(network = state.network.map(v => {
             ports
-              .find(_.meta.id == meta.id)
-              .map(
-                p =>
-                  Connection(
-                    EditPort(
-                      PortMeta(
-                        meta.id,
-                        Anchor(
-                          state.offset.x + p.meta.anchor.x,
-                          state.offset.y + p.meta.anchor.y,
-                          p.meta.anchor.orientation
-                        )
-                      ),
-                      p.name
+              .find(_.meta.id == v._1.meta.id)
+              .map(p => {
+                (
+                  EditPort(
+                    PortMeta(
+                      v._1.meta.id,
+                      Anchor(
+                        state.offset.x + p.meta.anchor.x,
+                        state.offset.y + p.meta.anchor.y,
+                        p.meta.anchor.orientation
+                      )
                     ),
-                    port
+                    p.name
+                  ),
+                  v._2
                 )
-              )
-              .getOrElse(c)
-          case c @ Connection(port, Port(meta: PortMeta, _)) =>
-            ports
-              .find(_.meta.id == meta.id)
-              .map(
-                p =>
-                  Connection(
-                    port,
-                    EditPort(
-                      PortMeta(
-                        meta.id,
-                        Anchor(
-                          state.offset.x + p.meta.anchor.x,
-                          state.offset.y + p.meta.anchor.y,
-                          p.meta.anchor.orientation
-                        )
-                      ),
-                      p.name
-                    )
-                )
-              )
-              .getOrElse(c)
-          case c => c
-        }
-        state.copy(connections = adjusted)
-      })
+              })
+              .getOrElse(v)
+          }))
+      )
 
     private def deletePorts(ports: Vector[String]): Callback =
-      $.modState(state => {
-        val remaining =
-          state.connections.filter(
-            (c: EditConnection) =>
-              !ports.contains(c.from.meta.id) && !ports
-                .contains(c.to.meta.id)
-          )
-        state.copy(connections = remaining)
-      })
+      $.modState(
+        state =>
+          state.copy(
+            network = state.network.induce(v => !ports.contains(v._1.meta.id))
+        )
+      )
 
     private def onPortClick(port: EditPort): Callback =
-      $.modState(state => {
-        val portX = state.offset.x + port.meta.anchor.x
-        val portY = state.offset.y + port.meta.anchor.y
-        val currentPort =
-          EditPort(
-            PortMeta(
-              port.meta.id,
-              Anchor(portX, portY, port.meta.anchor.orientation)
-            ),
-            port.name
-          )
-
-        state.connectionState match {
-          case Connecting(from, _) =>
-            if (currentPort.meta.id == from.meta.id)
-              state.copy(connectionState = NotConnecting)
-            else if (currentPort.meta.id == from.meta.id)
-              state
-            else {
-              findConnector(currentPort, state.connections) match {
-                case Some(connectedPort) =>
-                  val connection = Connection(from, currentPort)
-                  val connections = filterConnector(
-                    currentPort,
-                    state.connections
-                  ) :+ connection
-                  state.copy(
-                    connectionState =
-                      Connecting(connectedPort, Some(currentPort.meta.anchor)),
-                    connections = connections
-                  )
-                case None =>
-                  val connection = Connection(from, currentPort)
-                  val connections = state.connections :+ connection
-                  state.copy(
-                    connectionState = NotConnecting,
-                    connections = connections
-                  )
-              }
-            }
-          case NotConnecting =>
-            findConnector(currentPort, state.connections) match {
-              case Some(connectedPort) =>
-                state.copy(
-                  connectionState =
-                    Connecting(connectedPort, Some(currentPort.meta.anchor)),
-                  connections = filterConnector(currentPort, state.connections)
-                )
-              case None =>
-                state.copy(connectionState = Connecting(currentPort, None))
-            }
-        }
-      })
+      Callback(println(port))
+//      $.modState(state => {
+//        val portX = state.offset.x + port.meta.anchor.x
+//        val portY = state.offset.y + port.meta.anchor.y
+//        val currentPort =
+//          EditPort(
+//            PortMeta(
+//              port.meta.id,
+//              Anchor(portX, portY, port.meta.anchor.orientation)
+//            ),
+//            port.name
+//          )
+//
+//        state.connectionState match {
+//          case Connecting(from, _) =>
+//            if (currentPort.meta.id == from.meta.id)
+//              state.copy(connectionState = NotConnecting)
+//            else if (currentPort.meta.id == from.meta.id)
+//              state
+//            else {
+//              findConnector(currentPort, state.connections) match {
+//                case Some(connectedPort) =>
+//                  val connection = Connection(from, currentPort)
+//                  val connections = filterConnector(
+//                    currentPort,
+//                    state.connections
+//                  ) :+ connection
+//                  state.copy(
+//                    connectionState =
+//                      Connecting(connectedPort, Some(currentPort.meta.anchor)),
+//                    connections = connections
+//                  )
+//                case None =>
+//                  val connection = Connection(from, currentPort)
+//                  val connections = state.connections :+ connection
+//                  state.copy(
+//                    connectionState = NotConnecting,
+//                    connections = connections
+//                  )
+//              }
+//            }
+//          case NotConnecting =>
+//            findConnector(currentPort, state.connections.edgeList) match {
+//              case Some(connectedPort) =>
+//                state.copy(
+//                  connectionState =
+//                    Connecting(connectedPort, Some(currentPort.meta.anchor)),
+//                  connections = filterConnector(currentPort, state.connections)
+//                )
+//              case None =>
+//                state.copy(connectionState = Connecting(currentPort, None))
+//            }
+//        }
+//      })
 
     private def onPortHover(port: EditPort): Callback =
       $.modState(state => {
@@ -222,32 +218,30 @@ object GraphEditor {
             Infobar(),
             //Nodes
             React.Fragment(
-              state.nodes.map(
-                n =>
-                  <.div(
-                    ^.key := n.meta.id,
-                    NodeContainer(
-                      n.meta.id,
-                      n match {
-                        case InputNode(_)        => Input
-                        case OutputNode(_)       => Output
-                        case ProcessorNode(_, _) => Processor
-
-                      },
-                      props.namer,
-                      onPortClick,
-                      onPortHover,
-                      adjustPorts,
-                      deletePorts,
-                      deleteNode(n.meta.id),
-                      bringToFront(n.meta.id)
-                    )
-                )
-              ): _*
+              distinctNodes(state.network)
+                .map(
+                  n =>
+                    <.div(
+                      ^.key := n.meta.id,
+                      NodeContainer(
+                        n.meta.id,
+                        Nodes.getType(n),
+                        props.namer,
+                        onPortClick,
+                        onPortHover,
+                        adjustPorts,
+                        deletePorts,
+                        deleteNode(n.meta.id),
+                        bringToFront(n.meta.id)
+                      )
+                  )
+                ): _*
             ),
             //Connectors
-            state.connections
-              .toTagMod(c => Connector(c.from.meta.anchor, c.to.meta.anchor)),
+            state.network.edgeList
+              .toTagMod(
+                c => Connector(c._1._1.meta.anchor, c._2._1.meta.anchor)
+              ),
             state.connectionState match {
               case Connecting(from, to) =>
                 InFlightConnector(from.meta.anchor, to)

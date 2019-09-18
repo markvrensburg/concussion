@@ -7,11 +7,62 @@ import cats.implicits._
 sealed trait Graph[V] {
   import Graph._
 
+  def +(right: V): Graph[V] =
+    overlay(this, vertex(right))
+
   def +(right: Graph[V]): Graph[V] =
     overlay(this, right)
 
+  def *(right: V): Graph[V] =
+    connect(this, vertex(right))
+
   def *(right: Graph[V]): Graph[V] =
     connect(this, right)
+
+  def fold[B](empty: B,
+              vertex: V => B,
+              overlay: (Graph[V], Graph[V]) => B,
+              connect: (Graph[V], Graph[V]) => B): B =
+    Graph.fold(empty, vertex, overlay, connect)(this)
+
+  def foldg[B](empty: B,
+               vertex: V => B,
+               overlay: (B, B) => B,
+               connect: (B, B) => B): B =
+    Graph.foldg(empty, vertex, overlay, connect)(this)
+
+  def map[B](f: V => B): Graph[B] =
+    Graph.map(this)(f)
+
+  def vertexSet: Set[V] =
+    Graph.vertexSet(this)
+
+  def edgeSet: Set[(V, V)] =
+    Graph.edgeSet(this)
+
+  def vertexList: List[V] =
+    Graph.vertexList(this)
+
+  def edgeList: List[(V, V)] =
+    Graph.edgeList(this)
+
+  def transpose: Graph[V] =
+    Graph.transpose(this)
+
+  def induce(f: V => Boolean): Graph[V] =
+    Graph.induce(f)(this)
+
+  def removeVertex(f: V => Boolean): Graph[V] =
+    Graph.removeVertex(f)(this)
+
+  def removeEdge(f: (V, V) => Boolean): Graph[V] =
+    Graph.removeEdge(f)(this)
+
+  def removeVertex(v: V): Graph[V] =
+    Graph.removeVertex(v)(this)
+
+  def removeEdge(v1: V, v2: V): Graph[V] =
+    Graph.removeEdge(v1, v2)(this)
 }
 
 object Graph {
@@ -62,6 +113,9 @@ object Graph {
 
   def create[A](vs: Seq[A], es: Seq[(A, A)]): Graph[A] =
     overlay(vertices(vs), edges(es))
+
+  def fromRelation[A](relation: Relation[A]): Graph[A] =
+    create(relation.domain.toList, relation.relation.toList)
 
   //Church encoded fold
   def fold[A, B](empty: B,
@@ -178,6 +232,21 @@ object Graph {
         } yield (v1, v2))
     }
 
+  def vertexList[A](graph: Graph[A]): List[A] =
+    foldg[A, List[A]](List.empty, List(_), _ ++ _, _ ++ _)(graph)
+
+  def edgeList[A](graph: Graph[A]): List[(A, A)] =
+    graph match {
+      case Empty()         => List.empty
+      case Vertex(_)       => List.empty
+      case Overlay(g1, g2) => edgeList(g1) ++ edgeList(g2)
+      case Connect(g1, g2) =>
+        edgeList(g1) ++ edgeList(g2) ++ (for {
+          v1 <- vertexList(g1)
+          v2 <- vertexList(g2)
+        } yield (v1, v2))
+    }
+
   def transpose[A](graph: Graph[A]): Graph[A] =
     foldg[A, Graph[A]](empty, vertex, overlay, (g1, g2) => connect(g2, g1))(
       graph
@@ -191,8 +260,24 @@ object Graph {
       connect
     )(graph)
 
+  def removeVertex[A](f: A => Boolean)(graph: Graph[A]): Graph[A] =
+    induce[A](!f(_))(graph)
+
+  //todo make more efficient, use context from alga
+  def removeEdge[A](f: (A, A) => Boolean)(graph: Graph[A]): Graph[A] = {
+    val r = Relation.fromGraph(graph)
+    fromRelation(r.copy(relation = r.relation.filterNot(e => f(e._1, e._2))))
+  }
+
   def removeVertex[A](v: A)(graph: Graph[A]): Graph[A] =
-    induce[A](_ != v)(graph)
+    removeVertex((_: A) == v)(graph)
+
+  def removeEdge[A](v1: A, v2: A)(graph: Graph[A]): Graph[A] = {
+    removeEdge((e1: A, e2: A) => (e1 == v1) && (e2 == v2))(graph)
+
+    val r = Relation.fromGraph(graph)
+    fromRelation(r.copy(relation = r.relation.filterNot(_ == ((v1, v2)))))
+  }
 
   def graphViz[A](title: String = "g")(graph: Graph[A]): String =
     s"digraph $title {\n${edgeSet(graph).map(x => s""" "${x._1}" -> "${x._2}" """).mkString("\n")}\n}"

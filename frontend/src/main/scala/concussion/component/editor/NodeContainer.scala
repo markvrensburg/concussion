@@ -383,7 +383,7 @@ object NodeContainer {
 
   private val component =
     ScalaComponent
-      .builder[Props]("Node")
+      .builder[Props]("NodeContainer")
       .initialStateCallbackFromProps(
         props =>
           props.namer
