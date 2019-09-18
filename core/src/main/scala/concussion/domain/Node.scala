@@ -13,12 +13,10 @@ object NodeType {
   val nodeTypes: Enum[NodeType] = Enum.derived[NodeType]
 }
 
-sealed trait Node[Meta, PortMeta]
-final case class InputNode[Meta, PortMeta](meta: Meta, port: Port[PortMeta])
-    extends Node[Meta, PortMeta]
-final case class OutputNode[Meta, PortMeta](meta: Meta, port: Port[PortMeta])
-    extends Node[Meta, PortMeta]
-final case class ProcessorNode[Meta, PortMeta](meta: Meta,
-                                               code: String = "",
-                                               ports: List[Port[PortMeta]])
-    extends Node[Meta, PortMeta]
+sealed trait Node[Meta] {
+  def meta: Meta
+}
+final case class InputNode[Meta](meta: Meta) extends Node[Meta]
+final case class OutputNode[Meta](meta: Meta) extends Node[Meta]
+final case class ProcessorNode[Meta](meta: Meta, code: String = "")
+    extends Node[Meta]

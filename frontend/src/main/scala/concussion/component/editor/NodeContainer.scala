@@ -72,6 +72,8 @@ object NodeContainer {
           .sequence
       } yield ports
 
+//    private def onPortEvent(callback: EditNode => Callback): Callback
+
     def updateConnections(force: Boolean = false): Callback =
       for {
         props <- $.props
@@ -108,10 +110,8 @@ object NodeContainer {
       for {
         props <- $.props
         _ <- $.modState(state => {
-          state.copy(
-            ports = state.ports.filter(_._1 != portId),
-            doUpdate = true
-          ) //todo make id's type safe
+          state
+            .copy(ports = state.ports.filter(_._1 != portId), doUpdate = true)
         })
         _ <- props.deletePorts(Vector(portId))
       } yield ()
@@ -184,7 +184,7 @@ object NodeContainer {
             grid = Grid(5, 5),
             handle = ".dragger",
             bounds = bounds,
-            onStart = (_: MouseEvent, _: DraggableData) => props.bringToFront,
+            onMouseDown = (_: MouseEvent) => props.bringToFront,
             onStop = (_: MouseEvent, _: DraggableData) =>
               updateConnections(force = true)
           ),
@@ -246,7 +246,7 @@ object NodeContainer {
             grid = Grid(5, 5),
             handle = ".dragger",
             bounds = bounds,
-            onStart = (_: MouseEvent, _: DraggableData) => props.bringToFront,
+            onMouseDown = (_: MouseEvent) => props.bringToFront,
             onStop = (_: MouseEvent, _: DraggableData) =>
               updateConnections(force = true)
           ),
@@ -305,7 +305,7 @@ object NodeContainer {
             grid = Grid(5, 5),
             handle = ".dragger",
             bounds = bounds,
-            onStart = (_: MouseEvent, _: DraggableData) => props.bringToFront,
+            onMouseDown = (_: MouseEvent) => props.bringToFront,
             onStop = (_: MouseEvent, _: DraggableData) =>
               updateConnections(force = true)
           ),

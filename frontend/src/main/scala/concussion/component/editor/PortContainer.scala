@@ -2,6 +2,7 @@ package concussion
 package component
 package editor
 
+import concussion.domain.PortMeta
 import concussion.geometry._
 import japgolly.scalajs.react.Ref.Simple
 import japgolly.scalajs.react._

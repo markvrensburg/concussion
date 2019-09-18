@@ -1,6 +1,4 @@
-package concussion
-package component
-package editor
+package concussion.domain
 
 import concussion.geometry.{Anchor, Point}
 

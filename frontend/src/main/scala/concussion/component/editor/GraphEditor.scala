@@ -5,8 +5,9 @@ package editor
 import cats.effect.IO
 import concussion.geometry.{Anchor, Point}
 import concussion.domain._
+import concussion.graph.Graph
 import concussion.styles.{GraphStyle, PageStyle}
-import concussion.util.Namer
+import concussion.util.{Namer, Nodes}
 import japgolly.scalajs.react.CatsReact._
 import concussion.util.CatsIOReact._
 import japgolly.scalajs.react.component.Scala.Unmounted
@@ -22,23 +23,11 @@ object GraphEditor {
       extends ConnectionState
   case object NotConnecting extends ConnectionState
 
-  final case class Connection(port1: EditPort, port2: EditPort) {
-    def containsId(portId: String): Boolean =
-      (port1.meta.id == portId) || (port2.meta.id == portId)
-
-    def connectsTo(portId: String): Option[EditPort] = this match {
-      case Connection(Port(meta: PortMeta, _), port) if meta.id == portId =>
-        Some(port)
-      case Connection(port, Port(meta: PortMeta, _)) if meta.id == portId =>
-        Some(port)
-      case _ => None
-    }
-  }
-
   final case class State(connectionState: ConnectionState,
                          offset: Point,
-                         connections: Vector[Connection] = Vector.empty,
-                         nodes: Vector[(String, NodeType)] = Vector.empty)
+                         connections: Vector[EditConnection] = Vector.empty,
+                         nodes: Vector[EditNode] = Vector.empty,
+                         network: EditNetwork = Graph.empty)
 
   final case class Props(logo: String, namer: Namer[IO])
 
@@ -48,42 +37,41 @@ object GraphEditor {
 
     private def findConnector(
       port: EditPort,
-      connections: Vector[Connection]
+      connections: Vector[EditConnection]
     ): Option[EditPort] =
       connections
-        .find(_.containsId(port.meta.id))
-        .flatMap(_.connectsTo(port.meta.id))
+        .find(containsId(port.meta.id)(_))
+        .flatMap(connectsTo(port.meta.id)(_))
 
     private def filterConnector(
       port: EditPort,
-      connections: Vector[Connection]
-    ): Vector[Connection] =
-      connections.filter(!_.containsId(port.meta.id))
+      connections: Vector[EditConnection]
+    ): Vector[EditConnection] =
+      connections.filter(!containsId(port.meta.id)(_))
 
     private def addNode(nodeType: NodeType): Callback =
       for {
         props <- $.props
-        id <- props.namer
-          .nextName(NodeType.nodeTypes.encode(nodeType))
-          .toCallback
+        node <- Nodes.mkNode(nodeType, props.namer).toCallback
         _ <- $.modState(state => {
-          state.copy(nodes = state.nodes :+ (id -> nodeType))
+          state.copy(nodes = state.nodes :+ node)
         })
       } yield ()
 
     private def deleteNode(nodeId: String): Callback =
       $.modState(state => {
-        state.copy(nodes = state.nodes.filter(_._1 != nodeId))
+        state.copy(nodes = state.nodes.filter(_.meta.id != nodeId))
       })
 
     private def bringToFront(nodeId: String): Callback =
-      $.modState(state => {
-        val split = state.nodes.span(_._1 != nodeId)
-        state.copy(nodes = split match {
-          case (front, node +: back) => front ++ back :+ node
-          case (front, node)         => front ++ node
-        })
-      })
+//      $.modState(state => {
+//        val split = state.nodes.span(_._1 != nodeId)
+//        state.copy(nodes = split match {
+//          case (front, node +: back) => front ++ back :+ node
+//          case (front, node)         => front ++ node
+//        })
+//      })
+      Callback(println(nodeId))
 
     private def adjustPorts(ports: Vector[EditPort]): Callback =
       $.modState(state => {
@@ -140,9 +128,9 @@ object GraphEditor {
       $.modState(state => {
         val remaining =
           state.connections.filter(
-            (c: Connection) =>
-              !ports.contains(c.port1.meta.id) && !ports
-                .contains(c.port2.meta.id)
+            (c: EditConnection) =>
+              !ports.contains(c.from.meta.id) && !ports
+                .contains(c.to.meta.id)
           )
         state.copy(connections = remaining)
       })
@@ -237,25 +225,29 @@ object GraphEditor {
               state.nodes.map(
                 n =>
                   <.div(
-                    ^.key := n._1,
+                    ^.key := n.meta.id,
                     NodeContainer(
-                      n._1,
-                      n._2,
+                      n.meta.id,
+                      n match {
+                        case InputNode(_)        => Input
+                        case OutputNode(_)       => Output
+                        case ProcessorNode(_, _) => Processor
+
+                      },
                       props.namer,
                       onPortClick,
                       onPortHover,
                       adjustPorts,
                       deletePorts,
-                      deleteNode(n._1),
-                      bringToFront(n._1)
+                      deleteNode(n.meta.id),
+                      bringToFront(n.meta.id)
                     )
                 )
               ): _*
             ),
             //Connectors
-            state.connections.toTagMod(
-              c => Connector(c.port1.meta.anchor, c.port2.meta.anchor)
-            ),
+            state.connections
+              .toTagMod(c => Connector(c.from.meta.anchor, c.to.meta.anchor)),
             state.connectionState match {
               case Connecting(from, to) =>
                 InFlightConnector(from.meta.anchor, to)
