@@ -12,40 +12,21 @@ sealed trait Style extends StyleSheet.Inline
 object GlobalStyle extends Style {
   import dsl._
 
-  style(
-    unsafeRoot("*")(
-      boxSizing.borderBox,
-      padding(0.px),
-      margin(0.px)
-    )
-  )
+  style(unsafeRoot("*")(boxSizing.borderBox, padding(0.px), margin(0.px)))
 }
 
 object AceEditorStyle extends Style {
   import dsl._
 
-  style(
-    unsafeRoot("#brace-editor")(
-      borderRadius(0.5.em)
-    )
-  )
+  style(unsafeRoot("#brace-editor")(borderRadius(0.5.em)))
 }
 
 object DraggableStyle extends Style {
   import dsl._
 
-  style(
-    unsafeRoot(".dragger")(
-      userSelect.none
-    )
-  )
+  style(unsafeRoot(".dragger")(userSelect.none))
 
-  style(
-    unsafeRoot(".react-draggable")(
-      position.absolute,
-      height(0.px)
-    )
-  )
+  style(unsafeRoot(".react-draggable")(position.absolute, height(0.px)))
 }
 
 object LayoutStyle extends Style {
@@ -53,21 +34,14 @@ object LayoutStyle extends Style {
 
   val layoutId: String = "page-layout"
 
-  val layout: StyleA = style(
-    height(100.vh),
-    width(100.vw),
-    position.fixed,
-    zIndex(-100)
-  )
+  val layout: StyleA =
+    style(height(100.vh), width(100.vw), position.fixed, zIndex(-100))
 }
 
 object PageStyle extends Style {
   import dsl._
 
-  val editor: StyleA = style(
-    height(100.vh),
-    width(100.vw)
-  )
+  val editor: StyleA = style(height(100.vh), width(100.vw))
 }
 
 object LogoStyle extends Style {
@@ -102,18 +76,11 @@ object LogoStyle extends Style {
   )
 
   val logoContainer: StyleA = style(
-    unsafeRoot(".logo-container")(
-      height(100.%%),
-      display.flex,
-      overflow.hidden
-    )
+    unsafeRoot(".logo-container")(height(100.%%), display.flex, overflow.hidden)
   )
 
   val logoMenu: StyleA = style(
-    unsafeRoot(".logo-menu")(
-      display.flex,
-      overflow.hidden
-    )
+    unsafeRoot(".logo-menu")(display.flex, overflow.hidden)
   )
 
   val logo: StyleA = style(
@@ -128,22 +95,13 @@ object LogoStyle extends Style {
     )
   )
 
-  val glow: StyleA = style(
-    unsafeRoot(".glow")(
-      &.hover(
-        filter := "url(#glow)"
-      )
-    )
-  )
+  val glow: StyleA = style(unsafeRoot(".glow")(&.hover(filter := "url(#glow)")))
 }
 
 object ConnectorStyle extends Style {
   import dsl._
 
-  val connector: StyleA = style(
-    zIndex(100),
-    pointerEvents.none
-  )
+  val connector: StyleA = style(zIndex(100), pointerEvents.none)
 
   val portHandle: StyleA = style(
     unsafeRoot(".port-socket")(
@@ -178,16 +136,13 @@ object GraphStyle extends Style {
 object NodeStyle extends Style {
   import dsl._
 
-  val nodePos: StyleA = style(
-    left(170.px),
-    top(20.px)
-  )
+  val topNodeZIndex: String = "20"
 
-  val nodeMenu: StyleA = style(
-    unsafeRoot(".node-menu")(
-      opacity(0.9)
-    )
-  )
+  val bottomNodeZIndex: String = "10"
+
+  val nodePos: StyleA = style(left(170.px), top(20.px))
+
+  val nodeMenu: StyleA = style(unsafeRoot(".node-menu")(opacity(0.9)))
 }
 
 object InfobarStyle extends Style {

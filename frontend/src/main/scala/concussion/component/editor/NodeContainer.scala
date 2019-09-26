@@ -45,6 +45,7 @@ object NodeContainer {
                          onPortHover: EditPort => Callback,
                          adjustPorts: Vector[EditPort] => Callback,
                          deletePorts: Vector[String] => Callback,
+                         cloneNode: Callback,
                          deleteNode: Callback,
                          bringToFront: Callback)
 
@@ -72,7 +73,16 @@ object NodeContainer {
           .sequence
       } yield ports
 
-//    private def onPortEvent(callback: EditNode => Callback): Callback
+//    private def cloneNode(nodeId: String): Callback =
+//      for {
+//        props <- $.props
+//        newNode <- Nodes.copyNode(node, props.namer).toCallback
+//        _ <- $.modState(state => {
+//          state.copy(
+//            network = state.network + Graph.vertices(ports.map((_, node)))
+//          )
+//        })
+//      } yield ()
 
     def updateConnections(force: Boolean = false): Callback =
       for {
@@ -124,6 +134,12 @@ object NodeContainer {
         _ <- props.deleteNode
       } yield ()
 
+    private val onClone: Callback =
+      for {
+        props <- $.props
+        _ <- props.cloneNode
+      } yield ()
+
     private def shiftPort(portId: String) =
       $.modState(state => {
         val ports = state.ports.map {
@@ -172,7 +188,7 @@ object NodeContainer {
           )
         ),
         <.div(
-          //^.onClick --> onClone
+          ^.onClick --> onClone,
           Icon(Icon.props(name = "clone outline", color = Grey, link = true))
         )
       )
@@ -189,9 +205,6 @@ object NodeContainer {
               updateConnections(force = true)
           ),
         <.div(
-          //          ^.left := "50%",
-          //          ^.top := "50%",
-          //          ^.transform := "translate(-50%,-50%)",
           NodeStyle.nodePos,
           Segment(
             Segment.props(
@@ -416,6 +429,7 @@ object NodeContainer {
     onPortHover: EditPort => Callback = _ => Callback.empty,
     adjustPorts: Vector[EditPort] => Callback = _ => Callback.empty,
     deletePorts: Vector[String] => Callback = _ => Callback.empty,
+    cloneNode: Callback = Callback.empty,
     deleteNode: Callback = Callback.empty,
     bringToFront: Callback = Callback.empty
   ): Unmounted[Props, State, Backend] =
@@ -428,6 +442,7 @@ object NodeContainer {
         onPortHover,
         adjustPorts,
         deletePorts,
+        cloneNode,
         deleteNode,
         bringToFront
       )

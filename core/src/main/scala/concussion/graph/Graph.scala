@@ -114,9 +114,6 @@ object Graph {
   def create[A](vs: Seq[A], es: Seq[(A, A)]): Graph[A] =
     overlay(vertices(vs), edges(es))
 
-  def fromRelation[A](relation: Relation[A]): Graph[A] =
-    create(relation.domain.toList, relation.relation.toList)
-
   //Church encoded fold
   def fold[A, B](empty: B,
                  vertex: A => B,
@@ -266,7 +263,9 @@ object Graph {
   //todo make more efficient, use context from alga
   def removeEdge[A](f: (A, A) => Boolean)(graph: Graph[A]): Graph[A] = {
     val r = Relation.fromGraph(graph)
-    fromRelation(r.copy(relation = r.relation.filterNot(e => f(e._1, e._2))))
+    Relation.toGraph(
+      r.copy(relation = r.relation.filterNot(e => f(e._1, e._2)))
+    )
   }
 
   def removeVertex[A](v: A)(graph: Graph[A]): Graph[A] =
@@ -276,7 +275,7 @@ object Graph {
     removeEdge((e1: A, e2: A) => (e1 == v1) && (e2 == v2))(graph)
 
     val r = Relation.fromGraph(graph)
-    fromRelation(r.copy(relation = r.relation.filterNot(_ == ((v1, v2)))))
+    Relation.toGraph(r.copy(relation = r.relation.filterNot(_ == ((v1, v2)))))
   }
 
   def graphViz[A](title: String = "g")(graph: Graph[A]): String =

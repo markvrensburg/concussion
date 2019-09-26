@@ -31,5 +31,4 @@ object Node {
   final case class OutputNode[Meta](meta: Meta) extends Node[Meta]
   final case class ProcessorNode[Meta](meta: Meta, code: String = "")
       extends Node[Meta]
-
 }

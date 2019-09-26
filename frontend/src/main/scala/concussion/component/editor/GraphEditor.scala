@@ -2,12 +2,13 @@ package concussion
 package component
 package editor
 
+import cats.implicits._
 import cats.effect.IO
-import concussion.geometry.{Anchor, Neutral, Point}
+import concussion.geometry.{Anchor, Point}
 import concussion.domain._
 import concussion.graph.Graph
-import concussion.styles.{GraphStyle, PageStyle}
-import concussion.util.{Namer, Nodes}
+import concussion.styles.{GraphStyle, NodeStyle, PageStyle}
+import concussion.util.{Namer, Nodes, Ports}
 import japgolly.scalajs.react.CatsReact._
 import concussion.util.CatsIOReact._
 import japgolly.scalajs.react.component.Scala.Unmounted
@@ -25,6 +26,7 @@ object GraphEditor {
 
   final case class State(connectionState: ConnectionState,
                          offset: Point,
+                         topNodeId: Option[String] = None,
                          network: EditNetwork = Graph.empty)
 
   final case class Props(logo: String, namer: Namer[IO])
@@ -48,58 +50,46 @@ object GraphEditor {
     private def distinctNodes(network: EditNetwork): List[EditNode] =
       network.vertexList.groupBy(_._2.meta.id).values.toList.map(_.head._2)
 
-//    private def portsForNode(nodeId: String,
-//                             network: EditNetwork): List[EditPort] =
-//      network.vertexList.filter(_._2.meta.id == nodeId).map(_._1)
+    private def portsForNode(nodeId: String,
+                             network: EditNetwork): List[EditPort] =
+      network.vertexList.filter(_._2.meta.id == nodeId).map(_._1)
 
-    private def addNode(nodeType: NodeType): Callback =
+    private def addVertices(node: EditNode, ports: List[EditPort]): Callback =
+      $.modState(
+        state =>
+          state.copy(
+            topNodeId = Some(node.meta.id),
+            network = state.network + Graph.vertices(ports.map((_, node)))
+        )
+      )
+
+    private def cloneNode(nodeId: String): Callback =
       for {
         props <- $.props
-        newNode <- Nodes.mkNode(nodeType, props.namer).toCallback
-        _ <- $.modState(state => {
-          state.copy(
-            network = state.network + (
-              (
-                EditPort(PortMeta("ppp", Anchor(0, 0, Neutral)), "PORT"),
-                newNode
-              )
-            )
-          )
-        })
+        state <- $.state
+        existingNode = state.network.vertexList.find(_._2.meta.id == nodeId).get
+        existingPorts = portsForNode(nodeId, state.network)
+        node <- Nodes.copyNode(existingNode._2, props.namer).toCallback
+        ports <- existingPorts
+          .traverse(Ports.copyPort(_, node, props.namer))
+          .toCallback
+        _ <- addVertices(node, ports)
+        _ <- Callback(println(state.network.vertexList))
       } yield ()
-
-//    private def addNode(node: EditNode, ports: List[EditPort]): Callback =
-//      for {
-//        props <- $.props
-//        newNode <- Nodes.copyNode(node, props.namer).toCallback
-//        _ <- $.modState(state => {
-//          state.copy(network = state.network + Graph.vertices(ports.map((_,node))))
-//        })
-//      } yield ()
 
     private def deleteNode(nodeId: String): Callback =
       $.modState(state => {
         state.copy(network = state.network.induce(_._2.meta.id != nodeId))
       })
 
-//    private def addPort(port: EditPort, node: EditNode): Callback =
-//
-//    private def deletePort(portId: String): Callback =
-
     private def bringToFront(nodeId: String): Callback =
-//      $.modState(state => {
-//        val split = state.nodes.span(_._1 != nodeId)
-//        state.copy(nodes = split match {
-//          case (front, node +: back) => front ++ back :+ node
-//          case (front, node)         => front ++ node
-//        })
-//      })
-      Callback(println(nodeId))
+      $.modState(_.copy(topNodeId = Some(nodeId)))
 
     private def adjustPorts(ports: Vector[EditPort]): Callback =
       $.modState(
         state =>
           state.copy(network = state.network.map(v => {
+            println(s"found: $v")
             ports
               .find(_.meta.id == v._1.meta.id)
               .map(p => {
@@ -120,7 +110,7 @@ object GraphEditor {
               })
               .getOrElse(v)
           }))
-      )
+      ) >> Callback(println(ports))
 
     private def deletePorts(ports: Vector[String]): Callback =
       $.modState(
@@ -209,7 +199,8 @@ object GraphEditor {
     def render(props: Props, state: State): VdomElement =
       NodeMenu(
         props.logo,
-        addNode,
+        props.namer,
+        addVertices,
         <.div(
           PageStyle.editor,
           <.div.withRef(editorRef)(
@@ -223,6 +214,13 @@ object GraphEditor {
                   n =>
                     <.div(
                       ^.key := n.meta.id,
+                      ^.zIndex := {
+                        state.topNodeId match {
+                          case Some(id) if n.meta.id == id =>
+                            NodeStyle.topNodeZIndex
+                          case _ => NodeStyle.bottomNodeZIndex
+                        }
+                      },
                       NodeContainer(
                         n.meta.id,
                         Nodes.getType(n),
@@ -231,6 +229,7 @@ object GraphEditor {
                         onPortHover,
                         adjustPorts,
                         deletePorts,
+                        cloneNode(n.meta.id),
                         deleteNode(n.meta.id),
                         bringToFront(n.meta.id)
                       )

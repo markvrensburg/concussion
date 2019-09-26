@@ -170,5 +170,4 @@ object LGraph {
 
   implicit def GraphEq[V: Eq, E: Eq: Monoid]: Eq[LGraph[V, E]] =
     (x: LGraph[V, E], y: LGraph[V, E]) => x.toAdjacencyMap === y.toAdjacencyMap
-
 }
