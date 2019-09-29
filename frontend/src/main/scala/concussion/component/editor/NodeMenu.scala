@@ -25,7 +25,7 @@ object NodeMenu {
 
   final case class Props(logo: String,
                          namer: Namer[IO],
-                         addVertex: (EditNode, List[EditPort]) => Callback)
+                         addVertices: (EditNode, List[EditPort]) => Callback)
 
   final case class State(visible: Boolean = true)
 
@@ -39,7 +39,7 @@ object NodeMenu {
         props <- $.props
         node <- Nodes.mkNode(nodeType, props.namer).toCallback
         ports <- Ports.mkPort(node, props.namer).map(List(_)).toCallback
-        _ <- props.addVertex(node, ports)
+        _ <- props.addVertices(node, ports)
       } yield ()
 
     def render(props: Props, state: State, children: PropsChildren) =
@@ -100,8 +100,8 @@ object NodeMenu {
 
   def apply(logo: String,
             namer: Namer[IO],
-            addVertex: (EditNode, List[EditPort]) => Callback = (_, _) =>
+            addVertices: (EditNode, List[EditPort]) => Callback = (_, _) =>
               Callback.empty,
             children: VdomNode): Unmounted[Props, State, Backend] =
-    component(Props(logo, namer, addVertex))(children)
+    component(Props(logo, namer, addVertices))(children)
 }

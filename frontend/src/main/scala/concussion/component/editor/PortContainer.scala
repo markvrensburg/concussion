@@ -50,6 +50,7 @@ object PortContainer {
                   orientation.getOrElse(props.orientation)
                 )
               ),
+              props.portSocketRef,
               props.name
             )
           )

@@ -4,6 +4,8 @@ import cats.effect.IO
 import concussion.component.editor._
 import concussion.domain._
 import concussion.geometry._
+import japgolly.scalajs.react.Ref
+import org.scalajs.dom.html
 
 object Ports {
 
@@ -22,6 +24,7 @@ object Ports {
                 else Left
               )
             ),
+            Ref[html.Element],
             "Port"
         )
       )
@@ -32,7 +35,22 @@ object Ports {
       .map(
         pid =>
           port.map(
-            meta => meta.copy(id = pid, anchor = meta.anchor.copy(x = 0, y = 0))
+            meta =>
+              (
+                meta._1
+                  .copy(id = pid, anchor = meta._1.anchor.copy(x = 0, y = 0)),
+                Ref[html.Element],
+            )
         )
       )
+
+  def shouldUpdatePorts(currentPorts: Set[EditPort],
+                        nextPorts: Set[EditPort]): Boolean =
+    (currentPorts.length != nextPorts.length) || {
+      val ps1 = currentPorts
+        .map(p => (p.meta._1.id, p.meta._1.anchor.orientation, p.name))
+      val ps2 = nextPorts
+        .map(p => (p.meta._1.id, p.meta._1.anchor.orientation, p.name))
+      (ps1 != ps2)
+    }
 }

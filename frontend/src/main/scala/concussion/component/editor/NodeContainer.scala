@@ -5,6 +5,7 @@ package editor
 import cats.implicits._
 import cats.effect.IO
 import concussion.compile.Validation
+import concussion.domain.Node._
 import concussion.facade.draggable.{
   Draggable,
   DraggableBounds,
@@ -14,14 +15,13 @@ import concussion.facade.draggable.{
 import concussion.domain._
 import concussion.geometry._
 import concussion.styles.NodeStyle
-import concussion.util.Namer
-import japgolly.scalajs.react.Ref.Simple
+import concussion.util.{Namer, Nodes, Ports}
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.CatsReact._
 import concussion.util.CatsIOReact._
 import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.vdom.html_<^._
-import org.scalajs.dom.{MouseEvent, html}
+import org.scalajs.dom.MouseEvent
 import react.semanticui.colors.{Blue, Green, Grey, Red}
 import react.semanticui.elements.header.Header
 import react.semanticui.elements.icon.Icon
@@ -31,20 +31,16 @@ import scalacss.ScalaCssReact._
 
 object NodeContainer {
 
-  final case class State(
-    ports: Vector[(String, Simple[html.Element], Orientation, String)] =
-      Vector.empty,
-    code: Option[String] = Option.empty,
-    doUpdate: Boolean = false
-  )
+  final case class State(doUpdate: Boolean = false)
 
-  final case class Props(id: String,
-                         nodeType: NodeType,
+  final case class Props(node: EditNode,
+                         ports: Set[EditPort],
                          namer: Namer[IO],
                          onPortClick: EditPort => Callback,
                          onPortHover: EditPort => Callback,
-                         adjustPorts: Vector[EditPort] => Callback,
-                         deletePorts: Vector[String] => Callback,
+                         adjustPorts: List[EditPort] => Callback,
+                         deletePorts: List[String] => Callback,
+                         addVertices: (EditNode, List[EditPort]) => Callback,
                          cloneNode: Callback,
                          deleteNode: Callback,
                          bringToFront: Callback)
@@ -53,10 +49,10 @@ object NodeContainer {
 
     private val getPorts =
       for {
-        state <- $.state
-        ports <- state.ports
-          .map(p => {
-            p._2.get
+        props <- $.props
+        ports <- props.ports
+          .map(port => {
+            port.meta._2.get
               .map(e => {
                 val rect = e.getBoundingClientRect
                 val center = (
@@ -64,25 +60,23 @@ object NodeContainer {
                   rect.top + ((rect.bottom - rect.top) / 2)
                 )
                 EditPort(
-                  PortMeta(p._1, Anchor(center._1, center._2, p._3)),
-                  p._4
+                  PortMeta(
+                    port.meta._1.id,
+                    Anchor(
+                      center._1,
+                      center._2,
+                      port.meta._1.anchor.orientation
+                    )
+                  ),
+                  port.meta._2,
+                  port.name
                 )
               })
               .asCallback
           })
+          .toList
           .sequence
       } yield ports
-
-//    private def cloneNode(nodeId: String): Callback =
-//      for {
-//        props <- $.props
-//        newNode <- Nodes.copyNode(node, props.namer).toCallback
-//        _ <- $.modState(state => {
-//          state.copy(
-//            network = state.network + Graph.vertices(ports.map((_, node)))
-//          )
-//        })
-//      } yield ()
 
     def updateConnections(force: Boolean = false): Callback =
       for {
@@ -90,8 +84,8 @@ object NodeContainer {
         state <- $.state
         ports <- getPorts
         _ <- if (force || state.doUpdate)
-          props.adjustPorts(ports.mapFilter(identity)) >> $.modState(
-            _.copy(doUpdate = false)
+          props.adjustPorts(ports.mapFilter(identity)) >> $.setState(
+            State(doUpdate = true)
           )
         else
           Callback.empty
@@ -100,37 +94,21 @@ object NodeContainer {
     private val addPort =
       for {
         props <- $.props
-        id <- props.namer.nextName(s"${props.id}_Port").toCallback
-        _ <- $.modState(state => {
-          state.copy(
-            ports = state.ports :+ (
-              (
-                id,
-                Ref[html.Element],
-                if (props.nodeType == Input) Right
-                else Left,
-                "Port"
-              )
-            )
-          )
-        })
+        port <- Ports.mkPort(props.node, props.namer).toCallback
+        _ <- props.addVertices(props.node, List(port))
       } yield ()
 
     private def deletePort(portId: String) =
       for {
         props <- $.props
-        _ <- $.modState(state => {
-          state
-            .copy(ports = state.ports.filter(_._1 != portId), doUpdate = true)
-        })
-        _ <- props.deletePorts(Vector(portId))
+        _ <- $.setState(State(doUpdate = true))
+        _ <- props.deletePorts(List(portId))
       } yield ()
 
     private val onDelete: Callback =
       for {
         props <- $.props
-        state <- $.state
-        _ <- props.deletePorts(state.ports.map(_._1))
+        _ <- props.deletePorts(props.ports.toList.map(_.meta._1.id))
         _ <- props.deleteNode
       } yield ()
 
@@ -141,31 +119,46 @@ object NodeContainer {
       } yield ()
 
     private def shiftPort(portId: String) =
-      $.modState(state => {
-        val ports = state.ports.map {
-          case (id, ref, orientation, name) if id == portId =>
-            (id, ref, orientation.swap, name)
+      for {
+        props <- $.props
+        ports = props.ports.map {
+          case p @ Port(meta, _) if meta._1.id == portId =>
+            p.map(
+              m =>
+                (
+                  m._1.copy(
+                    anchor = meta._1.anchor
+                      .copy(orientation = meta._1.anchor.orientation.swap)
+                  ),
+                  m._2
+              )
+            )
           case port => port
         }
-        state.copy(ports = ports, doUpdate = true)
-      })
+        _ <- props.adjustPorts(ports.toList)
+        _ <- $.setState(State(doUpdate = true))
+      } yield ()
 
     private def changePortName(portId: String)(newName: String) =
-      $.modState(state => {
-        val ports = state.ports.map {
-          case (id, ref, orientation, _) if id == portId =>
-            (id, ref, orientation, newName)
+      for {
+        props <- $.props
+        ports = props.ports.map {
+          case p @ Port(meta, _) if meta._1.id == portId =>
+            p.copy(name = newName)
           case port => port
         }
-        state.copy(ports = ports, doUpdate = true)
-      })
+        _ <- props.adjustPorts(ports.toList)
+        _ <- $.setState(State(doUpdate = true))
+      } yield ()
 
     private def onCodeChange(newCode: String) =
       for {
         props <- $.props
         _ <- $.modState { state =>
-          println(s"${props.id}: ${Validation.program[Long](newCode)}")
-          state.copy(code = Some(newCode), doUpdate = true)
+          println(
+            s"${props.node.meta.id}: ${Validation.program[Long](newCode)}"
+          )
+          state.copy(doUpdate = true)
         }
       } yield ()
     //$.modState(_.copy(code = Some(newCode), doUpdate = true))
@@ -193,7 +186,7 @@ object NodeContainer {
         )
       )
 
-    private def input(props: Props, state: State) =
+    private def input(props: Props) =
       Draggable(
         Draggable
           .props(
@@ -229,21 +222,21 @@ object NodeContainer {
             ),
             //Ports
             React.Fragment(
-              state.ports.map(
+              props.ports.toList.map(
                 p =>
                   <.div(
-                    ^.key := p._1,
+                    ^.key := p.meta._1.id,
                     PortContainer(
-                      p._1,
-                      p._4,
-                      p._3,
-                      p._2,
+                      p.meta._1.id,
+                      p.name,
+                      p.meta._1.anchor.orientation,
+                      p.meta._2,
                       canDelete = false,
                       props.onPortClick,
                       props.onPortHover,
-                      deletePort(p._1),
-                      shiftPort(p._1),
-                      changePortName(p._1)
+                      deletePort(p.meta._1.id),
+                      shiftPort(p.meta._1.id),
+                      changePortName(p.meta._1.id)
                     )
                 )
               ): _*
@@ -252,7 +245,7 @@ object NodeContainer {
         )
       )
 
-    private def output(props: Props, state: State) =
+    private def output(props: Props) =
       Draggable(
         Draggable
           .props(
@@ -288,21 +281,21 @@ object NodeContainer {
             ),
             //Ports
             React.Fragment(
-              state.ports.map(
+              props.ports.toList.map(
                 p =>
                   <.div(
-                    ^.key := p._1,
+                    ^.key := p.meta._1.id,
                     PortContainer(
-                      p._1,
-                      p._4,
-                      p._3,
-                      p._2,
+                      p.meta._1.id,
+                      p.name,
+                      p.meta._1.anchor.orientation,
+                      p.meta._2,
                       canDelete = false,
                       props.onPortClick,
                       props.onPortHover,
-                      deletePort(p._1),
-                      shiftPort(p._1),
-                      changePortName(p._1)
+                      deletePort(p.meta._1.id),
+                      shiftPort(p.meta._1.id),
+                      changePortName(p.meta._1.id)
                     )
                 )
               ): _*
@@ -311,7 +304,7 @@ object NodeContainer {
         )
       )
 
-    private def processor(props: Props, state: State) =
+    private def processor(props: Props) =
       Draggable(
         Draggable
           .props(
@@ -354,21 +347,21 @@ object NodeContainer {
             ),
             //Ports
             React.Fragment(
-              state.ports.map(
+              props.ports.toList.map(
                 p =>
                   <.div(
-                    ^.key := p._1,
+                    ^.key := p.meta._1.id,
                     PortContainer(
-                      p._1,
-                      p._4,
-                      p._3,
-                      p._2,
+                      p.meta._1.id,
+                      p.name,
+                      p.meta._1.anchor.orientation,
+                      p.meta._2,
                       canDelete = true,
                       props.onPortClick,
                       props.onPortHover,
-                      deletePort(p._1),
-                      shiftPort(p._1),
-                      changePortName(p._1)
+                      deletePort(p.meta._1.id),
+                      shiftPort(p.meta._1.id),
+                      changePortName(p.meta._1.id)
                     )
                 )
               ): _*
@@ -387,61 +380,55 @@ object NodeContainer {
         )
       )
 
-    def render(props: Props, state: State): VdomElement = props.nodeType match {
-      case Input     => input(props, state)
-      case Output    => output(props, state)
-      case Processor => processor(props, state)
+    def render(props: Props): VdomElement = props.node match {
+      case InputNode(_)        => input(props)
+      case OutputNode(_)       => output(props)
+      case ProcessorNode(_, _) => processor(props)
     }
   }
 
   private val component =
     ScalaComponent
       .builder[Props]("NodeContainer")
-      .initialStateCallbackFromProps(
-        props =>
-          props.namer
-            .nextName(s"${props.id}_Port")
-            .toCallback
-            .map(
-              name =>
-                State(
-                  ports = Vector(
-                    (
-                      name,
-                      Ref[html.Element],
-                      if (props.nodeType == Input) Right
-                      else Left,
-                      "Port"
-                    )
-                  )
-              )
-          )
-      )
+      .initialState(State())
       .renderBackend[Backend]
+      .shouldComponentUpdate(
+        lc =>
+          CallbackTo {
+            val currentProps = lc.currentProps
+            val nextProps = lc.nextProps
+
+            Nodes.shouldUpdateNode(currentProps.node, nextProps.node) ||
+            Ports.shouldUpdatePorts(currentProps.ports, nextProps.ports)
+        }
+      )
       .componentDidUpdate(_.backend.updateConnections())
       .build
 
   def apply(
-    id: String,
-    nodeType: NodeType,
+    node: EditNode,
+    ports: Set[EditPort],
     namer: Namer[IO],
     onPortClick: EditPort => Callback = _ => Callback.empty,
     onPortHover: EditPort => Callback = _ => Callback.empty,
-    adjustPorts: Vector[EditPort] => Callback = _ => Callback.empty,
-    deletePorts: Vector[String] => Callback = _ => Callback.empty,
+    adjustPorts: List[EditPort] => Callback = _ => Callback.empty,
+    deletePorts: List[String] => Callback = _ => Callback.empty,
+    addVertices: (EditNode, List[EditPort]) => Callback = (_, _) =>
+      Callback.empty,
     cloneNode: Callback = Callback.empty,
     deleteNode: Callback = Callback.empty,
     bringToFront: Callback = Callback.empty
   ): Unmounted[Props, State, Backend] =
     component(
       Props(
-        id,
-        nodeType,
+        node,
+        ports,
         namer,
         onPortClick,
         onPortHover,
         adjustPorts,
         deletePorts,
+        addVertices,
         cloneNode,
         deleteNode,
         bringToFront

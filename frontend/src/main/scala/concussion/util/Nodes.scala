@@ -36,4 +36,12 @@ object Nodes {
       .nextName(NodeType.nodeTypes.encode(getType(node)))
       .map(nid => node.map(_.copy(id = nid)))
 
+  def shouldUpdateNode(currentNode: EditNode, nextNode: EditNode): Boolean =
+    (currentNode.meta.id != nextNode.meta.id) /* || {
+      (currentNode, nextNode) match {
+        case (ProcessorNode(_, code1), ProcessorNode(_, code2)) =>
+          code1 != code2
+        case _ => false
+      }
+    } */
 }
