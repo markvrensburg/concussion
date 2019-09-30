@@ -45,25 +45,18 @@ object GraphEditor {
 
     private def filterConnector(port: EditPort,
                                 network: EditNetwork): EditNetwork =
-      network.removeEdge((v1, v2) => !containsId(port.meta._1.id)((v1, v2)))
+      network.removeEdge((v1, v2) => containsId(port.meta._1.id)((v1, v2)))
 
     private def connectPorts(port1: EditPort,
                              port2: EditPort,
-                             network: EditNetwork): EditNetwork = {
-      val res: EditNetwork = (
+                             network: EditNetwork): EditNetwork =
+      (
         network.vertexSet.find(_._1.meta._1.id == port1.meta._1.id),
         network.vertexSet.find(_._1.meta._1.id == port2.meta._1.id)
       ) match {
         case (Some(v1), Some(v2)) => Graph.vertex(v1) * Graph.vertex(v2)
         case _                    => Graph.empty
       }
-
-      println(res)
-      println(network.vertexSet)
-      println(network.vertexSet)
-
-      res
-    }
 
     private def distinctNodes(network: EditNetwork): List[EditNode] =
       network.vertexList.groupBy(_._2.meta.id).values.map(_.head._2).toList

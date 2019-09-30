@@ -13,8 +13,8 @@ object Dependencies {
   val scalatestV = "3.0.8"
 
   //Backend
-  val http4sV = "0.20.10"
-  val pureConfigV = "0.12.0"
+  val http4sV = "0.20.11"
+  val pureConfigV = "0.12.1"
 
   //Frontend
   val scalaCssV = "0.5.6"

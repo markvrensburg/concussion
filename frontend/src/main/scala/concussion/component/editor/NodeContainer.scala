@@ -183,6 +183,12 @@ object NodeContainer {
         <.div(
           ^.onClick --> onClone,
           Icon(Icon.props(name = "clone outline", color = Grey, link = true))
+        ),
+        <.div(
+          //^.onClick --> ,
+          Icon(
+            Icon.props(name = "sliders horizontal", color = Grey, link = true)
+          )
         )
       )
 
@@ -397,7 +403,6 @@ object NodeContainer {
           CallbackTo {
             val currentProps = lc.currentProps
             val nextProps = lc.nextProps
-
             Nodes.shouldUpdateNode(currentProps.node, nextProps.node) ||
             Ports.shouldUpdatePorts(currentProps.ports, nextProps.ports)
         }
