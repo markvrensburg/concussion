@@ -24,10 +24,10 @@ object LandingPage {
 
   final class Backend() extends OnUnmount {
 
-    def onMouseEnter(id: String)(e: MouseEvent): Callback = Callback {
-      val layout = dom.document.getElementById(LayoutStyle.layoutId)
-      layout.dispatchEvent(mkBackgroundChangeEvent)
-      println((id, e.target))
+    val onMouseEnter: MouseEvent => Callback = _ =>
+      Callback {
+        val layout = dom.document.getElementById(LayoutStyle.layoutId)
+        layout.dispatchEvent(mkBackgroundChangeEvent)
     }
 
     def render(props: Props, state: State): VdomElement =
@@ -39,18 +39,18 @@ object LandingPage {
   }
 
   private def addListeners(
-      elementIds: List[String],
-      builder: Step4[Props, Children.None, State, Backend, UpdateSnapshot.None]
+    elementIds: List[String],
+    builder: Step4[Props, Children.None, State, Backend, UpdateSnapshot.None]
   ) =
     elementIds.foldLeft(builder)(
       (newBuilder, id) =>
         newBuilder.configure(
           EventListener[MouseEvent].install(
             "mouseenter",
-            _.backend.onMouseEnter(id),
+            _.backend.onMouseEnter,
             _ => dom.document.getElementById(id)
           )
-        )
+      )
     )
 
   private def component(random: Random) =
@@ -62,7 +62,8 @@ object LandingPage {
         .renderBackend[Backend]
     ).build
 
-  def apply(random: Random, ctl: RouterCtl[Page]): Unmounted[Props, State, Backend] =
+  def apply(random: Random,
+            ctl: RouterCtl[Page]): Unmounted[Props, State, Backend] =
     component(random)(Props(ctl))
 
 }

@@ -31,7 +31,6 @@ object Layout {
           LayoutStyle.layout,
           ^.id := LayoutStyle.layoutId,
           ^.background := state.background
-          //^.transition := "background 10000ms linear"
         ),
         children
       )
@@ -52,7 +51,7 @@ object Layout {
       .build
 
   def apply(
-      updateBackground: CallbackTo[String]
+    updateBackground: CallbackTo[String]
   )(children: VdomNode): Unmounted[Props, State, Backend] =
     component(Props(updateBackground))(children)
 

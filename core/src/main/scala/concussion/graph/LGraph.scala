@@ -35,12 +35,6 @@ sealed trait LGraph[V, E] {
   def *(right: (E, LGraph[V, E])): LGraph[V, E] =
     connect(right._1, this, right._2)
 
-  def isEmpty: Boolean =
-    foldg[Boolean](true, _ => false, (_, vtx1, vtx2) => vtx1 && vtx2)
-
-  def hasVertex(v: V)(implicit ev: Eq[V]): Boolean =
-    foldg[Boolean](false, _ === v, (_, vtx1, vtx2) => vtx1 || vtx2)
-
   def toAdjacencyMap(implicit ev1: Eq[E], ev2: Monoid[E]): AdjacencyMap[V, E] =
     foldg(
       AdjacencyMap.empty[V, E],
@@ -48,7 +42,46 @@ sealed trait LGraph[V, E] {
       AdjacencyMap.connect[V, E]
     )
 
-  def induce(f: V => Boolean): LGraph[V, E] =
+  def mapV[A](f: V => A): LGraph[A, E] =
+    foldg[LGraph[A, E]](empty, v => vertex(f(v)), connect)
+
+  def mapE[A](f: E => A): LGraph[V, A] =
+    foldg[LGraph[V, A]](
+      empty,
+      vertex,
+      (edge, g1, g2) => connect(f(edge), g1, g2)
+    )
+
+  def vertexVector: Vector[V] =
+    foldg[Vector[V]](Vector.empty, Vector(_), (_, g1, g2) => g1 ++ g2)
+
+  def simpleEdgeVector: Vector[E] =
+    foldg[Vector[E]](
+      Vector.empty,
+      _ => Vector.empty,
+      (edge, g1, g2) => Vector(edge) ++ g1 ++ g2
+    )
+
+  def vertexSet: Set[V] =
+    foldg[Set[V]](Set.empty, Set(_), (_, g1, g2) => g1.union(g2))
+
+  def simpleEdgeSet: Set[E] =
+    foldg[Set[E]](
+      Set.empty,
+      _ => Set.empty,
+      (edge, g1, g2) => Set(edge).union(g1).union(g2)
+    )
+
+  def edgeSet(implicit ev1: Eq[E], ev2: Monoid[E]): Set[(E, V, V)] =
+    toAdjacencyMap.edgeSet
+
+  def isEmpty: Boolean =
+    foldg[Boolean](true, _ => false, (_, vtx1, vtx2) => vtx1 && vtx2)
+
+  def hasVertex(v: V)(implicit ev: Eq[V]): Boolean =
+    foldg[Boolean](false, _ === v, (_, vtx1, vtx2) => vtx1 || vtx2)
+
+  def induceV(f: V => Boolean): LGraph[V, E] =
     foldg[LGraph[V, E]](
       empty,
       v => if (f(v)) vertex(v) else empty,
@@ -62,7 +95,7 @@ sealed trait LGraph[V, E] {
     )
 
   def removeVertex(v: V)(implicit ev: Eq[V]): LGraph[V, E] =
-    induce(_ =!= v)
+    induceV(_ =!= v)
 
   def focus(f: V => Boolean)(implicit ev1: Eq[E], ev2: Monoid[E]): Focus[V, E] =
     foldg[Focus[V, E]](emptyFocus, vertexFocus(f), connectFoci(_, _, _))
@@ -86,7 +119,7 @@ sealed trait LGraph[V, E] {
         overlays[V, E](
           List(
             vertex(v),
-            induce(_ =!= v),
+            induceV(_ =!= v),
             edges[V, E](
               c.inputs.filter(x => is(x._2)).map(x => (x._1, x._2, v))
             ),

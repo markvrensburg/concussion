@@ -4,7 +4,7 @@ package editor
 
 import cats.effect.IO
 import concussion.domain._
-import concussion.util.{Namer, Nodes, Ports}
+import concussion.util.{Namer, Nodes}
 import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.{PropsChildren, _}
 import japgolly.scalajs.react.vdom.html_<^._
@@ -25,7 +25,7 @@ object NodeMenu {
 
   final case class Props(logo: String,
                          namer: Namer[IO],
-                         addVertices: (EditNode, List[EditPort]) => Callback)
+                         addNode: EditNode => Callback)
 
   final case class State(visible: Boolean = true)
 
@@ -38,8 +38,7 @@ object NodeMenu {
       for {
         props <- $.props
         node <- Nodes.mkNode(nodeType, props.namer).toCallback
-        ports <- Ports.mkPort(node, props.namer).map(List(_)).toCallback
-        _ <- props.addVertices(node, ports)
+        _ <- props.addNode(node)
       } yield ()
 
     def render(props: Props, state: State, children: PropsChildren) =
@@ -100,8 +99,7 @@ object NodeMenu {
 
   def apply(logo: String,
             namer: Namer[IO],
-            addVertices: (EditNode, List[EditPort]) => Callback = (_, _) =>
-              Callback.empty,
+            addNode: EditNode => Callback = _ => Callback.empty,
             children: VdomNode): Unmounted[Props, State, Backend] =
-    component(Props(logo, namer, addVertices))(children)
+    component(Props(logo, namer, addNode))(children)
 }

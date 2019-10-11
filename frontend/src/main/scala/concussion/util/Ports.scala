@@ -9,48 +9,32 @@ import org.scalajs.dom.html
 
 object Ports {
 
-  def mkPort(node: EditNode, namer: Namer[IO]): IO[EditPort] =
+  def mkPort(nodeId: String,
+             nodeType: NodeType,
+             namer: Namer[IO]): IO[EditPort] =
     namer
-      .nextName(s"${node.meta.id}_Port")
+      .nextName(s"${nodeId}_Port")
       .map(
         id =>
-          EditPort(
-            PortMeta(
-              id,
-              Anchor(
-                0,
-                0,
-                if (Nodes.getType(node) == Input) Right
-                else Left
-              )
-            ),
-            Ref[html.Element],
-            "Port"
-        )
+          Port(id, "Port", (nodeType match {
+            case Input => Right
+            case _     => Left
+          }, Ref[html.Element]))
       )
 
-  def copyPort(port: EditPort, node: EditNode, namer: Namer[IO]): IO[EditPort] =
+  def copyPort(port: EditPort, nodeId: String, namer: Namer[IO]): IO[EditPort] =
     namer
-      .nextName(s"${node.meta.id}_Port")
-      .map(
-        pid =>
-          port.map(
-            meta =>
-              (
-                meta._1
-                  .copy(id = pid, anchor = meta._1.anchor.copy(x = 0, y = 0)),
-                Ref[html.Element],
-            )
-        )
-      )
+      .nextName(s"${nodeId}_Port")
+      .map(id => port.copy(id = id).mapMeta(m => (m._1, Ref[html.Element])))
 
-  def shouldUpdatePorts(currentPorts: Set[EditPort],
-                        nextPorts: Set[EditPort]): Boolean =
-    (currentPorts.length != nextPorts.length) || {
-      val ps1 = currentPorts
-        .map(p => (p.meta._1.id, p.meta._1.anchor.orientation, p.name))
-      val ps2 = nextPorts
-        .map(p => (p.meta._1.id, p.meta._1.anchor.orientation, p.name))
-      (ps1 != ps2)
+  // todo use cats equals for equality
+  def shouldUpdatePorts(currentPorts: NodePorts[_],
+                        nextPorts: NodePorts[_]): Boolean =
+    (currentPorts, nextPorts) match {
+      case (Single(p1), Single(p2)) => p1 != p2
+      case (Multiple(p1), Multiple(p2)) =>
+        (p1.length != p1.length) || (p1 != p2)
+      case _ => true
     }
+
 }

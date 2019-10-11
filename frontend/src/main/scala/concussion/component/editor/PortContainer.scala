@@ -2,22 +2,17 @@ package concussion
 package component
 package editor
 
-import concussion.domain.PortMeta
+import concussion.domain.Port
 import concussion.geometry._
-import japgolly.scalajs.react.Ref.Simple
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.vdom.html_<^._
-import org.scalajs.dom.html
 import react.semanticui.colors.Grey
 import react.semanticui.elements.icon.Icon
 
 object PortContainer {
 
-  final case class Props(id: String,
-                         name: String,
-                         orientation: Orientation,
-                         portSocketRef: Simple[html.Element],
+  final case class Props(port: EditPort,
                          canDelete: Boolean,
                          onPortClick: EditPort => Callback,
                          onPortHover: EditPort => Callback,
@@ -31,34 +26,19 @@ object PortContainer {
       callback: EditPort => Callback,
       orientation: Option[Orientation] = Option.empty
     ): Callback =
-      for {
-        props <- $.props
-        _ <- props.portSocketRef.foreachCB(e => {
-          val rect = e.getBoundingClientRect
-          val center =
-            (
-              rect.left + ((rect.right - rect.left) / 2),
-              rect.top + ((rect.bottom - rect.top) / 2)
-            )
+      $.props.flatMap(
+        props =>
           callback(
-            EditPort(
-              PortMeta(
-                props.id,
-                Anchor(
-                  center._1,
-                  center._2,
-                  orientation.getOrElse(props.orientation)
-                )
-              ),
-              props.portSocketRef,
-              props.name
+            Port(
+              props.port.id,
+              props.port.name,
+              (orientation.getOrElse(props.port.meta._1), props.port.meta._2)
             )
-          )
-        })
-      } yield ()
+        )
+      )
 
     private def portSocket(props: Props): VdomNode =
-      <.div.withRef(props.portSocketRef)(
+      <.div.withRef(props.port.meta._2)(
         ^.onMouseUp --> onPortEvent(props.onPortClick),
         ^.onMouseEnter --> onPortEvent(props.onPortHover),
         ^.onMouseLeave --> onPortEvent(props.onPortHover, Some(Neutral)),
@@ -88,7 +68,7 @@ object PortContainer {
         Icon(
           Icon.props(
             name =
-              if (props.orientation == Right) "angle left" else "angle right",
+              if (props.port.meta._1 == Right) "angle left" else "angle right",
             color = Grey,
             link = true
           )
@@ -98,7 +78,7 @@ object PortContainer {
     private def elements(props: Props): Vector[VdomNode] =
       Vector(
         portSocket(props),
-        Name(defaultValue = props.name, onChange = props.onNameChange),
+        Name(defaultValue = props.port.name, onChange = props.onNameChange),
         delete(props),
         shift(props)
       )
@@ -108,12 +88,12 @@ object PortContainer {
         ^.width := "100%",
         ^.display := "flex",
         ^.justifyContent := {
-          props.orientation match {
+          props.port.meta._1 match {
             case Right => "flex-end"
             case _     => "flex-start"
           }
         },
-        props.orientation match {
+        props.port.meta._1 match {
           case Right =>
             React.Fragment(elements(props).reverse: _*)
           case _ =>
@@ -128,15 +108,12 @@ object PortContainer {
       .renderBackend[Backend]
       .shouldComponentUpdate(
         lc =>
-          CallbackTo(lc.currentProps.orientation != lc.nextProps.orientation)
+          CallbackTo(lc.currentProps.port.meta._1 != lc.nextProps.port.meta._1)
       )
       .build
 
   def apply(
-    id: String,
-    name: String,
-    orientation: Orientation,
-    portSocketRef: Simple[html.Element],
+    port: EditPort,
     canDelete: Boolean = true,
     onPortClick: EditPort => Callback = _ => Callback.empty,
     onPortHover: EditPort => Callback = _ => Callback.empty,
@@ -146,10 +123,7 @@ object PortContainer {
   ): Unmounted[Props, Unit, Backend] =
     component(
       Props(
-        id,
-        name,
-        orientation,
-        portSocketRef,
+        port,
         canDelete,
         onPortClick,
         onPortHover,

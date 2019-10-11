@@ -1,15 +1,9 @@
 package concussion
 
-import concussion.graph.Graph
+import concussion.graph.LGraph
 
 package object domain {
 
-  type Vertex[NMeta, PMeta] = (Port[PMeta], Node[NMeta])
-
-  type Network[NMeta, PMeta] = Graph[Vertex[NMeta, PMeta]]
-
-  type BasicNode = Node[Unit]
-  type BasicPort = Port[Unit]
-  type BasicNetwork = Network[Unit, Unit]
+  type Network[NMeta, PMeta, Edge] = LGraph[Node[NMeta, PMeta], Edge]
 
 }

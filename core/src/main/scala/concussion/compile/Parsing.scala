@@ -23,7 +23,7 @@ object Parsing {
     )).map(ref => (ref._1 :: ref._2).mkString)
 
   def named: Parser[String] =
-    takeWhile(_.isLetterOrDigit).named("Name must contain letters or digits")
+    takeWhile1(_.isLetterOrDigit).named("Name must contain letters or digits")
 
   def reference[A]: Parser[Reference[A]] =
     namedStrict.map(Reference[A])

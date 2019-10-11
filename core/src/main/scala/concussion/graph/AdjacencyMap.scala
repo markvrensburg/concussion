@@ -4,7 +4,9 @@ package graph
 import cats._
 import cats.implicits._
 
-final case class AdjacencyMap[V, E](private val adjacencyMap: Map[V, Map[V, E]]) {
+final case class AdjacencyMap[V, E](
+  private val adjacencyMap: Map[V, Map[V, E]]
+) {
 
   def isEmpty: Boolean =
     adjacencyMap.isEmpty
@@ -21,21 +23,24 @@ final case class AdjacencyMap[V, E](private val adjacencyMap: Map[V, Map[V, E]])
   def vertexSet: Set[V] =
     adjacencyMap.keySet
 
-  def edgeList: List[(E, V, V)] =
+  def edgeSet: Set[(E, V, V)] =
     for {
-      (x, ys) <- adjacencyMap.toList
-      (y, e) <- ys.toList
+      (x, ys) <- adjacencyMap.toSet[(V, Map[V, E])]
+      (y, e) <- ys.toSet[(V, E)]
     } yield (e, x, y)
 
-  def edgeSet: Set[(E, V, V)] =
-    edgeList.toSet
-
   def removeVertex(vertex: V)(implicit ev: Eq[V]): AdjacencyMap[V, E] =
-    AdjacencyMap(adjacencyMap.filter(_._1 =!= vertex).mapValues(_.filter(_._1 =!= vertex)))
+    AdjacencyMap(
+      adjacencyMap.filter(_._1 =!= vertex).mapValues(_.filter(_._1 =!= vertex))
+    )
 
   def removeEdge(vtx1: V, vtx2: V)(implicit ev: Eq[V]): AdjacencyMap[V, E] =
     AdjacencyMap(
-      adjacencyMap.map(am => if (am._1 === vtx1) (am._1, am._2.filter(_._1 =!= vtx2)) else am)
+      adjacencyMap.map(
+        am =>
+          if (am._1 === vtx1) (am._1, am._2.filter(_._1 =!= vtx2))
+          else am
+      )
     )
 
   def removeEdge(edge: E)(implicit ev: Eq[E]): AdjacencyMap[V, E] =
@@ -49,7 +54,9 @@ object AdjacencyMap {
   def vertex[V, E](vertex: V): AdjacencyMap[V, E] =
     AdjacencyMap(Map(vertex -> Map.empty))
 
-  def edge[V: Order, E: Eq: Monoid](edge: E, vtx1: V, vtx2: V): AdjacencyMap[V, E] =
+  def edge[V: Order, E: Eq: Monoid](edge: E,
+                                    vtx1: V,
+                                    vtx2: V): AdjacencyMap[V, E] =
     if (edge === Monoid[E].empty)
       vertices(vtx1, vtx2)
     else if (vtx1 === vtx2)
@@ -60,20 +67,21 @@ object AdjacencyMap {
   def vertices[V: Order, E](vertex: V*): AdjacencyMap[V, E] =
     AdjacencyMap(vertex.map((_, Map.empty[V, E])).toMap)
 
-  def overlay[V, E: Eq: Monoid](l: AdjacencyMap[V, E], r: AdjacencyMap[V, E]): AdjacencyMap[V, E] =
+  def overlay[V, E: Eq: Monoid](l: AdjacencyMap[V, E],
+                                r: AdjacencyMap[V, E]): AdjacencyMap[V, E] =
     AdjacencyMap(l.adjacencyMap |+| r.adjacencyMap)
 
-  def connect[V, E: Eq: Monoid](
-      e: E,
-      l: AdjacencyMap[V, E],
-      r: AdjacencyMap[V, E]
-  ): AdjacencyMap[V, E] =
+  def connect[V, E: Eq: Monoid](e: E,
+                                l: AdjacencyMap[V, E],
+                                r: AdjacencyMap[V, E]): AdjacencyMap[V, E] =
     if (e === Monoid[E].empty)
       overlay(l, r)
     else {
       val targets = r.adjacencyMap.keySet.map((_, e)).toMap
       AdjacencyMap(
-        l.adjacencyMap |+| (r.adjacencyMap |+| l.adjacencyMap.keySet.map((_, targets)).toMap)
+        l.adjacencyMap |+| (r.adjacencyMap |+| l.adjacencyMap.keySet
+          .map((_, targets))
+          .toMap)
       )
     }
 

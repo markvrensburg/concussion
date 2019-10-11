@@ -21,50 +21,47 @@ lazy val commonSettings = Seq(
 lazy val root = project
   .in(file("."))
   .settings(commonSettings)
-  .settings(
-    publish := {},
-    publishLocal := {}
-  )
+  .settings(publish := {}, publishLocal := {})
   .aggregate(frontend, backend)
 
-lazy val core = (crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure) in file("core"))
-  .enablePlugins(BuildInfoPlugin)
-  .settings(commonSettings)
-  .settings(
-    buildInfoOptions ++= Seq(
-      BuildInfoOption.BuildTime,
-      BuildInfoOption.ToJson
-    ),
-    buildInfoKeys := Seq[BuildInfoKey](
-      name,
-      version,
-      "assetPath" -> Backend.assetPath,
-      "rootId" -> Frontend.rootId,
-      "aceKeybindingPath" -> Ace.keybindingPath,
-      "aceModePath" -> Ace.modePath,
-      "aceThemePath" -> Ace.themePath,
-      "aceKeybindingRegex" -> Ace.keybindingRegex,
-      "aceModeRegex" -> Ace.modeRegex,
-      "aceThemeRegex" -> Ace.themeRegex,
-      "semanticCssVersion" -> semanticUICssV
-    ),
-    buildInfoPackage := "info",
-    libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-core" % catsV,
-      "com.olegpy" %%% "meow-mtl" % meowMtlV,
-      "org.typelevel" %%% "cats-effect" % catsEffectV,
-      "org.tpolecat" %%% "atto-core" % attoV,
-      "co.fs2" %%% "fs2-core" % fs2V,
-      "com.lihaoyi" %%% "scalatags" % scalaTagsV,
-      "org.julienrf" %%% "enum" % enumV,
-      "org.scalacheck" %%% "scalacheck" % scalacheckV % "test",
-      "org.scalatest" %%% "scalatest" % scalatestV % "test"
+lazy val core =
+  (crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure) in file(
+    "core"
+  )).enablePlugins(BuildInfoPlugin)
+    .settings(commonSettings)
+    .settings(
+      buildInfoOptions ++= Seq(
+        BuildInfoOption.BuildTime,
+        BuildInfoOption.ToJson
+      ),
+      buildInfoKeys := Seq[BuildInfoKey](
+        name,
+        version,
+        "assetPath" -> Backend.assetPath,
+        "rootId" -> Frontend.rootId,
+        "aceKeybindingPath" -> Ace.keybindingPath,
+        "aceModePath" -> Ace.modePath,
+        "aceThemePath" -> Ace.themePath,
+        "aceKeybindingRegex" -> Ace.keybindingRegex,
+        "aceModeRegex" -> Ace.modeRegex,
+        "aceThemeRegex" -> Ace.themeRegex,
+        "semanticCssVersion" -> semanticUICssV
+      ),
+      buildInfoPackage := "info",
+      libraryDependencies ++= Seq(
+        "org.typelevel" %%% "cats-core" % catsV,
+        "com.olegpy" %%% "meow-mtl" % meowMtlV,
+        "org.typelevel" %%% "cats-effect" % catsEffectV,
+        "org.tpolecat" %%% "atto-core" % attoV,
+        "co.fs2" %%% "fs2-core" % fs2V,
+        "com.lihaoyi" %%% "scalatags" % scalaTagsV,
+        "org.julienrf" %%% "enum" % enumV,
+        "org.scalacheck" %%% "scalacheck" % scalacheckV % "test",
+        "org.scalatest" %%% "scalatest" % scalatestV % "test"
+      )
     )
-  )
-  .jvmSettings(
-    test in assembly := {}
-  )
-  .jsSettings()
+    .jvmSettings(test in assembly := {})
+    .jsSettings()
 
 lazy val coreJvm = core.jvm
 lazy val coreJs = core.js
@@ -75,7 +72,8 @@ lazy val backend = (project in file("backend"))
   .settings(
     test in assembly := {},
     assemblyMergeStrategy in assembly := {
-      case PathList(ps @ _*) if ps.last.endsWith("BuildInfo$.class") => MergeStrategy.first
+      case PathList(ps @ _*) if ps.last.endsWith("BuildInfo$.class") =>
+        MergeStrategy.first
       case x =>
         val oldStrategy = (assemblyMergeStrategy in assembly).value
         oldStrategy(x)
@@ -89,7 +87,8 @@ lazy val backend = (project in file("backend"))
         (
           nodeModules / Ace.keybindingPath +++
             nodeModules / Ace.themePath +++
-            nodeModules / Ace.modePath
+            nodeModules / Ace.modePath +++
+            nodeModules / SemanticUI.semanticUIPath
         ).allPaths
       }
       .value,
