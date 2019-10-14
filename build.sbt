@@ -87,8 +87,7 @@ lazy val backend = (project in file("backend"))
         (
           nodeModules / Ace.keybindingPath +++
             nodeModules / Ace.themePath +++
-            nodeModules / Ace.modePath +++
-            nodeModules / SemanticUI.semanticUIPath
+            nodeModules / Ace.modePath
         ).allPaths
       }
       .value,
