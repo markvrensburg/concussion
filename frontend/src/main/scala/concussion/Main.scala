@@ -28,11 +28,10 @@ object Main extends IOApp {
         | staticRoute("#notfound", NotFound) ~> render(
           notFound(random, (4, 3))
         ))
-        .notFound(redirectToPage(NotFound)(Redirect.Replace))
+        .notFound(redirectToPage(NotFound)(SetRouteVia.HistoryReplace))
         .setTitle(page => s"${BuildInfo.name.capitalize} | $page")
         .renderWith(
-          (_, page) =>
-            Layout(IO.delay(Background(random)).toCallback)(page.render())
+          (_, page) => Layout(IO.delay(Background(random)).toCallback)(page.render())
         )
     }
 

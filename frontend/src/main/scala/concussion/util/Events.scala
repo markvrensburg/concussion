@@ -7,10 +7,9 @@ object Events {
 
   val backgroundChangeEvent: String = "backgroundchange"
 
-  def mkBackgroundChangeEvent: Event = {
-    val event = document.createEvent("CustomEvent").asInstanceOf[CustomEvent]
-    event.initCustomEvent(backgroundChangeEvent, false, false, null)
-    event
-  }
-
+  def mkBackgroundChangeEvent: Event =
+    new CustomEvent(
+      typeArg = backgroundChangeEvent,
+      init = new CustomEventInit {}
+    )
 }

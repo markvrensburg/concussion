@@ -21,14 +21,8 @@ class StaticFileService(developmentMode: Boolean) {
   private val assetPath =
     if (BuildInfo.assetPath.isEmpty) None else Some(s"/${BuildInfo.assetPath}")
 
-  private val supportedStaticExtensions = Set(
-    ".html",
-    ".js",
-    ".css",
-    ".png",
-    ".ico",
-    ".jpg"
-  )
+  private val supportedStaticExtensions =
+    Set(".html", ".js", ".css", ".png", ".ico", ".jpg")
 
   private val blockingEc =
     ExecutionContext.fromExecutorService(
@@ -41,10 +35,7 @@ class StaticFileService(developmentMode: Boolean) {
         title := BuildInfo.name,
         base(href := "/"),
         meta(charset := "utf-8"),
-        link(
-          rel := "shortcut icon",
-          href := "favicon.ico"
-        ),
+        link(rel := "shortcut icon", href := "favicon.ico"),
         link(
           rel := "stylesheet",
           href := s"//cdn.jsdelivr.net/npm/semantic-ui@${BuildInfo.semanticCssVersion}/dist/semantic.min.css"
@@ -53,13 +44,13 @@ class StaticFileService(developmentMode: Boolean) {
       body(
         div(id := BuildInfo.rootId),
         if (developmentMode)
-          script(src := s"${BuildInfo.name}.js")
-        else
           Seq(
             script(src := s"${BuildInfo.name}-fastopt-library.js"),
             script(src := s"${BuildInfo.name}-fastopt-loader.js"),
             script(src := s"${BuildInfo.name}-fastopt.js")
           )
+        else
+          script(src := s"${BuildInfo.name}.js")
       )
     ).render
 

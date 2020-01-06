@@ -10,8 +10,7 @@ object Config {
   object Backend {
     val mainClass: String = "concussion.Main"
     val developMainClass: String = "concussion.MainDevelop"
-    //Have this set to something like "public/"
-    val assetPath: String = "public/"
+    val assetPath: String = "public/" //Have this set to something like "public/"
   }
 
   object Frontend {

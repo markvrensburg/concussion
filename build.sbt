@@ -14,7 +14,9 @@ lazy val commonSettings = Seq(
   organization := Application.organization,
   version := Application.version,
   scalaVersion := Application.scalaVersion,
-  addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.10"),
+  addCompilerPlugin(
+    ("org.typelevel" %% "kind-projector" % "0.11.0").cross(CrossVersion.full)
+  ),
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
 )
 
@@ -149,8 +151,8 @@ lazy val frontend = (project in file("frontend"))
   .enablePlugins(ScalaJSPlugin, ScalaJSWeb, ScalaJSBundlerPlugin)
   .settings(commonSettings)
   .settings(
-    version in webpack := "4.30.0",
-    version in startWebpackDevServer := "3.3.1",
+    version in webpack := webpackV,
+    version in startWebpackDevServer := webpackDevServerV,
     webpackDevServerExtraArgs := Seq("--inline"),
     webpackResources := webpackDir.value * "*.js",
     webpackConfigFile in fastOptJS := webpackDevConf.value,
@@ -177,11 +179,11 @@ lazy val frontend = (project in file("frontend"))
       "semantic-ui-react" -> semanticUIReactV
     ),
     npmDevDependencies in Compile ++= Seq(
-      "webpack-merge" -> "4.1.0",
-      "html-webpack-plugin" -> "3.1.0",
-      "imports-loader" -> "0.8.0",
-      "expose-loader" -> "0.7.5",
-      "copy-webpack-plugin" -> "5.0.3",
+      "webpack-merge" -> webpackMergeV,
+      "html-webpack-plugin" -> htmlWebpackPluginV,
+      "imports-loader" -> importsLoaderV,
+      "expose-loader" -> exposeLoaderV,
+      "copy-webpack-plugin" -> copyWebpackPluginV,
       "semantic-ui-css" -> semanticUICssV
     )
   )

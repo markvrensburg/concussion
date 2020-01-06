@@ -15,15 +15,15 @@ class Server[F[_]: ConcurrentEffect: ContextShift: Timer](developmentMode: Boole
   private val ip = "0.0.0.0"
   private val port = 8090
 
-  private val banner = """
-                         | _______  _____  __   _ _______ _     _ _______ _______ _____  _____  __   _
-                         | |       |     | | \  | |       |     | |______ |______   |   |     | | \  |
-                         | |_____  |_____| |  \_| |_____  |_____| ______| ______| __|__ |_____| |  \_|
-                       """.stripMargin.lines.toList
+  private val banner =
+    """
+      | _______  _____  __   _ _______ _     _ _______ _______ _____  _____  __   _
+      | |       |     | | \  | |       |     | |______ |______   |   |     | | \  |
+      | |_____  |_____| |  \_| |_____  |_____| ______| ______| __|__ |_____| |  \_|
+    """.stripMargin.lines.toList
 
-  private val services = Router[F](
-    "/" -> GZip(StaticFileService[F](developmentMode))
-  ).orNotFound
+  private val services =
+    Router[F]("/" -> GZip(StaticFileService[F](developmentMode))).orNotFound
 
   def serve: F[ExitCode] =
     for {
@@ -42,7 +42,7 @@ class Server[F[_]: ConcurrentEffect: ContextShift: Timer](developmentMode: Boole
 object Server {
 
   def apply[F[_]: ConcurrentEffect: ContextShift: Timer]: Server[F] =
-    new Server[F](true)
+    new Server[F](false)
 
   def apply[F[_]: ConcurrentEffect: ContextShift: Timer](developmentMode: Boolean): Server[F] =
     new Server[F](developmentMode)
