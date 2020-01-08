@@ -14,9 +14,7 @@ lazy val commonSettings = Seq(
   organization := Application.organization,
   version := Application.version,
   scalaVersion := Application.scalaVersion,
-  addCompilerPlugin(
-    ("org.typelevel" %% "kind-projector" % "0.11.0").cross(CrossVersion.full)
-  ),
+  addCompilerPlugin(("org.typelevel" %% "kind-projector" % "0.11.0").cross(CrossVersion.full)),
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
 )
 
@@ -130,7 +128,8 @@ lazy val backend = (project in file("backend"))
       }
     },
     imageNames in docker := Seq(
-      ImageName("registry.heroku.com/concussion-io/web:latest")
+      ImageName("registry.heroku.com/concussion-io/web:latest"),
+      ImageName("registry.gitlab.com/markvrensburg/concussion")
     )
   )
   .dependsOn(coreJvm)

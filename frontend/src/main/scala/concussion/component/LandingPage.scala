@@ -24,11 +24,12 @@ object LandingPage {
 
   final class Backend() extends OnUnmount {
 
-    def onMouseEnter(id: String)(e: MouseEvent): Callback = Callback {
-      val layout = dom.document.getElementById(LayoutStyle.layoutId)
-      layout.dispatchEvent(mkBackgroundChangeEvent)
-      println((id, e.target))
-    }
+    def onMouseEnter(id: String): MouseEvent => Callback =
+      _ =>
+        Callback {
+          val layout = dom.document.getElementById(LayoutStyle.layoutId)
+          layout.dispatchEvent(mkBackgroundChangeEvent(id))
+        }
 
     def render(props: Props, state: State): VdomElement =
       <.div(

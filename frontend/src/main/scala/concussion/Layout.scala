@@ -7,7 +7,6 @@ import japgolly.scalajs.react.component.Scala.Unmounted
 import japgolly.scalajs.react.extra.{EventListener, OnUnmount}
 import japgolly.scalajs.react.vdom.html_<^._
 import org.scalajs.dom._
-import org.scalajs.dom.raw.Event
 import scalacss.ScalaCssReact._
 
 object Layout {
@@ -18,10 +17,11 @@ object Layout {
 
   final class Backend($ : BackendScope[Props, State]) extends OnUnmount {
 
-    val onBackgroundChange: Event => Callback = _ =>
+    def onBackgroundChange(e: CustomEvent): Callback =
       for {
         props <- $.props
         background <- props.updateBackground
+        _ <- Callback(println(e.detail))
         _ <- $.setState(State(background))
       } yield ()
 
@@ -43,7 +43,7 @@ object Layout {
       .initialStateCallbackFromProps(_.updateBackground.map(State))
       .renderBackendWithChildren[Backend]
       .configure(
-        EventListener[Event].install(
+        EventListener[CustomEvent].install(
           backgroundChangeEvent,
           _.backend.onBackgroundChange,
           _ => document.getElementById(LayoutStyle.layoutId)
