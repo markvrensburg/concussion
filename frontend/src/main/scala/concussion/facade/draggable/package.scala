@@ -99,7 +99,7 @@ package draggable {
 
   case object FalseBounds
 
-  private[draggable] object raw {
+  private[draggable] object rawjs {
     type RawOnMouseDown = js.Function1[MouseEvent, Unit]
 
     type RawDraggableEventHandler =

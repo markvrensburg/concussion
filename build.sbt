@@ -51,7 +51,6 @@ lazy val core = (crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure)
     buildInfoPackage := "info",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % catsV,
-      "com.olegpy" %%% "meow-mtl" % meowMtlV,
       "org.typelevel" %%% "cats-effect" % catsEffectV,
       "org.tpolecat" %%% "atto-core" % attoV,
       "co.fs2" %%% "fs2-core" % fs2V,
@@ -84,6 +83,7 @@ lazy val backend = (project in file("backend"))
     scalaJSProjects := Seq(frontend),
     pipelineStages in Assets := Seq(scalaJSPipeline),
     compile in Compile := (compile in Compile).dependsOn(scalaJSPipeline).value,
+    devCommands in scalaJSPipeline ++= Seq("~reStart", "~compile"),
     npmAssets ++= NpmAssets
       .ofProject(frontend) { nodeModules =>
         (

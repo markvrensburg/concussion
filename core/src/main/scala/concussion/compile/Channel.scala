@@ -6,8 +6,6 @@ import cats.effect.concurrent.{MVar, Semaphore}
 import cats.implicits._
 import fs2.{Pipe, Stream}
 
-import scala.language.higherKinds
-
 abstract class CVar[F[_], A] {
   def read: F[A]
   def write(a: A): F[Unit]
@@ -28,7 +26,7 @@ object CVar {
 
           override def isEmpty: F[Boolean] =
             state.isEmpty
-      }
+        }
     )
 }
 
@@ -52,7 +50,6 @@ object Channel {
       override def write(a: A): F[Unit] = writeCV.write(a)
     }
 
-  def connection[F[_], A](cv1: CVar[F, A],
-                          cv2: CVar[F, A]): (Channel[F, A], Channel[F, A]) =
+  def connection[F[_], A](cv1: CVar[F, A], cv2: CVar[F, A]): (Channel[F, A], Channel[F, A]) =
     (Channel(cv1, cv2), Channel(cv2, cv1))
 }

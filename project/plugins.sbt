@@ -13,7 +13,7 @@ addSbtPlugin("ch.epfl.scala" % "sbt-web-scalajs-bundler-sjs06" % "0.16.0")
 addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.9.0")
 
 // Best practices for production code
-addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.4")
+addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.10")
 addSbtPlugin("org.wartremover" % "sbt-wartremover" % "2.4.2")
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.0.0")
 

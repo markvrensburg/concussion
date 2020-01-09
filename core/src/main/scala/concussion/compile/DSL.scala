@@ -4,8 +4,6 @@ package compile
 import cats.Monad
 import cats.implicits._
 
-import scala.language.higherKinds
-
 trait OperandDSL[F[_], A] {
   def read(operand: Operand[A]): F[A]
   def write(value: A, reference: Reference[A]): F[Unit]

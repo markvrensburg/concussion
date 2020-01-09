@@ -19,7 +19,7 @@ package ace {
     }
   }
 
-  private[ace] object raw {
+  private[ace] object rawjs {
     type RawOnChange = js.Function1[String, Unit]
   }
 

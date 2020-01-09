@@ -6,12 +6,7 @@ import cats.implicits._
 import cats.effect.IO
 import concussion.compile.Validation
 import concussion.domain.Node._
-import concussion.facade.draggable.{
-  Draggable,
-  DraggableBounds,
-  DraggableData,
-  Grid
-}
+import concussion.facade.draggable.{Draggable, DraggableBounds, DraggableData, Grid}
 import concussion.domain._
 import concussion.geometry._
 import concussion.styles.NodeStyle
@@ -33,17 +28,19 @@ object NodeContainer {
 
   final case class State(doUpdate: Boolean = false)
 
-  final case class Props(node: EditNode,
-                         ports: Set[EditPort],
-                         namer: Namer[IO],
-                         onPortClick: EditPort => Callback,
-                         onPortHover: EditPort => Callback,
-                         adjustPorts: List[EditPort] => Callback,
-                         deletePorts: List[String] => Callback,
-                         addVertices: (EditNode, List[EditPort]) => Callback,
-                         cloneNode: Callback,
-                         deleteNode: Callback,
-                         bringToFront: Callback)
+  final case class Props(
+      node: EditNode,
+      ports: Set[EditPort],
+      namer: Namer[IO],
+      onPortClick: EditPort => Callback,
+      onPortHover: EditPort => Callback,
+      adjustPorts: List[EditPort] => Callback,
+      deletePorts: List[String] => Callback,
+      addVertices: (EditNode, List[EditPort]) => Callback,
+      cloneNode: Callback,
+      deleteNode: Callback,
+      bringToFront: Callback
+  )
 
   final class Backend($ : BackendScope[Props, State]) {
 
@@ -131,7 +128,7 @@ object NodeContainer {
                       .copy(orientation = meta._1.anchor.orientation.swap)
                   ),
                   m._2
-              )
+                )
             )
           case port => port
         }
@@ -173,22 +170,18 @@ object NodeContainer {
         <.div(
           ^.onClick --> onDelete,
           Icon(
-            Icon.props(
-              name = "trash alternate outline",
-              color = Grey,
-              link = true
-            )
+            name = "trash alternate outline",
+            color = Grey,
+            link = true
           )
         ),
         <.div(
           ^.onClick --> onClone,
-          Icon(Icon.props(name = "clone outline", color = Grey, link = true))
+          Icon(name = "clone outline", color = Grey, link = true)
         ),
         <.div(
           //^.onClick --> ,
-          Icon(
-            Icon.props(name = "sliders horizontal", color = Grey, link = true)
-          )
+          Icon(name = "sliders horizontal", color = Grey, link = true)
         )
       )
 
@@ -200,32 +193,26 @@ object NodeContainer {
             handle = ".dragger",
             bounds = bounds,
             onMouseDown = (_: MouseEvent) => props.bringToFront,
-            onStop = (_: MouseEvent, _: DraggableData) =>
-              updateConnections(force = true)
+            onStop = (_: MouseEvent, _: DraggableData) => updateConnections(force = true)
           ),
         <.div(
           NodeStyle.nodePos,
           Segment(
-            Segment.props(
-              className = "dragger",
-              inverted = true,
-              compact = true,
-              attached = SegmentAttached.Top,
-              textAlign = Center
-            ),
-            Header(
-              Header.props(as = "h4", inverted = true, color = Green),
-              "INPUT"
-            ),
+            className = "dragger",
+            inverted = true,
+            compact = true,
+            attached = SegmentAttached.Top,
+            textAlign = Center
+          )(
+            Header(as = "h4", inverted = true, color = Green)("INPUT"),
             nodeOptions
           ),
           Segment(
-            Segment.props(
-              inverted = true,
-              compact = true,
-              attached = SegmentAttached.Bottom,
-              textAlign = Center
-            ),
+            inverted = true,
+            compact = true,
+            attached = SegmentAttached.Bottom,
+            textAlign = Center
+          )(
             //Ports
             React.Fragment(
               props.ports.toList.map(
@@ -244,7 +231,7 @@ object NodeContainer {
                       shiftPort(p.meta._1.id),
                       changePortName(p.meta._1.id)
                     )
-                )
+                  )
               ): _*
             )
           )
@@ -259,32 +246,26 @@ object NodeContainer {
             handle = ".dragger",
             bounds = bounds,
             onMouseDown = (_: MouseEvent) => props.bringToFront,
-            onStop = (_: MouseEvent, _: DraggableData) =>
-              updateConnections(force = true)
+            onStop = (_: MouseEvent, _: DraggableData) => updateConnections(force = true)
           ),
         <.div(
           NodeStyle.nodePos,
           Segment(
-            Segment.props(
-              className = "dragger",
-              inverted = true,
-              compact = true,
-              attached = SegmentAttached.Top,
-              textAlign = Center
-            ),
-            Header(
-              Header.props(as = "h4", inverted = true, color = Red),
-              "OUTPUT"
-            ),
+            className = "dragger",
+            inverted = true,
+            compact = true,
+            attached = SegmentAttached.Top,
+            textAlign = Center
+          )(
+            Header(as = "h4", inverted = true, color = Red)("OUTPUT"),
             nodeOptions
           ),
           Segment(
-            Segment.props(
-              inverted = true,
-              compact = true,
-              attached = SegmentAttached.Bottom,
-              textAlign = Center
-            ),
+            inverted = true,
+            compact = true,
+            attached = SegmentAttached.Bottom,
+            textAlign = Center
+          )(
             //Ports
             React.Fragment(
               props.ports.toList.map(
@@ -303,7 +284,7 @@ object NodeContainer {
                       shiftPort(p.meta._1.id),
                       changePortName(p.meta._1.id)
                     )
-                )
+                  )
               ): _*
             )
           )
@@ -318,39 +299,32 @@ object NodeContainer {
             handle = ".dragger",
             bounds = bounds,
             onMouseDown = (_: MouseEvent) => props.bringToFront,
-            onStop = (_: MouseEvent, _: DraggableData) =>
-              updateConnections(force = true)
+            onStop = (_: MouseEvent, _: DraggableData) => updateConnections(force = true)
           ),
         <.div(
           NodeStyle.nodePos,
           Segment(
-            Segment.props(
-              className = "dragger",
-              inverted = true,
-              compact = true,
-              attached = SegmentAttached.Top,
-              textAlign = Center
-            ),
-            Header(
-              Header.props(as = "h4", inverted = true, color = Blue),
-              "PROCESSOR"
-            ),
+            className = "dragger",
+            inverted = true,
+            compact = true,
+            attached = SegmentAttached.Top,
+            textAlign = Center
+          )(
+            Header(as = "h4", inverted = true, color = Blue)("PROCESSOR"),
             nodeOptions
           ),
           Segment(
-            Segment.props(
-              inverted = true,
-              compact = true,
-              attached = SegmentAttached.Attached
-            ),
+            inverted = true,
+            compact = true,
+            attached = SegmentAttached.Attached
+          )(
             CodeEditor(onChange = onCodeChange)
           ),
           Segment(
-            Segment.props(
-              inverted = true,
-              compact = true,
-              attached = SegmentAttached.Bottom
-            ),
+            inverted = true,
+            compact = true,
+            attached = SegmentAttached.Bottom
+          )(
             //Ports
             React.Fragment(
               props.ports.toList.map(
@@ -369,7 +343,7 @@ object NodeContainer {
                       shiftPort(p.meta._1.id),
                       changePortName(p.meta._1.id)
                     )
-                )
+                  )
               ): _*
             ),
             <.div(
@@ -379,7 +353,7 @@ object NodeContainer {
               ^.marginTop := ".25rem",
               <.div(
                 ^.onClick --> addPort,
-                Icon(Icon.props(name = "plus circle", link = true))
+                Icon(name = "plus circle", link = true)
               )
             )
           )
@@ -405,24 +379,23 @@ object NodeContainer {
             val nextProps = lc.nextProps
             Nodes.shouldUpdateNode(currentProps.node, nextProps.node) ||
             Ports.shouldUpdatePorts(currentProps.ports, nextProps.ports)
-        }
+          }
       )
       .componentDidUpdate(_.backend.updateConnections())
       .build
 
   def apply(
-    node: EditNode,
-    ports: Set[EditPort],
-    namer: Namer[IO],
-    onPortClick: EditPort => Callback = _ => Callback.empty,
-    onPortHover: EditPort => Callback = _ => Callback.empty,
-    adjustPorts: List[EditPort] => Callback = _ => Callback.empty,
-    deletePorts: List[String] => Callback = _ => Callback.empty,
-    addVertices: (EditNode, List[EditPort]) => Callback = (_, _) =>
-      Callback.empty,
-    cloneNode: Callback = Callback.empty,
-    deleteNode: Callback = Callback.empty,
-    bringToFront: Callback = Callback.empty
+      node: EditNode,
+      ports: Set[EditPort],
+      namer: Namer[IO],
+      onPortClick: EditPort => Callback = _ => Callback.empty,
+      onPortHover: EditPort => Callback = _ => Callback.empty,
+      adjustPorts: List[EditPort] => Callback = _ => Callback.empty,
+      deletePorts: List[String] => Callback = _ => Callback.empty,
+      addVertices: (EditNode, List[EditPort]) => Callback = (_, _) => Callback.empty,
+      cloneNode: Callback = Callback.empty,
+      deleteNode: Callback = Callback.empty,
+      bringToFront: Callback = Callback.empty
   ): Unmounted[Props, State, Backend] =
     component(
       Props(

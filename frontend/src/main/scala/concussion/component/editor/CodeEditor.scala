@@ -13,9 +13,7 @@ object CodeEditor {
 
   final case class State(code: String)
 
-  final case class Props(initialCode: String,
-                         maxLines: Int,
-                         onChange: String => Callback)
+  final case class Props(initialCode: String, maxLines: Int, onChange: String => Callback)
 
   final class Backend($ : BackendScope[Props, State]) {
 
@@ -43,7 +41,7 @@ object CodeEditor {
             value = state.code,
             placeholder = "Type code here",
             onChange = updateCode,
-            minLines = state.code.lines.size,
+            minLines = state.code.linesIterator.size,
             maxLines = props.maxLines,
             wrapEnabled = true,
             editorProps = EditorProps(blockScrolling = true)
@@ -63,9 +61,9 @@ object CodeEditor {
       .build
 
   def apply(
-    initialCode: String = "",
-    maxLines: Int = 12,
-    onChange: String => Callback = _ => Callback.empty
+      initialCode: String = "",
+      maxLines: Int = 12,
+      onChange: String => Callback = _ => Callback.empty
   ): Unmounted[Props, State, Backend] =
     component(Props(initialCode, maxLines, onChange))
 

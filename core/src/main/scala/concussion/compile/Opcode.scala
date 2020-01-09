@@ -3,8 +3,6 @@ package compile
 
 import fs2.Stream
 
-import scala.language.higherKinds
-
 sealed trait Opcode[A] {
 
   def interperate[F[_]](language: Language[F, A]): Stream[F, Unit] = {

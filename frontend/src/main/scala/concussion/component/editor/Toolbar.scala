@@ -15,23 +15,10 @@ object Toolbar {
   private val toolbar =
     <.div(
       ToolbarStyle.toolbar,
-      Menu(
-        Menu.props(icon = MenuIcon.Labeled, compact = true, inverted = true),
-        MenuItem(
-          MenuItem.props(name = "play"),
-          Icon(Icon.props(name = "play", link = true)),
-          "Step"
-        ),
-        MenuItem(
-          MenuItem.props(name = "forward"),
-          Icon(Icon.props(name = "forward", link = true)),
-          "Run"
-        ),
-        MenuItem(
-          MenuItem.props(name = "stop"),
-          Icon(Icon.props(name = "stop", link = true)),
-          "Stop"
-        )
+      Menu(icon = MenuIcon.Labeled, compact = true, inverted = true)(
+        MenuItem(name = "play")(Icon(name = "play", link = true), "Step"),
+        MenuItem(name = "forward")(Icon(name = "forward", link = true), "Run"),
+        MenuItem(name = "stop")(Icon(name = "stop", link = true), "Stop")
       )
     )
 

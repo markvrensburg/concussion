@@ -4,7 +4,7 @@ object Config {
     val name: String = "concussion"
     val organization: String = "za.co.entelect"
     val version: String = "0.0.1-SNAPSHOT"
-    val scalaVersion: String = "2.12.10"
+    val scalaVersion: String = "2.13.1"
   }
 
   object Backend {

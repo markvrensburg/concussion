@@ -14,22 +14,24 @@ import react.semanticui.elements.icon.Icon
 
 object PortContainer {
 
-  final case class Props(id: String,
-                         name: String,
-                         orientation: Orientation,
-                         portSocketRef: Simple[html.Element],
-                         canDelete: Boolean,
-                         onPortClick: EditPort => Callback,
-                         onPortHover: EditPort => Callback,
-                         onDeleteClick: Callback,
-                         onShiftClick: Callback,
-                         onNameChange: String => Callback)
+  final case class Props(
+      id: String,
+      name: String,
+      orientation: Orientation,
+      portSocketRef: Simple[html.Element],
+      canDelete: Boolean,
+      onPortClick: EditPort => Callback,
+      onPortHover: EditPort => Callback,
+      onDeleteClick: Callback,
+      onShiftClick: Callback,
+      onNameChange: String => Callback
+  )
 
   final class Backend($ : BackendScope[Props, Unit]) {
 
     private def onPortEvent(
-      callback: EditPort => Callback,
-      orientation: Option[Orientation] = Option.empty
+        callback: EditPort => Callback,
+        orientation: Option[Orientation] = Option.empty
     ): Callback =
       for {
         props <- $.props
@@ -62,7 +64,7 @@ object PortContainer {
         ^.onMouseUp --> onPortEvent(props.onPortClick),
         ^.onMouseEnter --> onPortEvent(props.onPortHover),
         ^.onMouseLeave --> onPortEvent(props.onPortHover, Some(Neutral)),
-        Icon(Icon.props(name = "dot circle outline", className = "port-socket"))
+        Icon(name = "dot circle outline", className = "port-socket")
       )
 
     private def delete(props: Props): Option[VdomNode] =
@@ -71,11 +73,9 @@ object PortContainer {
           <.div(
             ^.onClick --> props.onDeleteClick,
             Icon(
-              Icon.props(
-                name = "trash alternate outline",
-                color = Grey,
-                link = true
-              )
+              name = "trash alternate outline",
+              color = Grey,
+              link = true
             )
           )
         )
@@ -86,12 +86,9 @@ object PortContainer {
       <.div(
         ^.onClick --> props.onShiftClick,
         Icon(
-          Icon.props(
-            name =
-              if (props.orientation == Right) "angle left" else "angle right",
-            color = Grey,
-            link = true
-          )
+          name = if (props.orientation == Right) "angle left" else "angle right",
+          color = Grey,
+          link = true
         )
       )
 
@@ -127,22 +124,21 @@ object PortContainer {
       .builder[Props]("PortContainer")
       .renderBackend[Backend]
       .shouldComponentUpdate(
-        lc =>
-          CallbackTo(lc.currentProps.orientation != lc.nextProps.orientation)
+        lc => CallbackTo(lc.currentProps.orientation != lc.nextProps.orientation)
       )
       .build
 
   def apply(
-    id: String,
-    name: String,
-    orientation: Orientation,
-    portSocketRef: Simple[html.Element],
-    canDelete: Boolean = true,
-    onPortClick: EditPort => Callback = _ => Callback.empty,
-    onPortHover: EditPort => Callback = _ => Callback.empty,
-    onDeleteClick: Callback = Callback.empty,
-    onShiftClick: Callback = Callback.empty,
-    onNameChange: String => Callback = _ => Callback.empty
+      id: String,
+      name: String,
+      orientation: Orientation,
+      portSocketRef: Simple[html.Element],
+      canDelete: Boolean = true,
+      onPortClick: EditPort => Callback = _ => Callback.empty,
+      onPortHover: EditPort => Callback = _ => Callback.empty,
+      onDeleteClick: Callback = Callback.empty,
+      onShiftClick: Callback = Callback.empty,
+      onNameChange: String => Callback = _ => Callback.empty
   ): Unmounted[Props, Unit, Backend] =
     component(
       Props(

@@ -82,7 +82,7 @@ object Parsing {
     } yield Statement(labelOpt, opcodeOpt, commentOpt)
 
   private def parseLine[A: Read](
-    line: String
+      line: String
   ): EitherNel[String, Statement[A]] =
     statement.parseOnly(line) match {
       case ParseResult.Done(remain, result) if !remain.isEmpty =>
@@ -104,9 +104,9 @@ object Parsing {
     }
 
   def parse[A: Read](
-    program: String
+      program: String
   ): EitherNel[(Int, String), Vector[Statement[A]]] =
-    program.lines.toVector.zipWithIndex
+    program.linesIterator.toVector.zipWithIndex
       .map(line => parseLine(line._1).leftMap(_.map((line._2 + 1, _))))
       .parSequence
 

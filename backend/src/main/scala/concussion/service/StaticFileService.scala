@@ -3,13 +3,11 @@ package service
 
 import cats.implicits._
 import cats.data._
-import cats.effect.{ContextShift, Effect}
+import cats.effect.{Blocker, ContextShift, Effect}
 import org.http4s.{HttpRoutes, MediaType, StaticFile}
 import org.http4s.dsl.Http4sDsl
 import org.http4s.headers._
-import java.util.concurrent._
 import scalatags.Text.all._
-import scala.concurrent.ExecutionContext
 import info.BuildInfo
 
 class StaticFileService(developmentMode: Boolean) {
@@ -23,11 +21,6 @@ class StaticFileService(developmentMode: Boolean) {
 
   private val supportedStaticExtensions =
     Set(".html", ".js", ".css", ".png", ".ico", ".jpg")
-
-  private val blockingEc =
-    ExecutionContext.fromExecutorService(
-      Executors.newFixedThreadPool(Runtime.getRuntime.availableProcessors)
-    )
 
   private val index: String =
     html(
@@ -54,7 +47,7 @@ class StaticFileService(developmentMode: Boolean) {
       )
     ).render
 
-  private def service[F[_]: ContextShift](implicit F: Effect[F]) = {
+  private def service[F[_]: ContextShift](blocker: Blocker)(implicit F: Effect[F]) = {
 
     val getMapping: String => F[Option[String]] = pathInfo =>
       F.delay {
@@ -81,10 +74,10 @@ class StaticFileService(developmentMode: Boolean) {
       case GET -> Root / "index.html" => indexRoute
       case req @ GET -> Root / asset if supportedStaticExtensions.exists(asset.endsWith) =>
         StaticFile
-          .fromResource[F](s"${assetPath.getOrElse("")}$asset", blockingEc, req.some)
+          .fromResource[F](s"${assetPath.getOrElse("")}$asset", blocker, req.some)
           .orElse(
             OptionT(getMapping(s"/$asset"))
-              .flatMap(StaticFile.fromResource[F](_, blockingEc, req.some))
+              .flatMap(StaticFile.fromResource[F](_, blocker, req.some))
           )
           .fold(NotFound())(_.pure[F])
           .flatten
@@ -94,6 +87,6 @@ class StaticFileService(developmentMode: Boolean) {
 
 object StaticFileService {
 
-  def apply[F[_]: Effect: ContextShift](developmentMode: Boolean): HttpRoutes[F] =
-    new StaticFileService(developmentMode).service
+  def apply[F[_]: Effect: ContextShift](blocker: Blocker, developmentMode: Boolean): HttpRoutes[F] =
+    new StaticFileService(developmentMode).service(blocker)
 }

@@ -16,30 +16,11 @@ object Infobar {
   private val infobar =
     <.div(
       InfobarStyle.infobar,
-      Menu(
-        Menu.props(compact = true, inverted = true),
-        MenuItem(
-          MenuItem.props(name = "program_name"),
-          Name(defaultValue = "MAIN_PROGRAM")
-        ),
-        MenuItem(
-          MenuItem.props(name = "new"),
-          Icon(
-            Icon.props(name = "file outline", color = Grey, link = true)
-          )
-        ),
-        MenuItem(
-          MenuItem.props(name = "save"),
-          Icon(
-            Icon.props(name = "save outline", color = Grey, link = true)
-          )
-        ),
-        MenuItem(
-          MenuItem.props(name = "load"),
-          Icon(
-            Icon.props(name = "folder outline", color = Grey, link = true)
-          )
-        )
+      Menu(compact = true, inverted = true)(
+        MenuItem(name = "program_name")(Name(defaultValue = "MAIN_PROGRAM")),
+        MenuItem(name = "new")(Icon(name = "file outline", color = Grey, link = true)),
+        MenuItem(name = "save")(Icon(name = "save outline", color = Grey, link = true)),
+        MenuItem(name = "load")(Icon(name = "folder outline", color = Grey, link = true))
       )
     )
 

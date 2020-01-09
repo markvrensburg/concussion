@@ -6,8 +6,6 @@ import cats.effect.concurrent.Deferred
 import cats.implicits._
 import fs2.Stream
 
-import scala.language.higherKinds
-
 //.evalMap(_ => state.get) over "run" stream for state
 class Language[F[_]: Concurrent, A](
     implicit

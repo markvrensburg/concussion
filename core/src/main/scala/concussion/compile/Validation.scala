@@ -15,12 +15,15 @@ object Validation {
   def syncLabels[A](program: Program[A]): Program[A] =
     Program(
       program.executables,
-      program.labels.mapValues { i =>
-        program.executables.filter(_._1 >= i) match {
-          case e if e.nonEmpty => e.minBy(_._1)._1
-          case _               => i
-        }
-      }
+      program.labels.view
+        .mapValues(
+          i =>
+            program.executables.filter(_._1 >= i) match {
+              case e if e.nonEmpty => e.minBy(_._1)._1
+              case _               => i
+            }
+        )
+        .toMap
     )
 
   def extractExecutablesR[A] = Reader(extractExecutables[A])

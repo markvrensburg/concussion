@@ -31,7 +31,9 @@ final case class AdjacencyMap[V, E](private val adjacencyMap: Map[V, Map[V, E]])
     edgeList.toSet
 
   def removeVertex(vertex: V)(implicit ev: Eq[V]): AdjacencyMap[V, E] =
-    AdjacencyMap(adjacencyMap.filter(_._1 =!= vertex).mapValues(_.filter(_._1 =!= vertex)))
+    AdjacencyMap(
+      adjacencyMap.filter(_._1 =!= vertex).view.mapValues(_.filter(_._1 =!= vertex)).toMap
+    )
 
   def removeEdge(vtx1: V, vtx2: V)(implicit ev: Eq[V]): AdjacencyMap[V, E] =
     AdjacencyMap(
@@ -39,7 +41,7 @@ final case class AdjacencyMap[V, E](private val adjacencyMap: Map[V, Map[V, E]])
     )
 
   def removeEdge(edge: E)(implicit ev: Eq[E]): AdjacencyMap[V, E] =
-    AdjacencyMap(adjacencyMap.mapValues(_.filter(_._2 =!= edge)))
+    AdjacencyMap(adjacencyMap.view.mapValues(_.filter(_._2 =!= edge)).toMap)
 }
 
 object AdjacencyMap {

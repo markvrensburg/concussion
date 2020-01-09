@@ -26,7 +26,7 @@ object AceEditor {
     var width: js.UndefOr[String]
     var value: js.UndefOr[String]
     var placeholder: js.UndefOr[String]
-    var onChange: js.UndefOr[raw.RawOnChange]
+    var onChange: js.UndefOr[rawjs.RawOnChange]
     var minLines: js.UndefOr[JsNumber]
     var maxLines: js.UndefOr[JsNumber]
     var debounceChangePeriod: js.UndefOr[JsNumber]

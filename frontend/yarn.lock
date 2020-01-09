@@ -2897,6 +2897,10 @@ react-popper@^1.3.3:
     typed-styles "^0.0.7"
     warning "^4.0.2"
 
+react-semantic-toasts@0.6.5:
+  version "0.6.5"
+  resolved "https://registry.yarnpkg.com/react-semantic-toasts/-/react-semantic-toasts-0.6.5.tgz#d35b7dacf821860b85683d6d875c08f68a83f3e9"
+
 react@16.7.0:
   version "16.7.0"
   resolved "https://registry.yarnpkg.com/react/-/react-16.7.0.tgz#b674ec396b0a5715873b350446f7ea0802ab6381"
@@ -3084,9 +3088,9 @@ semantic-ui-css@2.4.1:
   dependencies:
     jquery x.*
 
-semantic-ui-react@0.87.2:
-  version "0.87.2"
-  resolved "https://registry.yarnpkg.com/semantic-ui-react/-/semantic-ui-react-0.87.2.tgz#b312a5a1f7395b3ff871507c59c0557fae54c984"
+semantic-ui-react@0.87.3:
+  version "0.87.3"
+  resolved "https://registry.yarnpkg.com/semantic-ui-react/-/semantic-ui-react-0.87.3.tgz#59b6e1ca52b202bf6deed4c65e81b170b4a12bf6"
   dependencies:
     "@babel/runtime" "^7.1.2"
     "@semantic-ui-react/event-stack" "^3.1.0"
