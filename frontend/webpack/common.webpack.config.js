@@ -1,5 +1,5 @@
 var globalModules = {
-  "brace": "brace"
+  //"brace": "brace"
   //"brace/mode/yaml": "yaml",
   //"brace/theme/merbivore": "merbivore"
 };

@@ -18,12 +18,10 @@ object Config {
   }
 
   object Ace {
-    val keybindingPath: String = "brace/keybinding"
-    val modePath: String = "brace/mode"
-    val themePath: String = "brace/theme"
+    val sourcePath: String = "ace-builds/src-min-noconflict"
 
-    val keybindingRegex: String = "/keybinding-(.*)[.]js"
-    val modeRegex: String = "/mode-(.*)[.]js"
-    val themeRegex: String = "/theme-(.*)[.]js"
+    val keybindingRegex: String = "/(keybinding-.*)[.]js"
+    val modeRegex: String = "/(mode-.*)[.]js"
+    val themeRegex: String = "/(theme-.*)[.]js"
   }
 }

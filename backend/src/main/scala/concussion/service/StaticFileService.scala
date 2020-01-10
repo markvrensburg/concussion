@@ -55,11 +55,11 @@ class StaticFileService(developmentMode: Boolean) {
 
         pathInfo match {
           case keybindingRegex(keybinding) =>
-            Some(s"$path${BuildInfo.aceKeybindingPath}/$keybinding.js")
+            Some(s"$path${BuildInfo.aceSourcePath}/$keybinding.js")
           case modeRegex(mode) =>
-            Some(s"$path${BuildInfo.aceModePath}/$mode.js")
+            Some(s"$path${BuildInfo.aceSourcePath}/$mode.js")
           case themeRegex(theme) =>
-            Some(s"$path${BuildInfo.aceThemePath}/$theme.js")
+            Some(s"$path${BuildInfo.aceSourcePath}/$theme.js")
           case _ => None
         }
       }

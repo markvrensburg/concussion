@@ -40,9 +40,7 @@ lazy val core = (crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure)
       version,
       "assetPath" -> Backend.assetPath,
       "rootId" -> Frontend.rootId,
-      "aceKeybindingPath" -> Ace.keybindingPath,
-      "aceModePath" -> Ace.modePath,
-      "aceThemePath" -> Ace.themePath,
+      "aceSourcePath" -> Ace.sourcePath,
       "aceKeybindingRegex" -> Ace.keybindingRegex,
       "aceModeRegex" -> Ace.modeRegex,
       "aceThemeRegex" -> Ace.themeRegex,
@@ -86,11 +84,7 @@ lazy val backend = (project in file("backend"))
     devCommands in scalaJSPipeline ++= Seq("~reStart", "~compile"),
     npmAssets ++= NpmAssets
       .ofProject(frontend) { nodeModules =>
-        (
-          nodeModules / Ace.keybindingPath +++
-            nodeModules / Ace.themePath +++
-            nodeModules / Ace.modePath
-        ).allPaths
+        (nodeModules / Ace.sourcePath).allPaths
       }
       .value,
     libraryDependencies ++= Seq(
@@ -99,8 +93,8 @@ lazy val backend = (project in file("backend"))
       "org.http4s" %% "http4s-dsl" % http4sV,
       "com.github.pureconfig" %% "pureconfig" % pureConfigV,
       "com.github.pureconfig" %% "pureconfig-cats-effect" % pureConfigV,
-      "org.fusesource.jansi" % "jansi" % "1.18",
-      "ch.qos.logback" % "logback-classic" % "1.2.3"
+      "org.fusesource.jansi" % "jansi" % jansiV,
+      "ch.qos.logback" % "logback-classic" % logbackV
     ),
     WebKeys.packagePrefix in Assets := Backend.assetPath,
     managedClasspath in Runtime += (packageBin in Assets).value,

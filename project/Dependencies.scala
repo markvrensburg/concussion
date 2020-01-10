@@ -13,6 +13,8 @@ object Dependencies {
   //Backend
   val http4sV = "0.21.0-M6"
   val pureConfigV = "0.12.2"
+  val jansiV = "1.18"
+  val logbackV = "1.2.3"
 
   //Frontend
   val scalaCssV = "0.6.0"
@@ -22,7 +24,7 @@ object Dependencies {
 
   //Frontend NPM
   val reactV = "16.7.0"
-  val reactAceV = "7.0.5"
+  val reactAceV = "8.0.0"
   val reactDraggableV = "4.1.0"
   val semanticUIReactV = "0.87.3"
   val semanticUICssV = "2.4.1"
