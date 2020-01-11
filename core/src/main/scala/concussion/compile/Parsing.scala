@@ -7,6 +7,8 @@ import cats.data.EitherNel
 
 object Parsing {
 
+  private val invalidChars = " #:,."
+
   def whitespace: Parser[Unit] =
     takeWhile(_.isWhitespace).void
 
@@ -18,12 +20,14 @@ object Parsing {
       .named("Expected separator (space or ','")
 
   def namedStrict: Parser[String] =
-    (letter.named("Name must start with letter") ~ many(letterOrDigit).named(
-      "Name must contain letters or digits"
+    (letter.named("Name must start with letter") ~ many(noneOf(invalidChars)).named(
+      s"Name must not contain invalid characters [$invalidChars]"
     )).map(ref => (ref._1 :: ref._2).mkString)
 
-  def named: Parser[String] =
-    takeWhile(_.isLetterOrDigit).named("Name must contain letters or digits")
+  def namedUnStrict: Parser[String] =
+    many(noneOf(invalidChars))
+      .map(_.mkString)
+      .named(s"Name must not contain invalid characters [$invalidChars]")
 
   def reference[A]: Parser[Reference[A]] =
     namedStrict.map(Reference[A])
@@ -35,7 +39,7 @@ object Parsing {
     immediate[A] | reference[A].widen[Operand[A]]
 
   def label: Parser[Label] =
-    (named <* whitespace <* char(':').named("Expected colon(:)"))
+    (namedUnStrict <* whitespace <* char(':').named("Expected colon(:)"))
       .map(Label)
 
   def comment: Parser[Comment] =
@@ -56,13 +60,13 @@ object Parsing {
         case "SUB" =>
           (whitespace1 *> operand[A].map(SUB[A])).named("SUB").widen[Opcode[A]]
         case "JEZ" =>
-          (whitespace1 *> named.map(JEZ[A])).named("JEZ").widen[Opcode[A]]
+          (whitespace1 *> namedUnStrict.map(JEZ[A])).named("JEZ").widen[Opcode[A]]
         case "JGZ" =>
-          (whitespace1 *> named.map(JGZ[A])).named("JGZ").widen[Opcode[A]]
+          (whitespace1 *> namedUnStrict.map(JGZ[A])).named("JGZ").widen[Opcode[A]]
         case "JLZ" =>
-          (whitespace1 *> named.map(JLZ[A])).named("JLZ").widen[Opcode[A]]
+          (whitespace1 *> namedUnStrict.map(JLZ[A])).named("JLZ").widen[Opcode[A]]
         case "JMP" =>
-          (whitespace1 *> named.map(JMP[A])).named("JMP").widen[Opcode[A]]
+          (whitespace1 *> namedUnStrict.map(JMP[A])).named("JMP").widen[Opcode[A]]
         case "JRO" =>
           (whitespace1 *> operand[A].map(JRO[A])).named("JRO").widen[Opcode[A]]
         case "SAV" =>
