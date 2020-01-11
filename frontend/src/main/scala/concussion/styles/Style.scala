@@ -18,7 +18,7 @@ object GlobalStyle extends Style {
 object AceEditorStyle extends Style {
   import dsl._
 
-  style(unsafeRoot("#brace-editor")(borderRadius(0.5.em)))
+  style(unsafeRoot("#ace-editor")(borderRadius(0.5.em)))
 }
 
 object DraggableStyle extends Style {
