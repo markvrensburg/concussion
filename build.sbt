@@ -15,7 +15,8 @@ lazy val commonSettings = Seq(
   version := Application.version,
   scalaVersion := Application.scalaVersion,
   addCompilerPlugin(("org.typelevel" %% "kind-projector" % "0.11.0").cross(CrossVersion.full)),
-  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
+  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
+  addCompilerPlugin(("io.tryp" %% "splain" % "0.5.0").cross(CrossVersion.patch))
 )
 
 lazy val root = project

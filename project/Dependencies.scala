@@ -20,7 +20,7 @@ object Dependencies {
   val scalaCssV = "0.6.0"
   val scalaJsReactV = "1.5.0"
   val scalaJsDomV = "0.9.8"
-  val scalaJsReactSemanticUIV = "0.3.0"
+  val scalaJsReactSemanticUIV = "0.3.1"
 
   //Frontend NPM
   val reactV = "16.7.0"

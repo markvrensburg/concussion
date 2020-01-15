@@ -44,8 +44,8 @@ object Ports {
         )
       )
 
-  def shouldUpdatePorts(currentPorts: Set[EditPort],
-                        nextPorts: Set[EditPort]): Boolean =
+  def shouldUpdatePorts(currentPorts: Vector[EditPort],
+                        nextPorts: Vector[EditPort]): Boolean =
     (currentPorts.length != nextPorts.length) || {
       val ps1 = currentPorts
         .map(p => (p.meta._1.id, p.meta._1.anchor.orientation, p.name))

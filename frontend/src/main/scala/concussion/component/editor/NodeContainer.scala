@@ -30,7 +30,7 @@ object NodeContainer {
 
   final case class Props(
       node: EditNode,
-      ports: Set[EditPort],
+      ports: Vector[EditPort],
       namer: Namer[IO],
       onPortClick: EditPort => Callback,
       onPortHover: EditPort => Callback,
@@ -386,7 +386,7 @@ object NodeContainer {
 
   def apply(
       node: EditNode,
-      ports: Set[EditPort],
+      ports: Vector[EditPort],
       namer: Namer[IO],
       onPortClick: EditPort => Callback = _ => Callback.empty,
       onPortHover: EditPort => Callback = _ => Callback.empty,

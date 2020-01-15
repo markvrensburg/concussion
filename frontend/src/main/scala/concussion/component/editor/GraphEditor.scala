@@ -62,8 +62,8 @@ object GraphEditor {
       network.vertexList.groupBy(_._2.meta.id).values.map(_.head._2).toList
 
     private def portsForNode(nodeId: String,
-                             network: EditNetwork): Set[EditPort] =
-      network.vertexSet.filter(_._2.meta.id == nodeId).map(_._1)
+                             network: EditNetwork): Vector[EditPort] =
+      network.vertexList.filter(_._2.meta.id == nodeId).map(_._1).toVector
 
     private def nodeForPort(portId: String,
                             network: EditNetwork): Option[EditNode] =

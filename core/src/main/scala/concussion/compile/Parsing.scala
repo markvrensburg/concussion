@@ -1,4 +1,5 @@
-package concussion.compile
+package concussion
+package compile
 
 import atto.Atto._
 import atto._
@@ -111,7 +112,6 @@ object Parsing {
       program: String
   ): EitherNel[(Int, String), Vector[Statement[A]]] =
     program.linesIterator.toVector.zipWithIndex
-      .map(line => parseLine(line._1).leftMap(_.map((line._2 + 1, _))))
-      .parSequence
+      .parTraverse(line => parseLine(line._1).leftMap(_.map((line._2 + 1, _))))
 
 }
