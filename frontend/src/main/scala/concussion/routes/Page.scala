@@ -24,7 +24,7 @@ object Page {
     LandingPage(random, ctl)
 
   def editor(logo: String, namer: Namer[IO]): VdomElement =
-    GraphEditor(logo, namer)
+    NetworkEditor(logo, namer)
 
   def notFound(r: Random, size: (Int, Int)): VdomElement = {
 

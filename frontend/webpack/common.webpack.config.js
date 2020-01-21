@@ -1,7 +1,4 @@
 var globalModules = {
-  //"brace": "brace"
-  //"brace/mode/yaml": "yaml",
-  //"brace/theme/merbivore": "merbivore"
 };
 
 const importRule = {

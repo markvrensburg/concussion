@@ -24,7 +24,10 @@ object AceEditorStyle extends Style {
 object DraggableStyle extends Style {
   import dsl._
 
-  style(unsafeRoot(".dragger")(userSelect.none))
+  val draggerId: String = "dragger"
+  val draggerHandle: String = s".$draggerId"
+
+  style(unsafeRoot(draggerHandle)(userSelect.none))
 
   style(unsafeRoot(".react-draggable")(position.absolute, height(0.px)))
 }
@@ -95,7 +98,9 @@ object LogoStyle extends Style {
     )
   )
 
-  val glow: StyleA = style(unsafeRoot(".glow")(&.hover(filter := "url(#glow)")))
+  val glowId: String = "glow"
+
+  val glow: StyleA = style(unsafeRoot(s".$glowId")(&.hover(filter := s"url(#$glowId)")))
 }
 
 object ConnectorStyle extends Style {

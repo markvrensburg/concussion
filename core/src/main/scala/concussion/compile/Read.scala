@@ -4,32 +4,38 @@ package compile
 import atto.Atto._
 import atto._
 
-final class Read[A](val parser: Parser[A]) {
+final class Read[A](val parser: Parser[A]) extends AnyVal {
   def parse(s: String): Either[String, A] = parser.parseOnly(s).either
 }
 
-object Read {
+object Read extends ReadPriority0 {
 
   @inline final def apply[A](implicit ev: Read[A]): Read[A] = ev
 
-  def fromParser[A](parser: Parser[A]): Read[A] =
-    new Read[A](parser)
-
-  implicit val readByte: Read[Byte] =
-    Read.fromParser(byte)
-
-  implicit val readInt: Read[Int] =
-    Read.fromParser(int)
-
   implicit val readLong: Read[Long] =
-    Read.fromParser(long)
+    fromParser(long)
+}
+
+trait ReadPriority0 extends ReadUtil {
 
   implicit val readDouble: Read[Double] =
-    Read.fromParser(double)
+    fromParser(double)
+
+  implicit val readInt: Read[Int] =
+    fromParser(int)
+
+  implicit val readByte: Read[Byte] =
+    fromParser(byte)
 
   implicit val readChar: Read[Char] =
-    Read.fromParser(elem(_ => true))
+    fromParser(elem(_ => true))
 
   implicit val readString: Read[String] =
-    Read.fromParser(takeWhile(!_.isWhitespace))
+    fromParser(takeWhile(!_.isWhitespace))
+}
+
+trait ReadUtil {
+
+  def fromParser[A](parser: Parser[A]): Read[A] =
+    new Read[A](parser)
 }

@@ -5,7 +5,7 @@ import fs2.Stream
 
 sealed trait Opcode[A] {
 
-  def interperate[F[_]](language: Language[F, A]): Stream[F, Unit] = {
+  def interpret[F[_]](language: Language[F, A]): Stream[F, Unit] = {
     import language._
     this match {
       case MOV(source, destination) => mov(source, destination)

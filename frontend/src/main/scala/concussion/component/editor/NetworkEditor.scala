@@ -17,17 +17,18 @@ import japgolly.scalajs.react._
 import org.scalajs.dom.html
 import scalacss.ScalaCssReact._
 
-object GraphEditor {
+object NetworkEditor {
 
   sealed trait ConnectionState
-  final case class Connecting(from: EditPort, to: Option[Anchor])
-      extends ConnectionState
+  final case class Connecting(from: EditPort, to: Option[Anchor]) extends ConnectionState
   case object NotConnecting extends ConnectionState
 
-  final case class State(connectionState: ConnectionState,
-                         offset: Point,
-                         topNodeId: Option[String] = None,
-                         network: EditNetwork = Graph.empty)
+  final case class State(
+      connectionState: ConnectionState,
+      offset: Point,
+      topNodeId: Option[String] = None,
+      network: EditNetwork = Graph.empty
+  )
 
   final case class Props(logo: String, namer: Namer[IO])
 
@@ -36,20 +37,17 @@ object GraphEditor {
     private val editorRef = Ref[html.Element]
 
     private def findConnector(
-      port: EditPort,
-      connections: Set[EditConnection]
+        port: EditPort,
+        connections: Set[EditConnection]
     ): Option[EditPort] =
       connections
         .find(containsId(port.meta._1.id)(_))
         .flatMap(connectsTo(port.meta._1.id)(_))
 
-    private def filterConnector(port: EditPort,
-                                network: EditNetwork): EditNetwork =
+    private def filterConnector(port: EditPort, network: EditNetwork): EditNetwork =
       network.removeEdge((v1, v2) => containsId(port.meta._1.id)((v1, v2)))
 
-    private def connectPorts(port1: EditPort,
-                             port2: EditPort,
-                             network: EditNetwork): EditNetwork =
+    private def connectPorts(port1: EditPort, port2: EditPort, network: EditNetwork): EditNetwork =
       (
         network.vertexSet.find(_._1.meta._1.id == port1.meta._1.id),
         network.vertexSet.find(_._1.meta._1.id == port2.meta._1.id)
@@ -61,12 +59,10 @@ object GraphEditor {
     private def distinctNodes(network: EditNetwork): List[EditNode] =
       network.vertexList.groupBy(_._2.meta.id).values.map(_.head._2).toList
 
-    private def portsForNode(nodeId: String,
-                             network: EditNetwork): Vector[EditPort] =
-      network.vertexList.filter(_._2.meta.id == nodeId).map(_._1).toVector
+    private def portsForNode(nodeId: String, network: EditNetwork): Vector[EditPort] =
+      network.vertexSet.filter(_._2.meta.id == nodeId).map(_._1).toVector
 
-    private def nodeForPort(portId: String,
-                            network: EditNetwork): Option[EditNode] =
+    private def nodeForPort(portId: String, network: EditNetwork): Option[EditNode] =
       network.vertexSet.find(_._1.meta._1.id == portId).map(_._2)
 
     private def addVertices(node: EditNode, ports: List[EditPort]): Callback =
@@ -75,7 +71,7 @@ object GraphEditor {
           state.copy(
             topNodeId = Some(node.meta.id),
             network = state.network + Graph.vertices(ports.map((_, node)))
-        )
+          )
       )
 
     private def cloneNode(nodeId: String): Callback =
@@ -134,9 +130,8 @@ object GraphEditor {
         state =>
           state.copy(
             connectionState = NotConnecting,
-            network =
-              state.network.induce(v => !ports.contains(v._1.meta._1.id))
-        )
+            network = state.network.induce(v => !ports.contains(v._1.meta._1.id))
+          )
       )
 
     private def onPortClick(port: EditPort): Callback =
@@ -156,7 +151,8 @@ object GraphEditor {
         state.connectionState match {
           case Connecting(from, _) =>
             if (currentPort.meta._1.id == from.meta._1.id)
-              state.copy(connectionState = NotConnecting) //Same port connected to -> cancel connecting
+              state
+                .copy(connectionState = NotConnecting) //Same port connected to -> cancel connecting
             else if (nodeForPort(currentPort.meta._1.id, state.network) == nodeForPort(
                        from.meta._1.id,
                        state.network
@@ -189,8 +185,7 @@ object GraphEditor {
             findConnector(currentPort, state.network.edgeSet) match {
               case Some(connectedPort) =>
                 state.copy(
-                  connectionState =
-                    Connecting(connectedPort, Some(currentPort.meta._1.anchor)),
+                  connectionState = Connecting(connectedPort, Some(currentPort.meta._1.anchor)),
                   network = filterConnector(currentPort, state.network)
                 )
               case None =>
@@ -257,7 +252,7 @@ object GraphEditor {
                         deleteNode(n.meta.id),
                         bringToFront(n.meta.id)
                       )
-                  )
+                    )
                 ): _*
             ),
             //Connectors

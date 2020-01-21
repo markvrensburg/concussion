@@ -11,12 +11,22 @@ import org.scalatest._
 
 class ParsingSpec extends FunSuite {
 
-  test("Opcode: MOV should parse") {
+  test("Opcode: MOV should parse, immediate operand") {
     assert(
       opcode[Byte]
         .parseOnly("MOV 42 ACC") == Done(
         "",
         MOV(Immediate(42), Reference("ACC"))
+      )
+    )
+  }
+
+  test("Opcode: MOV should parse, reference operand") {
+    assert(
+      opcode[Byte]
+        .parseOnly("MOV PORT ACC") == Done(
+        "",
+        MOV(Reference("PORT"), Reference("ACC"))
       )
     )
   }

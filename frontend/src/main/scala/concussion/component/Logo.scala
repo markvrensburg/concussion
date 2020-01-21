@@ -1,6 +1,7 @@
 package concussion
 package component
 
+import concussion.styles.LogoStyle
 import scalatags.Text.svgAttrs.{filter => _, modifier => _, _}
 import scalatags.Text.svgTags._
 
@@ -59,7 +60,7 @@ object Logo {
     sections.map(section => {
       path(
         id := section._2,
-        `class` := "glow",
+        `class` := LogoStyle.glowId,
         d := section._1,
         style := s"fill:#ffffff;fill-opacity:${0.4 + (0.75 - 0.4) * random.nextDouble};fill-rule:evenodd;"
       )
@@ -74,7 +75,7 @@ object Logo {
         transform := "translate(0,-140)",
         defs(
           filter(
-            id := "glow",
+            id := LogoStyle.glowId,
             feGaussianBlur(`class` := "blur", result := "coloredBlur", stdDeviation := "1"),
             feMerge(
               feMergeNode(in := "coloredBlur"),
