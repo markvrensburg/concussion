@@ -4,16 +4,16 @@ package compile
 import cats.Monad
 import cats.implicits._
 
-trait OperandDSL[F[_], A] {
-  def read(operand: Operand[A]): F[A]
-  def write(value: A, reference: Reference[A]): F[Unit]
+trait OperandDSL[F[_]] {
+  def read[A](operand: Operand[A]): F[A]
+  def write[A](value: A, reference: Reference[A]): F[Unit]
 }
 
-trait NodeDSL[F[_], A] {
-  def getAcc: F[A]
-  def getBak: F[A]
-  def setAcc(value: A): F[Unit]
-  def setBak(value: A): F[Unit]
+trait NodeDSL[F[_]] {
+  def getAcc[A]: F[A]
+  def getBak[A]: F[A]
+  def setAcc[A](value: A): F[Unit]
+  def setBak[A](value: A): F[Unit]
 }
 
 trait LabelDSL[F[_]] {

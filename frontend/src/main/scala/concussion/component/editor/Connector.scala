@@ -8,7 +8,7 @@ import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.html_<^._
 import japgolly.scalajs.react.component.Scala.Unmounted
 import scalatags.Text.svgAttrs._
-import scalatags.Text.svgTags.{circle, _}
+import scalatags.Text.svgTags._
 import scalatags.Text.implicits._
 import scalacss.ScalaCssReact._
 
@@ -56,12 +56,7 @@ object Connector {
 
       var h = (b * b) - (a * c)
 
-      @inline def q_(s: Double,
-                     t: Double,
-                     v1: Double,
-                     v2: Double,
-                     v3: Double,
-                     v4: Double) =
+      @inline def q_(s: Double, t: Double, v1: Double, v2: Double, v3: Double, v4: Double) =
         (s * s * s * v1) + (3.0 * s * s * t * v2) + (3.0 * s * t * t * v3) + (t * t * t * v4)
 
       if (h.x > 0.0) {
@@ -166,12 +161,10 @@ object Connector {
             ^.position := "absolute",
             ConnectorStyle.connector,
             ^.dangerouslySetInnerHtml := p.connector
-        )
+          )
       )
       .build
 
-  def apply(from: Anchor,
-            to: Anchor,
-            dashed: Boolean = false): Unmounted[Props, Unit, Unit] =
+  def apply(from: Anchor, to: Anchor, dashed: Boolean = false): Unmounted[Props, Unit, Unit] =
     component(Props(from, to, dashed))
 }

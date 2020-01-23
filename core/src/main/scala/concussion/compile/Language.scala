@@ -7,97 +7,90 @@ import cats.implicits._
 import fs2.Stream
 
 //.evalMap(_ => state.get) over "run" stream for state
-class Language[F[_]: Concurrent, A](
-    implicit
-    numeric: Numeric[A],
-    operandDSL: OperandDSL[F, A],
-    counterDSL: CounterDSL[F],
-    labelDSL: LabelDSL[F],
-    nodeDSL: NodeDSL[F, A]
-) {
+class Language[DSL[_]: Concurrent: OperandDSL: CounterDSL: LabelDSL: NodeDSL, A: Numeric] {
 
   //Read and Write: Move value from source to destination
-  def mov(source: Operand[A], destination: Reference[A]): Stream[F, Unit] = {
+  def mov(source: Operand[A], destination: Reference[A]): Stream[DSL, Unit] = {
 
-    def read(cell: Deferred[F, A]): Stream[F, Unit] =
-      Stream.eval(operandDSL.read(source).flatMap(cell.complete))
+    def read(cell: Deferred[DSL, A]): Stream[DSL, Unit] =
+      Stream.eval(DSL.read(source).flatMap(cell.complete))
 
-    def write(cell: Deferred[F, A]): Stream[F, Unit] =
-      Stream.eval(cell.get.flatMap(operandDSL.write(_, destination)))
+    def write(cell: Deferred[DSL, A]): Stream[DSL, Unit] =
+      Stream.eval(cell.get.flatMap(DSL.write(_, destination)))
 
-    Stream.eval(counterDSL.inc *> Deferred[F, A]).flatMap(temp => read(temp) ++ write(temp))
+    Stream.eval(DSL.inc *> Deferred[DSL, A]).flatMap(temp => read(temp) ++ write(temp))
   }
 
   //Add value in register ACC to value at source and store it in register ACC
-  def add(value: Operand[A]): Stream[F, Unit] =
+  def add(value: Operand[A]): Stream[DSL, Unit] =
     Stream.eval(for {
-      _ <- counterDSL.inc
-      acc <- nodeDSL.getAcc
-      addend <- operandDSL.read(value)
-      _ <- nodeDSL.setAcc(numeric.plus(acc, addend))
+      _ <- DSL.inc
+      acc <- DSL.getAcc[A]
+      addend <- DSL.read(value)
+      _ <- DSL.setAcc(A.plus(acc, addend))
     } yield ())
 
   //Subtract value in register ACC from value at source and store it in register ACC
-  def sub(value: Operand[A]): Stream[F, Unit] =
+  def sub(value: Operand[A]): Stream[DSL, Unit] =
     Stream.eval(for {
-      _ <- counterDSL.inc
-      acc <- nodeDSL.getAcc
-      subtrahend <- operandDSL.read(value)
-      _ <- nodeDSL.setAcc(numeric.minus(acc, subtrahend))
+      _ <- DSL.inc
+      acc <- DSL.getAcc[A]
+      subtrahend <- DSL.read(value)
+      _ <- DSL.setAcc(A.minus(acc, subtrahend))
     } yield ())
 
   //If register ACC has value equal to zero, jump to program counter with label
-  def jez(label: String): Stream[F, Unit] =
+  def jez(label: String): Stream[DSL, Unit] =
     Stream.eval(for {
-      acc <- nodeDSL.getAcc
-      _ <- if (numeric.equiv(acc, numeric.zero)) labelDSL.jump(label) else counterDSL.inc
+      acc <- DSL.getAcc[A]
+      _ <- if (A.equiv(acc, A.zero)) DSL.jump(label) else DSL.inc
     } yield ())
 
   //If register ACC has value greater than zero, jump to program counter with label
-  def jgz(label: String): Stream[F, Unit] =
+  def jgz(label: String): Stream[DSL, Unit] =
     Stream.eval(for {
-      acc <- nodeDSL.getAcc
-      _ <- if (numeric.gt(acc, numeric.zero)) labelDSL.jump(label) else counterDSL.inc
+      acc <- DSL.getAcc[A]
+      _ <- if (A.gt(acc, A.zero)) DSL.jump(label) else DSL.inc
     } yield ())
 
   //If register ACC has value less than zero, jump to program counter with label
-  def jlz(label: String): Stream[F, Unit] =
+  def jlz(label: String): Stream[DSL, Unit] =
     Stream.eval(for {
-      acc <- nodeDSL.getAcc
-      _ <- if (numeric.lt(acc, numeric.zero)) labelDSL.jump(label) else counterDSL.inc
+      acc <- DSL.getAcc[A]
+      _ <- if (A.lt(acc, A.zero)) DSL.jump(label) else DSL.inc
     } yield ())
 
   //Jump to program counter with label
-  def jmp(label: String): Stream[F, Unit] =
-    Stream.eval(labelDSL.jump(label))
+  def jmp(label: String): Stream[DSL, Unit] =
+    Stream.eval(DSL.jump(label))
 
   //Jump to program counter (current + offset)
-  def jro(offset: Operand[A]): Stream[F, Unit] =
+  def jro(offset: Operand[A]): Stream[DSL, Unit] =
     Stream.eval(for {
-      current <- counterDSL.get
-      off <- operandDSL.read(offset)
-      _ <- counterDSL.set(current + numeric.toInt(off))
+      current <- DSL.get
+      off <- DSL.read(offset)
+      _ <- DSL.set(current + A.toInt(off))
     } yield ())
 
   //Store contents of register ACC into BAK
-  def sav: Stream[F, Unit] =
+  def sav: Stream[DSL, Unit] =
     Stream.eval(for {
-      _ <- counterDSL.inc
-      acc <- nodeDSL.getAcc
-      _ <- nodeDSL.setBak(acc)
+      _ <- DSL.inc
+      acc <- DSL.getAcc[A]
+      _ <- DSL.setBak(acc)
     } yield ())
 
   //Swap contents of register ACC and BAK
-  def swp: Stream[F, Unit] =
+  def swp: Stream[DSL, Unit] =
     Stream.eval(for {
-      _ <- counterDSL.inc
-      acc <- nodeDSL.getAcc
-      bak <- nodeDSL.getBak
-      _ <- nodeDSL.setAcc(bak)
-      _ <- nodeDSL.setBak(acc)
+      _ <- DSL.inc
+      acc <- DSL.getAcc[A]
+      bak <- DSL.getBak[A]
+      _ <- DSL.setAcc(bak)
+      _ <- DSL.setBak(acc)
     } yield ())
 
   //Do nothing: Increment program counter
-  def nop: Stream[F, Unit] =
-    Stream.eval(counterDSL.inc)
+  def nop: Stream[DSL, Unit] =
+    Stream.eval(DSL.inc)
 }
