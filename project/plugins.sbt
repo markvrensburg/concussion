@@ -6,7 +6,7 @@ addSbtPlugin("io.spray" % "sbt-revolver" % "0.9.1")
 
 // Allows Scala.js Compilation
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "0.6.1")
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.31")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.32")
 addSbtPlugin("ch.epfl.scala" % "sbt-web-scalajs-bundler-sjs06" % "0.16.0")
 
 // Extract metadata from sbt and make it available to the code

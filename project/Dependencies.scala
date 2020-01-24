@@ -11,14 +11,14 @@ object Dependencies {
   val scalatestV = "3.0.8"
 
   //Backend
-  val http4sV = "0.21.0-M6"
+  val http4sV = "0.21.0-RC1"
   val pureConfigV = "0.12.2"
   val jansiV = "1.18"
   val logbackV = "1.2.3"
 
   //Frontend
   val scalaCssV = "0.6.0"
-  val scalaJsReactV = "1.5.0"
+  val scalaJsReactV = "1.6.0"
   val scalaJsDomV = "0.9.8"
   val scalaJsReactSemanticUIV = "0.3.2"
 
